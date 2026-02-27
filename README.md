@@ -8,7 +8,7 @@
 
 [![CI](https://github.com/gaetanars/AlertLens/actions/workflows/ci.yml/badge.svg)](https://github.com/gaetanars/AlertLens/actions/workflows/ci.yml)
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io%2Fgaetanars%2Falertlens-blue?logo=docker)](https://github.com/gaetanars/AlertLens/pkgs/container/alertlens)
-[![Go](https://img.shields.io/badge/Go-1.24-00ADD8?logo=go)](https://golang.org)
+[![Go](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go)](https://golang.org)
 [![License](https://img.shields.io/github/license/gaetanars/AlertLens)](LICENSE)
 [![Docs](https://img.shields.io/badge/Docs-gaetanars.github.io%2FAlertLens-orange)](https://gaetanars.github.io/AlertLens/)
 
@@ -107,7 +107,7 @@ Before any write, AlertLens shows a unified diff. You confirm — then the chang
 
 ## Build from source
 
-Requires Go 1.24+ and Node.js 20+.
+Requires Go 1.25+ and Node.js 20+.
 
 ```bash
 git clone https://github.com/gaetanars/AlertLens.git
@@ -136,6 +136,6 @@ Browser ──► AlertLens (Go binary + embedded SvelteKit frontend)
                 └──► GitHub / GitLab API  (GitOps)
 ```
 
-- Backend: Go 1.24, chi router, zap logger
+- Backend: Go 1.25, chi router, zap logger
 - Frontend: SvelteKit + Tailwind CSS + shadcn/svelte
 - Single binary via `go:embed` — no Node.js at runtime

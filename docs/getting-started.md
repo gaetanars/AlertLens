@@ -37,7 +37,7 @@
 
 === "Build from source"
 
-    Requires Go 1.24+ and Node.js 20+.
+    Requires Go 1.25+ and Node.js 20+.
 
     ```bash
     git clone https://github.com/gaetanars/AlertLens.git

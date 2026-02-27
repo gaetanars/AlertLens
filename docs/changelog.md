@@ -35,7 +35,7 @@ AlertLens uses [Semantic Versioning](https://semver.org/).
 
 ### Architecture
 
-- Backend: Go 1.24, `go-chi/chi` router, `go.uber.org/zap` logger
+- Backend: Go 1.25, `go-chi/chi` router, `go.uber.org/zap` logger
 - Frontend: SvelteKit + Tailwind CSS + shadcn/svelte
 - Auth: `golang-jwt/jwt/v5`, `golang.org/x/time` rate limiter
 - GitOps: `google/go-github/v66`, `xanzy/go-gitlab`

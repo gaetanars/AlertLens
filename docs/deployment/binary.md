@@ -36,7 +36,7 @@ Pre-built binaries for Linux, macOS, and Windows are available on the [GitHub Re
 
 | Tool | Minimum version |
 |---|---|
-| Go | 1.24 |
+| Go | 1.25 |
 | Node.js | 20 |
 | npm | 9 |
 
