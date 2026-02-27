@@ -230,7 +230,7 @@ The chart enforces Kubernetes security best practices out of the box:
 
 ## Full values reference
 
-See the [chart README](https://github.com/gaetanars/AlertLens/blob/main/charts/alertlens/README.md) or run:
+See the [chart README](https://github.com/gaetanars/AlertLens/blob/main/chart/alertlens/README.md) or run:
 
 ```bash
 helm show values oci://ghcr.io/gaetanars/charts/alertlens

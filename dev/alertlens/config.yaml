@@ -1,0 +1,15 @@
+server:
+  host: "0.0.0.0"
+  port: 9000
+
+auth:
+  # Admin password set via ALERTLENS_AUTH_ADMIN_PASSWORD env var in docker-compose.
+  # Value: "admin"  (change before deploying outside localhost)
+  admin_password: "admin"
+
+alertmanagers:
+  - name: "default"
+    url: "http://alertmanager:9093"
+    # Shared volume with the alertmanager container → disk-save mode works
+    config_file_path: "/etc/alertmanager/alertmanager.yml"
+    tls_skip_verify: false

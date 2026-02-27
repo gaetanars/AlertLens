@@ -1,0 +1,172 @@
+# Default values for alertlens.
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/gaetanars/alertlens
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart AppVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created.
+  create: true
+  # Automatically mount API credentials — not needed for AlertLens (stateless, no K8s API calls).
+  automount: false
+  # Annotations to add to the service account (e.g. for IRSA or Workload Identity).
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template.
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+# Pod-level security context.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
+
+# Container-level security context.
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+service:
+  type: ClusterIP
+  port: 9000
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: alertlens.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: alertlens-tls
+  #    hosts:
+  #      - alertlens.example.com
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  failureThreshold: 3
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Pod Disruption Budget — recommended when replicaCount > 1.
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # maxUnavailable: 1
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+
+# ── AlertLens Application Configuration ──────────────────────────────────────
+#
+# Sensitive values (adminPassword, GitHub/GitLab tokens) are stored in a
+# Kubernetes Secret and injected as environment variables at runtime.
+# All other settings are written to a ConfigMap as alertlens.yaml.
+
+alertlens:
+  # Admin password for write operations (silence creation, config editing).
+  # If empty, AlertLens runs in public read-only mode.
+  # Can also be set via ALERTLENS_AUTH_ADMIN_PASSWORD env var or existingSecret.
+  adminPassword: ""
+
+  # Alertmanager or Grafana Mimir instances to aggregate.
+  alertmanagers:
+    - name: default
+      url: http://alertmanager:9093
+      # basic_auth:
+      #   username: ""
+      #   password: ""        # Use extraEnv for secret values, not this field.
+      # tenant_id: ""         # Grafana Mimir: X-Scope-OrgID header value.
+      # tls_skip_verify: false
+
+  # GitOps integration — push alertmanager.yml changes to GitHub or GitLab.
+  gitops:
+    github:
+      # Personal access token with contents:write on the target repository.
+      # Can also be set via ALERTLENS_GITOPS_GITHUB_TOKEN or existingSecret.
+      token: ""
+    gitlab:
+      # Personal access token with api scope on the target project.
+      # Can also be set via ALERTLENS_GITOPS_GITLAB_TOKEN or existingSecret.
+      token: ""
+      url: "https://gitlab.com"
+
+# ── Existing Secret ───────────────────────────────────────────────────────────
+# Reference an existing Secret instead of letting this chart create one.
+# The secret may contain any combination of these keys:
+#   admin-password   → maps to ALERTLENS_AUTH_ADMIN_PASSWORD
+#   github-token     → maps to ALERTLENS_GITOPS_GITHUB_TOKEN
+#   gitlab-token     → maps to ALERTLENS_GITOPS_GITLAB_TOKEN
+existingSecret: ""
+
+# ── Extra configuration ───────────────────────────────────────────────────────
+# Extra environment variables injected into the alertlens container.
+# Useful for per-instance credentials not manageable via values (e.g. basic_auth passwords).
+extraEnv: []
+# - name: ALERTLENS_ALERTMANAGERS_0_BASIC_AUTH_PASSWORD
+#   valueFrom:
+#     secretKeyRef:
+#       name: alertmanager-credentials
+#       key: password
+
+# Extra envFrom sources (ConfigMaps or Secrets).
+extraEnvFrom: []
+# - secretRef:
+#     name: alertlens-extra
+
+# Extra volumes to add to the pod.
+extraVolumes: []
+
+# Extra volume mounts to add to the alertlens container.
+extraVolumeMounts: []

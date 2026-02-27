@@ -1,0 +1,18 @@
+{{- $config := dict
+  "server" (dict "host" "0.0.0.0" "port" (.Values.service.port | int))
+  "alertmanagers" .Values.alertlens.alertmanagers
+  "gitops" (dict
+    "github" (dict)
+    "gitlab" (dict "url" .Values.alertlens.gitops.gitlab.url)
+  )
+-}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "alertlens.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "alertlens.labels" . | nindent 4 }}
+data:
+  alertlens.yaml: |
+    {{- $config | toYaml | nindent 4 }}

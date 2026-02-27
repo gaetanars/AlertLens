@@ -210,7 +210,7 @@ jobs:
 
       - name: Package Helm chart
         run: |
-          helm package charts/alertlens \
+          helm package chart/alertlens \
             --version "${{ env.CHART_VERSION }}" \
             --app-version "${{ env.CHART_VERSION }}"
 

@@ -1,5 +1,5 @@
-# Binary
-alertlens
+# Binary (root-level compiled binary only)
+/alertlens
 
 # Build artifacts
 dist/

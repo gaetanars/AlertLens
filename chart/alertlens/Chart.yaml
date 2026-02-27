@@ -1,0 +1,36 @@
+apiVersion: v2
+name: alertlens
+description: A modern UI for Prometheus Alertmanager — visualize, silence, and manage configurations with ease.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+home: https://github.com/gaetanars/AlertLens
+sources:
+  - https://github.com/gaetanars/AlertLens
+icon: https://raw.githubusercontent.com/gaetanars/AlertLens/main/web/static/favicon.png
+
+keywords:
+  - alertmanager
+  - prometheus
+  - monitoring
+  - alerting
+  - grafana-mimir
+  - observability
+
+maintainers:
+  - name: gaetanars
+    url: https://github.com/gaetanars
+
+annotations:
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: Documentation
+      url: https://gaetanars.github.io/AlertLens/
+    - name: GitHub
+      url: https://github.com/gaetanars/AlertLens
+    - name: Docker image
+      url: https://github.com/gaetanars/AlertLens/pkgs/container/alertlens
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial release of AlertLens Helm chart
