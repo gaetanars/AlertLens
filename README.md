@@ -7,7 +7,7 @@
 **A modern UI for Prometheus Alertmanager — visualize, silence, and manage configurations with ease.**
 
 [![CI](https://github.com/gaetanars/AlertLens/actions/workflows/ci.yml/badge.svg)](https://github.com/gaetanars/AlertLens/actions/workflows/ci.yml)
-[![Docker](https://img.shields.io/badge/Docker-ghcr.io%2Fgaetanars%2Falertmlens-blue?logo=docker)](https://github.com/gaetanars/AlertLens/pkgs/container/alertlens)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io%2Fgaetanars%2Falertlens-blue?logo=docker)](https://github.com/gaetanars/AlertLens/pkgs/container/alertlens)
 [![Go](https://img.shields.io/badge/Go-1.24-00ADD8?logo=go)](https://golang.org)
 [![License](https://img.shields.io/github/license/gaetanars/AlertLens)](LICENSE)
 [![Docs](https://img.shields.io/badge/Docs-gaetanars.github.io%2FAlertLens-orange)](https://gaetanars.github.io/AlertLens/)
