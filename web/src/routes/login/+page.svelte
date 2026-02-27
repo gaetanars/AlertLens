@@ -15,10 +15,10 @@
 		try {
 			const res = await login(password);
 			authStore.setToken(res.token, res.expires_at);
-			toast.success('Connecté en mode admin');
+			toast.success('Signed in as admin');
 			goto('/alerts');
 		} catch (err) {
-			error = err instanceof Error ? err.message : 'Mot de passe incorrect';
+			error = err instanceof Error ? err.message : 'Incorrect password';
 		} finally {
 			loading = false;
 		}
@@ -34,12 +34,12 @@
 				</div>
 			</div>
 			<h1 class="text-2xl font-bold">AlertLens Admin</h1>
-			<p class="text-sm text-muted-foreground mt-1">Connectez-vous pour accéder au mode admin</p>
+			<p class="text-sm text-muted-foreground mt-1">Sign in to access admin mode</p>
 		</div>
 
 		<form onsubmit={submit} class="space-y-4">
 			<div>
-				<label for="password" class="text-sm font-medium mb-1 block">Mot de passe</label>
+				<label for="password" class="text-sm font-medium mb-1 block">Password</label>
 				<div class="relative">
 					<Lock class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 					<input
@@ -62,7 +62,7 @@
 				disabled={loading || !password}
 				class="w-full py-2 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
 			>
-				{loading ? 'Connexion...' : 'Se connecter'}
+				{loading ? 'Signing in...' : 'Sign in'}
 			</button>
 		</form>
 	</div>

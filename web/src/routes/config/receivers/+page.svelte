@@ -79,7 +79,7 @@
 			fullConfig = cfg.raw_yaml;
 			receivers = parseReceivers(cfg.raw_yaml);
 		} catch (e) {
-			toast.error('Erreur: ' + (e instanceof Error ? e.message : ''));
+			toast.error('Error: ' + (e instanceof Error ? e.message : ''));
 		} finally { loading = false; }
 	}
 
@@ -108,7 +108,7 @@
 		try {
 			diffResult = await diffConfig(selectedInstance || '', proposedYaml);
 			step = 'diff';
-		} catch (e) { toast.error('Erreur: ' + (e instanceof Error ? e.message : '')); }
+		} catch (e) { toast.error('Error: ' + (e instanceof Error ? e.message : '')); }
 	}
 
 	async function save() {
@@ -124,12 +124,12 @@
 				} : undefined,
 				webhook_url: webhookUrl || undefined
 			});
-			toast.success('Configuration sauvegardée');
+			toast.success('Configuration saved');
 			fullConfig = proposedYaml;
 			step = 'edit';
 			diffResult = null;
 		} catch (e) {
-			toast.error('Erreur de sauvegarde: ' + (e instanceof Error ? e.message : ''));
+			toast.error('Save error: ' + (e instanceof Error ? e.message : ''));
 		} finally {
 			saving = false;
 		}
@@ -142,7 +142,7 @@
 	<div class="flex items-center justify-between">
 		<h2 class="font-semibold">Receivers</h2>
 		<select bind:value={selectedInstance} onchange={load} class="px-2 py-1 rounded border bg-background text-sm">
-			<option value="">Défaut</option>
+			<option value="">Default</option>
 			{#each $instances as inst}
 				<option value={inst.name}>{inst.name}</option>
 			{/each}
@@ -150,7 +150,7 @@
 	</div>
 
 	{#if loading}
-		<div class="py-8 text-center text-muted-foreground animate-pulse">Chargement…</div>
+		<div class="py-8 text-center text-muted-foreground animate-pulse">Loading…</div>
 	{:else if step === 'edit'}
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 			<!-- Receiver list -->
@@ -174,7 +174,7 @@
 				{/each}
 				<button onclick={addReceiver} class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed text-sm text-muted-foreground hover:text-foreground hover:border-foreground transition-colors">
 					<Plus class="h-4 w-4" />
-					Ajouter un receiver
+					Add receiver
 				</button>
 			</div>
 
@@ -183,7 +183,7 @@
 				{@const r = receivers[editingIdx]}
 				<div class="lg:col-span-2 space-y-3">
 					<div>
-						<label class="text-sm font-medium mb-1 block">Nom</label>
+						<label class="text-sm font-medium mb-1 block">Name</label>
 						<input bind:value={r.name} class="w-full px-3 py-2 rounded-md border bg-background text-sm" />
 					</div>
 
@@ -218,7 +218,7 @@
 								</div>
 							{:else if cfg.type === 'email'}
 								<div>
-									<label class="text-xs text-muted-foreground">Destinataire <span class="text-destructive">*</span></label>
+									<label class="text-xs text-muted-foreground">Recipient <span class="text-destructive">*</span></label>
 									<input bind:value={cfg.config.to} placeholder="team@example.com" class="w-full px-2 py-1.5 rounded border bg-background text-sm mt-0.5" />
 								</div>
 							{/if}
@@ -242,7 +242,7 @@
 
 		<button onclick={previewDiff} class="flex items-center gap-2 px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-sm transition-colors">
 			<Eye class="h-4 w-4" />
-			Voir le diff
+			Preview diff
 		</button>
 
 	{:else if step === 'diff' && diffResult}
@@ -251,7 +251,7 @@
 		{#if diffResult.has_changes}
 			<!-- SPEC-05: save options in the diff step -->
 			<div class="p-4 rounded-lg border space-y-3 mt-3">
-				<h3 class="font-semibold text-sm">Mode de sauvegarde</h3>
+				<h3 class="font-semibold text-sm">Save mode</h3>
 				<div class="flex gap-3">
 					{#each ['disk', 'github', 'gitlab'] as mode}
 						<label class="flex items-center gap-1.5 cursor-pointer">
@@ -269,16 +269,16 @@
 						<input bind:value={gitFilePath} placeholder="alertmanager.yml" class="px-3 py-2 rounded border bg-background text-sm" />
 					</div>
 				{/if}
-				<input bind:value={webhookUrl} placeholder="Webhook URL (optionnel)" class="w-full px-3 py-2 rounded border bg-background text-sm" />
+				<input bind:value={webhookUrl} placeholder="Webhook URL (optional)" class="w-full px-3 py-2 rounded border bg-background text-sm" />
 			</div>
 		{/if}
 
 		<div class="flex gap-2 mt-3">
-			<button onclick={() => step = 'edit'} class="px-4 py-2 rounded-md border text-sm hover:bg-muted">Retour</button>
+			<button onclick={() => step = 'edit'} class="px-4 py-2 rounded-md border text-sm hover:bg-muted">Back</button>
 			{#if diffResult.has_changes}
 				<button onclick={save} disabled={saving} class="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-sm disabled:opacity-50 transition-colors">
 					<Save class="h-4 w-4" />
-					{saving ? 'Sauvegarde...' : 'Confirmer et sauvegarder'}
+					{saving ? 'Saving...' : 'Confirm and save'}
 				</button>
 			{/if}
 		</div>

@@ -104,7 +104,7 @@
 				<ChevronDown class="h-4 w-4" />
 			{/if}
 		</button>
-		<span class="text-xs font-medium text-muted-foreground">{isRoot ? 'Route racine' : `Route (depth ${depth})`}</span>
+		<span class="text-xs font-medium text-muted-foreground">{isRoot ? 'Root route' : `Route (depth ${depth})`}</span>
 		<div class="flex-1">
 			<input
 				value={route.receiver}
@@ -132,7 +132,7 @@
 				<div class="flex items-center justify-between mb-1">
 					<span class="text-xs font-medium text-muted-foreground">Matchers</span>
 					<button onclick={addMatcher} class="flex items-center gap-1 text-xs text-primary hover:underline">
-						<Plus class="h-3 w-3" /> Ajouter
+						<Plus class="h-3 w-3" /> Add
 					</button>
 				</div>
 				<div class="space-y-1">
@@ -163,7 +163,7 @@
 							<input
 								value={m.value}
 								oninput={(e) => patchMatcher(i, { value: (e.target as HTMLInputElement).value })}
-								placeholder="valeur"
+								placeholder="value"
 								class="flex-1 px-2 py-1 rounded border bg-background text-xs"
 							/>
 							<button onclick={() => removeMatcher(i)} class="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors">
@@ -228,7 +228,7 @@
 					<div>
 						<span class="text-xs font-medium text-muted-foreground block mb-1">Mute Time Intervals</span>
 						{#if availableTimeIntervals.length === 0}
-							<p class="text-xs text-muted-foreground italic">Aucun interval défini — <a href="/config/time-intervals" class="text-primary hover:underline">créer un Time Interval</a></p>
+							<p class="text-xs text-muted-foreground italic">No interval defined — <a href="/config/time-intervals" class="text-primary hover:underline">create a Time Interval</a></p>
 						{:else}
 							<div class="flex flex-wrap gap-1">
 								{#each availableTimeIntervals as name}
@@ -236,7 +236,7 @@
 										onclick={() => toggleTimeInterval('mute_time_intervals', name)}
 										class="px-2 py-0.5 rounded-full text-xs border transition-colors
 											{route.mute_time_intervals.includes(name) ? 'bg-orange-500/20 text-orange-700 dark:text-orange-400 border-orange-500/50' : 'hover:bg-muted'}"
-										title="Supprime les notifications pendant cet intervalle"
+										title="Suppresses notifications during this interval"
 									>
 										{name}
 									</button>
@@ -249,7 +249,7 @@
 					<div>
 						<span class="text-xs font-medium text-muted-foreground block mb-1">Active Time Intervals</span>
 						{#if availableTimeIntervals.length === 0}
-							<p class="text-xs text-muted-foreground italic">Aucun interval défini — <a href="/config/time-intervals" class="text-primary hover:underline">créer un Time Interval</a></p>
+							<p class="text-xs text-muted-foreground italic">No interval defined — <a href="/config/time-intervals" class="text-primary hover:underline">create a Time Interval</a></p>
 						{:else}
 							<div class="flex flex-wrap gap-1">
 								{#each availableTimeIntervals as name}
@@ -257,7 +257,7 @@
 										onclick={() => toggleTimeInterval('active_time_intervals', name)}
 										class="px-2 py-0.5 rounded-full text-xs border transition-colors
 											{route.active_time_intervals.includes(name) ? 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/50' : 'hover:bg-muted'}"
-										title="N'envoie les notifications que pendant cet intervalle"
+										title="Only sends notifications during this interval"
 									>
 										{name}
 									</button>
@@ -271,7 +271,7 @@
 			<!-- Child routes -->
 			{#if route.routes.length > 0}
 				<div>
-					<span class="text-xs font-medium text-muted-foreground block mb-1">Routes enfants ({route.routes.length})</span>
+					<span class="text-xs font-medium text-muted-foreground block mb-1">Child routes ({route.routes.length})</span>
 					{#each route.routes as child, i}
 						<div class="relative">
 							<RouteNodeEditor
@@ -283,7 +283,7 @@
 							<button
 								onclick={() => removeChild(i)}
 								class="absolute top-2 right-2 p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors z-10"
-								title="Supprimer cette route"
+								title="Remove this route"
 							>
 								<Trash2 class="h-3 w-3" />
 							</button>
@@ -293,7 +293,7 @@
 			{/if}
 
 			<button onclick={addChild} class="flex items-center gap-1 text-xs text-primary hover:underline">
-				<Plus class="h-3 w-3" /> Ajouter une route enfant
+				<Plus class="h-3 w-3" /> Add child route
 			</button>
 		</div>
 	{/if}

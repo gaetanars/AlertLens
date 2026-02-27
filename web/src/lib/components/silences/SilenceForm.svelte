@@ -59,8 +59,8 @@
 	}
 
 	async function submit() {
-		if (!selectedInstance) { toast.error('Sélectionnez une instance'); return; }
-		if (matchers.some(m => !m.name)) { toast.error('Tous les matchers doivent avoir un nom'); return; }
+		if (!selectedInstance) { toast.error('Select an instance'); return; }
+		if (matchers.some(m => !m.name)) { toast.error('All matchers must have a name'); return; }
 		loading = true;
 		try {
 			const req: CreateSilenceRequest = {
@@ -73,15 +73,15 @@
 			};
 			if (isEdit && editSilence) {
 				await updateSilence(editSilence.id, req);
-				toast.success('Silence modifié');
+				toast.success('Silence updated');
 			} else {
 				await createSilence(req);
-				toast.success('Silence créé');
+				toast.success('Silence created');
 			}
 			await Promise.all([loadSilences(), loadAlerts()]);
 			onClose?.();
 		} catch (e) {
-			toast.error(e instanceof Error ? e.message : 'Erreur lors de la sauvegarde');
+			toast.error(e instanceof Error ? e.message : 'Save error');
 		} finally {
 			loading = false;
 		}
@@ -90,7 +90,7 @@
 
 <div class="space-y-4">
 	<div class="flex items-center justify-between">
-		<h2 class="text-lg font-semibold">{isEdit ? 'Modifier le silence' : 'Nouveau Silence'}</h2>
+		<h2 class="text-lg font-semibold">{isEdit ? 'Edit silence' : 'New silence'}</h2>
 		<button onclick={onClose} class="p-1 rounded hover:bg-muted"><X class="h-4 w-4" /></button>
 	</div>
 
@@ -127,7 +127,7 @@
 					</label>
 					<input
 						bind:value={matcher.value}
-						placeholder="valeur"
+						placeholder="value"
 						class="flex-1 px-2 py-1.5 rounded border bg-background text-sm"
 					/>
 					<button onclick={() => removeMatcher(i)} class="p-1 rounded hover:bg-muted text-muted-foreground">
@@ -137,13 +137,13 @@
 			{/each}
 		</div>
 		<button onclick={addMatcher} class="mt-2 flex items-center gap-1 text-sm text-primary hover:underline">
-			<Plus class="h-4 w-4" /> Ajouter un matcher
+			<Plus class="h-4 w-4" /> Add matcher
 		</button>
 	</div>
 
 	<!-- Duration presets -->
 	<div>
-		<label class="text-sm font-medium mb-1 block">Durée</label>
+		<label class="text-sm font-medium mb-1 block">Duration</label>
 		<div class="flex flex-wrap gap-2 mb-2">
 			{#each DURATION_PRESETS as preset, i}
 				<button
@@ -156,11 +156,11 @@
 		</div>
 		<div class="grid grid-cols-2 gap-2">
 			<div>
-				<label class="text-xs text-muted-foreground">Début</label>
+				<label class="text-xs text-muted-foreground">Start</label>
 				<input type="datetime-local" bind:value={startsAt} class="w-full px-2 py-1.5 rounded border bg-background text-sm" />
 			</div>
 			<div>
-				<label class="text-xs text-muted-foreground">Fin</label>
+				<label class="text-xs text-muted-foreground">End</label>
 				<input type="datetime-local" bind:value={endsAt} class="w-full px-2 py-1.5 rounded border bg-background text-sm" />
 			</div>
 		</div>
@@ -169,12 +169,12 @@
 	<!-- Author + comment -->
 	<div class="grid grid-cols-2 gap-2">
 		<div>
-			<label class="text-sm font-medium mb-1 block">Créé par</label>
-			<input bind:value={createdBy} placeholder="votre nom" class="w-full px-3 py-2 rounded-md border bg-background text-sm" />
+			<label class="text-sm font-medium mb-1 block">Created by</label>
+			<input bind:value={createdBy} placeholder="your name" class="w-full px-3 py-2 rounded-md border bg-background text-sm" />
 		</div>
 		<div>
-			<label class="text-sm font-medium mb-1 block">Commentaire</label>
-			<input bind:value={comment} placeholder="raison..." class="w-full px-3 py-2 rounded-md border bg-background text-sm" />
+			<label class="text-sm font-medium mb-1 block">Comment</label>
+			<input bind:value={comment} placeholder="reason..." class="w-full px-3 py-2 rounded-md border bg-background text-sm" />
 		</div>
 	</div>
 
@@ -183,6 +183,6 @@
 		disabled={loading}
 		class="w-full py-2 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
 	>
-		{loading ? (isEdit ? 'Modification...' : 'Création...') : (isEdit ? 'Enregistrer les modifications' : 'Créer le silence')}
+		{loading ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save changes' : 'Create silence')}
 	</button>
 </div>

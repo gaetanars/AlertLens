@@ -43,9 +43,9 @@
 
 <!-- Page header -->
 <div class="flex items-center justify-between mb-4">
-	<h1 class="text-xl font-bold">Alertes actives</h1>
+	<h1 class="text-xl font-bold">Active alerts</h1>
 	{#if $alertsLoading}
-		<span class="text-sm text-muted-foreground animate-pulse">Chargement…</span>
+		<span class="text-sm text-muted-foreground animate-pulse">Loading…</span>
 	{/if}
 </div>
 

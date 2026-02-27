@@ -19,10 +19,10 @@
 	async function expire(s: Silence) {
 		try {
 			await expireSilence(s.id, s.alertmanager);
-			toast.success('Silence expiré');
+			toast.success('Silence expired');
 			await loadSilences();
 		} catch (e) {
-			toast.error(e instanceof Error ? e.message : 'Erreur');
+			toast.error(e instanceof Error ? e.message : 'Error');
 		}
 	}
 
@@ -44,7 +44,7 @@
 				{#if isAck(s)}
 					<span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
 						<User class="h-3 w-3" />
-						Ack visuel
+						Visual ack
 					</span>
 				{:else}
 					<span class="px-2 py-0.5 rounded-full text-xs bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
@@ -52,7 +52,7 @@
 					</span>
 				{/if}
 				<span class="text-xs text-muted-foreground">{s.alertmanager}</span>
-				<span class="text-xs text-muted-foreground">par <strong>{s.createdBy}</strong></span>
+				<span class="text-xs text-muted-foreground">by <strong>{s.createdBy}</strong></span>
 			</div>
 			<div class="flex flex-wrap gap-1">
 				{#each s.matchers.filter(m => !m.name.startsWith('alertlens_')) as m}
@@ -62,7 +62,7 @@
 			{#if s.comment}
 				<p class="text-xs text-muted-foreground italic">"{s.comment}"</p>
 			{/if}
-			<p class="text-xs text-muted-foreground">Jusqu'au {new Date(s.endsAt).toLocaleString('fr-FR')}</p>
+			<p class="text-xs text-muted-foreground">Until {new Date(s.endsAt).toLocaleString('en-US')}</p>
 		</div>
 		{#if $isAdmin && s.status.state === 'active'}
 			<div class="flex gap-1 flex-shrink-0">
@@ -70,7 +70,7 @@
 					<button
 						onclick={() => onEdit(s)}
 						class="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-						title="Modifier"
+						title="Edit"
 					>
 						<Pencil class="h-4 w-4" />
 					</button>
@@ -78,7 +78,7 @@
 				<button
 					onclick={() => expire(s)}
 					class="p-1.5 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-					title="Expirer maintenant"
+					title="Expire now"
 				>
 					<Trash2 class="h-4 w-4" />
 				</button>
@@ -91,7 +91,7 @@
 	{#if active.length > 0}
 		<section>
 			<h3 class="font-semibold mb-2 text-sm text-muted-foreground uppercase tracking-wide">
-				Actifs ({active.length})
+				Active ({active.length})
 			</h3>
 			<div class="space-y-2">
 				{#each active as s (s.id)}{@render silenceRow(s)}{/each}
@@ -102,7 +102,7 @@
 	{#if pending.length > 0}
 		<section>
 			<h3 class="font-semibold mb-2 text-sm text-muted-foreground uppercase tracking-wide">
-				En attente ({pending.length})
+				Pending ({pending.length})
 			</h3>
 			<div class="space-y-2">
 				{#each pending as s (s.id)}{@render silenceRow(s)}{/each}
@@ -113,7 +113,7 @@
 	{#if expired.length > 0}
 		<section>
 			<h3 class="font-semibold mb-2 text-sm text-muted-foreground uppercase tracking-wide opacity-60">
-				Expirés ({expired.length})
+				Expired ({expired.length})
 			</h3>
 			<div class="space-y-2 opacity-60">
 				{#each expired.slice(0, 10) as s (s.id)}{@render silenceRow(s)}{/each}
@@ -122,6 +122,6 @@
 	{/if}
 
 	{#if silences.length === 0}
-		<div class="py-12 text-center text-muted-foreground">Aucun silence</div>
+		<div class="py-12 text-center text-muted-foreground">No silences</div>
 	{/if}
 </div>

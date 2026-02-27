@@ -18,7 +18,7 @@
 		try {
 			routeData = await fetchRouting(selectedInstance || undefined);
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Erreur de chargement';
+			error = e instanceof Error ? e.message : 'Failed to load';
 		} finally {
 			loading = false;
 		}
@@ -49,7 +49,7 @@
 			bind:value={selectedInstance}
 			class="px-3 py-2 rounded-md border bg-background text-sm"
 		>
-			<option value="">Instance par défaut</option>
+			<option value="">Default instance</option>
 			{#each $instances as inst}
 				<option value={inst.name}>{inst.name}</option>
 			{/each}
@@ -68,22 +68,22 @@
 {/if}
 
 {#if loading}
-	<div class="py-12 text-center text-muted-foreground animate-pulse">Chargement…</div>
+	<div class="py-12 text-center text-muted-foreground animate-pulse">Loading…</div>
 {:else if routeData}
 	<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 		<!-- Tree (takes 2/3 of width) -->
 		<div class="lg:col-span-2">
 			<RoutingTree route={routeData.route} onNodeClick={handleNodeClick} />
-			<p class="mt-2 text-xs text-muted-foreground text-center">Cliquez sur un nœud pour voir les alertes correspondantes</p>
+			<p class="mt-2 text-xs text-muted-foreground text-center">Click a node to see matching alerts</p>
 		</div>
 
 		<!-- Side panel -->
 		<div class="space-y-4">
 			{#if selectedNode}
 				<div class="p-4 rounded-lg border bg-card">
-					<h3 class="font-semibold mb-2">Nœud sélectionné</h3>
+					<h3 class="font-semibold mb-2">Selected node</h3>
 					<div class="space-y-1 text-sm">
-						<div><span class="text-muted-foreground">Receiver :</span> <strong>{selectedNode.receiver}</strong></div>
+						<div><span class="text-muted-foreground">Receiver:</span> <strong>{selectedNode.receiver}</strong></div>
 						{#if selectedNode.group_by?.length}
 							<div><span class="text-muted-foreground">Group by :</span> {selectedNode.group_by.join(', ')}</div>
 						{/if}
@@ -111,7 +111,7 @@
 
 				{#if matchedRoutes.length > 0}
 					<div class="p-4 rounded-lg border bg-card">
-						<h3 class="font-semibold mb-2">Routes matchées ({matchedRoutes.length})</h3>
+						<h3 class="font-semibold mb-2">Matched routes ({matchedRoutes.length})</h3>
 						<div class="space-y-1">
 							{#each matchedRoutes as r, i}
 								<div class="flex items-center gap-2 text-sm">
@@ -124,7 +124,7 @@
 				{/if}
 			{:else}
 				<div class="p-4 rounded-lg border bg-muted/30 text-center text-sm text-muted-foreground">
-					Cliquez sur un nœud dans l'arbre pour voir ses détails
+					Click a node in the tree to see its details
 				</div>
 			{/if}
 		</div>

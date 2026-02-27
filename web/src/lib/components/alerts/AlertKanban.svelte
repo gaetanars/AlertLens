@@ -14,7 +14,7 @@
 		critical: 'Critical',
 		warning:  'Warning',
 		info:     'Info',
-		none:     'Autres'
+		none:     'Other'
 	};
 
 	const COLUMN_HEADER: Record<Severity, string> = {
@@ -62,7 +62,7 @@
 					{/each}
 					{#if colAlerts.length === 0}
 						<div class="flex items-center justify-center h-16 text-sm text-muted-foreground border-2 border-dashed rounded-lg">
-							Aucune alerte
+							No alerts
 						</div>
 					{/if}
 				</div>
@@ -81,7 +81,7 @@
 					{/each}
 					{#if colAlerts.length === 0}
 						<div class="flex items-center justify-center h-16 text-sm text-muted-foreground border-2 border-dashed rounded-lg">
-							Aucune alerte
+							No alerts
 						</div>
 					{/if}
 				</div>

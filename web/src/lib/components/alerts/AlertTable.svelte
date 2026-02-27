@@ -63,15 +63,15 @@
 					/>
 				</th>
 				<th class="px-3 py-2 text-left cursor-pointer hover:text-foreground" onclick={() => setSort('alertname')}>
-					Alerte
+					Alert
 				</th>
 				<th class="px-3 py-2 text-left cursor-pointer hover:text-foreground" onclick={() => setSort('severity')}>
-					Sévérité
+					Severity
 				</th>
 				<th class="px-3 py-2 text-left">Instance</th>
-				<th class="px-3 py-2 text-left">Labels clés</th>
+				<th class="px-3 py-2 text-left">Key labels</th>
 				<th class="px-3 py-2 text-left cursor-pointer hover:text-foreground" onclick={() => setSort('startsAt')}>
-					Depuis
+					Since
 				</th>
 				<th class="px-3 py-2 text-left">Ack</th>
 				{#if $isAdmin}
@@ -125,7 +125,7 @@
 			{/each}
 			{#if alerts.length === 0}
 				<tr>
-					<td colspan={$isAdmin ? 8 : 7} class="px-3 py-8 text-center text-muted-foreground">Aucune alerte active</td>
+					<td colspan={$isAdmin ? 8 : 7} class="px-3 py-8 text-center text-muted-foreground">No active alerts</td>
 				</tr>
 			{/if}
 		</tbody>

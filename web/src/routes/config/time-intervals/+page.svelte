@@ -49,7 +49,7 @@
 			const parsed = yaml.load(cfg.raw_yaml) as any;
 			timeIntervals = parsed?.time_intervals ?? [];
 		} catch (e) {
-			toast.error('Erreur: ' + (e instanceof Error ? e.message : ''));
+			toast.error('Error: ' + (e instanceof Error ? e.message : ''));
 		} finally {
 			loading = false;
 		}
@@ -85,7 +85,7 @@
 			diffResult = await diffConfig(selectedInstance || '', proposedYaml);
 			step = 'diff';
 		} catch (e) {
-			toast.error('Erreur: ' + (e instanceof Error ? e.message : ''));
+			toast.error('Error: ' + (e instanceof Error ? e.message : ''));
 		}
 	}
 
@@ -102,12 +102,12 @@
 				} : undefined,
 				webhook_url: webhookUrl || undefined
 			});
-			toast.success('Configuration sauvegardée');
+			toast.success('Configuration saved');
 			fullConfig = proposedYaml;
 			step = 'edit';
 			diffResult = null;
 		} catch (e) {
-			toast.error('Erreur de sauvegarde: ' + (e instanceof Error ? e.message : ''));
+			toast.error('Save error: ' + (e instanceof Error ? e.message : ''));
 		} finally {
 			saving = false;
 		}
@@ -122,10 +122,10 @@
 	<div class="flex items-center justify-between">
 		<div>
 			<h2 class="font-semibold">Time Intervals</h2>
-			<p class="text-xs text-muted-foreground mt-0.5">Définissez des intervalles de temps nommés, utilisables dans les routes comme <code class="bg-muted px-1 rounded">mute_time_intervals</code> ou <code class="bg-muted px-1 rounded">active_time_intervals</code>.</p>
+			<p class="text-xs text-muted-foreground mt-0.5">Define named time intervals, usable in routes comme <code class="bg-muted px-1 rounded">mute_time_intervals</code> ou <code class="bg-muted px-1 rounded">active_time_intervals</code>.</p>
 		</div>
 		<select bind:value={selectedInstance} onchange={load} class="px-2 py-1 rounded border bg-background text-sm">
-			<option value="">Défaut</option>
+			<option value="">Default</option>
 			{#each $instances as inst}
 				<option value={inst.name}>{inst.name}</option>
 			{/each}
@@ -133,7 +133,7 @@
 	</div>
 
 	{#if loading}
-		<div class="py-8 text-center text-muted-foreground animate-pulse">Chargement…</div>
+		<div class="py-8 text-center text-muted-foreground animate-pulse">Loading…</div>
 	{:else if step === 'edit'}
 		<div class="space-y-4">
 			{#each timeIntervals as interval, i}
@@ -141,7 +141,7 @@
 					<div class="flex items-center justify-between">
 						<input
 							bind:value={interval.name}
-							placeholder="Nom de l'intervalle"
+							placeholder="Interval name"
 							class="font-semibold px-2 py-1 rounded border bg-background text-sm flex-1 mr-4"
 						/>
 						<button onclick={() => removeInterval(i)} class="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
@@ -152,7 +152,7 @@
 					{#each interval.time_intervals as spec, j}
 						<div class="pl-4 border-l-2 border-muted space-y-2">
 							<div class="flex items-center justify-between">
-								<span class="text-xs font-medium text-muted-foreground">Spécification {j + 1}</span>
+								<span class="text-xs font-medium text-muted-foreground">Specification {j + 1}</span>
 								{#if interval.time_intervals.length > 1}
 									<button onclick={() => removeTimeIntervalSpec(i, j)} class="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors">
 										<Trash2 class="h-3 w-3" />
@@ -162,7 +162,7 @@
 
 							<!-- Weekdays -->
 							<div>
-								<label class="text-xs text-muted-foreground block mb-1">Jours de la semaine</label>
+								<label class="text-xs text-muted-foreground block mb-1">Days of week</label>
 								<div class="flex flex-wrap gap-2">
 									{#each WEEKDAYS as day}
 										<label class="flex items-center gap-1 text-xs cursor-pointer">
@@ -185,12 +185,12 @@
 							<!-- Time ranges -->
 							{#if spec.times}
 								<div>
-									<label class="text-xs text-muted-foreground block mb-1">Plages horaires</label>
+									<label class="text-xs text-muted-foreground block mb-1">Time ranges</label>
 									{#each spec.times as t}
 										<div class="flex items-center gap-2">
-											<label class="text-xs text-muted-foreground">De</label>
+											<label class="text-xs text-muted-foreground">From</label>
 											<input type="time" bind:value={t.start_time} class="px-2 py-1 rounded border bg-background text-sm" />
-											<label class="text-xs text-muted-foreground">à</label>
+											<label class="text-xs text-muted-foreground">to</label>
 											<input type="time" bind:value={t.end_time} class="px-2 py-1 rounded border bg-background text-sm" />
 										</div>
 									{/each}
@@ -199,7 +199,7 @@
 
 							<!-- Location / timezone -->
 							<div>
-								<label class="text-xs text-muted-foreground block mb-1">Fuseau horaire (optionnel, ex: Europe/Paris)</label>
+								<label class="text-xs text-muted-foreground block mb-1">Timezone (optional, e.g. Europe/Paris)</label>
 								<input
 									bind:value={spec.location}
 									placeholder="UTC"
@@ -210,19 +210,19 @@
 					{/each}
 
 					<button onclick={() => addTimeIntervalSpec(i)} class="flex items-center gap-1 text-xs text-primary hover:underline">
-						<Plus class="h-3 w-3" /> Ajouter une spécification
+						<Plus class="h-3 w-3" /> Add specification
 					</button>
 				</div>
 			{/each}
 
 			<button onclick={addInterval} class="flex items-center gap-2 px-4 py-2 rounded-md border text-sm hover:bg-muted transition-colors">
 				<Plus class="h-4 w-4" />
-				Ajouter un Time Interval
+				Add Time Interval
 			</button>
 
 			<button onclick={previewDiff} class="flex items-center gap-2 px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-sm transition-colors">
 				<Eye class="h-4 w-4" />
-				Voir le diff
+				Preview diff
 			</button>
 		</div>
 
@@ -231,7 +231,7 @@
 
 		{#if diffResult.has_changes}
 			<div class="p-4 rounded-lg border space-y-3 mt-3">
-				<h3 class="font-semibold text-sm">Mode de sauvegarde</h3>
+				<h3 class="font-semibold text-sm">Save mode</h3>
 				<div class="flex gap-3">
 					{#each ['disk', 'github', 'gitlab'] as mode}
 						<label class="flex items-center gap-1.5 cursor-pointer">
@@ -249,16 +249,16 @@
 						<input bind:value={gitFilePath} placeholder="alertmanager.yml" class="px-3 py-2 rounded border bg-background text-sm" />
 					</div>
 				{/if}
-				<input bind:value={webhookUrl} placeholder="Webhook URL (optionnel)" class="w-full px-3 py-2 rounded border bg-background text-sm" />
+				<input bind:value={webhookUrl} placeholder="Webhook URL (optional)" class="w-full px-3 py-2 rounded border bg-background text-sm" />
 			</div>
 		{/if}
 
 		<div class="flex gap-2 mt-3">
-			<button onclick={() => step = 'edit'} class="px-4 py-2 rounded-md border text-sm hover:bg-muted">Retour</button>
+			<button onclick={() => step = 'edit'} class="px-4 py-2 rounded-md border text-sm hover:bg-muted">Back</button>
 			{#if diffResult.has_changes}
 				<button onclick={save} disabled={saving} class="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-sm disabled:opacity-50 transition-colors">
 					<Save class="h-4 w-4" />
-					{saving ? 'Sauvegarde...' : 'Confirmer et sauvegarder'}
+					{saving ? 'Saving...' : 'Confirm and save'}
 				</button>
 			{/if}
 		</div>

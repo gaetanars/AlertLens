@@ -11,7 +11,7 @@
 		<Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 		<input
 			type="text"
-			placeholder='Filtrer : severity="critical", env=~"prod.*"'
+			placeholder='Filter: severity="critical", env=~"prod.*"'
 			bind:value={$filterQuery}
 			class="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 		/>
@@ -22,7 +22,7 @@
 		bind:value={$instanceFilter}
 		class="px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 	>
-		<option value="">Toutes les instances</option>
+		<option value="">All instances</option>
 		{#each $instances as inst}
 			<option value={inst.name}>{inst.name}</option>
 		{/each}
@@ -31,7 +31,7 @@
 	<!-- Group by (kanban mode) -->
 	{#if $viewMode === 'kanban'}
 		<div class="flex items-center gap-2">
-			<label for="groupby" class="text-sm text-muted-foreground">Grouper par</label>
+			<label for="groupby" class="text-sm text-muted-foreground">Group by</label>
 			<select
 				id="groupby"
 				bind:value={$groupByLabel}
@@ -51,14 +51,14 @@
 		<button
 			onclick={() => viewMode.set('kanban')}
 			class="p-2 transition-colors {$viewMode === 'kanban' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'}"
-			title="Vue Kanban"
+			title="Kanban view"
 		>
 			<LayoutGrid class="h-4 w-4" />
 		</button>
 		<button
 			onclick={() => viewMode.set('list')}
 			class="p-2 transition-colors {$viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'}"
-			title="Vue Liste"
+			title="List view"
 		>
 			<List class="h-4 w-4" />
 		</button>
@@ -68,7 +68,7 @@
 	<button
 		onclick={onRefresh}
 		class="p-2 rounded-md border bg-background hover:bg-muted transition-colors"
-		title="Rafraîchir"
+		title="Refresh"
 	>
 		<RefreshCw class="h-4 w-4" />
 	</button>

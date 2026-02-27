@@ -33,7 +33,7 @@
 	}
 
 	async function submit() {
-		if (!ackBy.trim()) { toast.error('Renseignez votre nom'); return; }
+		if (!ackBy.trim()) { toast.error('Please enter your name'); return; }
 		loading = true;
 		try {
 			const req: CreateSilenceRequest = {
@@ -48,11 +48,11 @@
 				ack_comment: ackComment
 			};
 			await createSilence(req);
-			toast.success(`Alerte prise en charge par ${ackBy}`);
+			toast.success(`Alert acknowledged by ${ackBy}`);
 			await loadAlerts();
 			onClose?.();
 		} catch (e) {
-			toast.error(e instanceof Error ? e.message : 'Erreur lors de l\'ack');
+			toast.error(e instanceof Error ? e.message : 'Ack error');
 		} finally {
 			loading = false;
 		}
@@ -61,7 +61,7 @@
 
 <div class="space-y-4">
 	<div class="flex items-center justify-between">
-		<h2 class="text-lg font-semibold">Prendre en charge l'alerte</h2>
+		<h2 class="text-lg font-semibold">Acknowledge alert</h2>
 		<button onclick={onClose} class="p-1 rounded hover:bg-muted"><X class="h-4 w-4" /></button>
 	</div>
 
@@ -72,7 +72,7 @@
 	{/if}
 
 	<div>
-		<label class="text-sm font-medium mb-1 block">Votre nom / identifiant <span class="text-destructive">*</span></label>
+		<label class="text-sm font-medium mb-1 block">Your name / identifier <span class="text-destructive">*</span></label>
 		<input
 			bind:value={ackBy}
 			placeholder="alice"
@@ -82,16 +82,16 @@
 	</div>
 
 	<div>
-		<label class="text-sm font-medium mb-1 block">Commentaire</label>
+		<label class="text-sm font-medium mb-1 block">Comment</label>
 		<input
 			bind:value={ackComment}
-			placeholder="J'investigate..."
+			placeholder="Investigating..."
 			class="w-full px-3 py-2 rounded-md border bg-background text-sm"
 		/>
 	</div>
 
 	<div>
-		<label class="text-sm font-medium mb-1 block">Durée de prise en charge</label>
+		<label class="text-sm font-medium mb-1 block">Duration</label>
 		<div class="flex flex-wrap gap-2 mb-2">
 			{#each DURATION_PRESETS as preset, i}
 				<button onclick={() => applyPreset(i)} class="px-3 py-1 rounded-full border text-sm hover:bg-muted transition-colors">
@@ -107,6 +107,6 @@
 		disabled={loading}
 		class="w-full py-2 rounded-md bg-purple-600 text-white font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
 	>
-		{loading ? 'Ack en cours...' : 'Prendre en charge'}
+		{loading ? 'Acknowledging...' : 'Acknowledge'}
 	</button>
 </div>

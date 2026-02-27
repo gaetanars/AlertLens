@@ -8,7 +8,7 @@
 	import { mode, toggleMode } from 'mode-watcher';
 
 	const navItems = [
-		{ href: '/alerts',   label: 'Alertes',       icon: Bell },
+		{ href: '/alerts',   label: 'Alerts',       icon: Bell },
 		{ href: '/silences', label: 'Silences',       icon: Volume2 },
 		{ href: '/routing',  label: 'Routing Tree',   icon: GitBranch },
 	];
@@ -78,7 +78,7 @@
 		<button
 			onclick={toggleTheme}
 			class="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-			title="Changer de thème"
+			title="Toggle theme"
 		>
 			{#if mode.current === 'dark'}
 				<Sun class="h-4 w-4" />
@@ -93,7 +93,7 @@
 				class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
 			>
 				<LogOut class="h-4 w-4" />
-				Déconnexion
+				Sign out
 			</button>
 		{:else if $authStore.adminEnabled}
 			<a

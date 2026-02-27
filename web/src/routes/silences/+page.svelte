@@ -33,7 +33,7 @@
 			bind:value={$instanceFilter}
 			class="px-3 py-2 rounded-md border bg-background text-sm"
 		>
-			<option value="">Toutes les instances</option>
+			<option value="">All instances</option>
 			{#each $instances as inst}
 				<option value={inst.name}>{inst.name}</option>
 			{/each}
@@ -47,7 +47,7 @@
 				class="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-sm transition-colors"
 			>
 				<Plus class="h-4 w-4" />
-				Nouveau silence
+				New silence
 			</button>
 		{/if}
 	</div>
@@ -64,7 +64,7 @@
 {/if}
 
 {#if $silencesLoading}
-	<div class="py-12 text-center text-muted-foreground animate-pulse">Chargement…</div>
+	<div class="py-12 text-center text-muted-foreground animate-pulse">Loading…</div>
 {:else}
 	<SilenceList silences={$silences} onEdit={$isAdmin ? openEdit : undefined} />
 {/if}

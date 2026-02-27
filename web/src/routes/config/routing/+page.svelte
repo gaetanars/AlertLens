@@ -47,7 +47,7 @@
 			const parsed = yaml.load(cfg.raw_yaml) as any;
 			availableTimeIntervals = (parsed?.time_intervals ?? []).map((ti: any) => ti.name).filter(Boolean);
 		} catch (e) {
-			toast.error('Erreur de chargement: ' + (e instanceof Error ? e.message : ''));
+			toast.error('Load error: ' + (e instanceof Error ? e.message : ''));
 		} finally {
 			loading = false;
 		}
@@ -71,7 +71,7 @@
 			diffResult = await diffConfig(selectedInstance || '', rawYaml);
 			step = 'diff';
 		} catch (e) {
-			toast.error('Erreur diff: ' + (e instanceof Error ? e.message : ''));
+			toast.error('Diff error: ' + (e instanceof Error ? e.message : ''));
 		}
 	}
 
@@ -88,12 +88,12 @@
 				} : undefined,
 				webhook_url: webhookUrl || undefined
 			});
-			toast.success('Configuration sauvegardée avec succès');
+			toast.success('Configuration saved successfully');
 			originalYaml = rawYaml;
 			step = 'edit';
 			diffResult = null;
 		} catch (e) {
-			toast.error('Erreur de sauvegarde: ' + (e instanceof Error ? e.message : ''));
+			toast.error('Save error: ' + (e instanceof Error ? e.message : ''));
 		} finally {
 			saving = false;
 		}
@@ -162,7 +162,7 @@
 			const parsed = yaml.load(rawYaml) as any;
 			formRoute = yamlRouteToForm(parsed?.route);
 		} catch {
-			toast.error('YAML invalide, impossible de convertir en formulaire');
+			toast.error('Invalid YAML, cannot convert to form');
 		}
 	}
 
@@ -172,7 +172,7 @@
 			parsed.route = formRouteToYaml(formRoute);
 			rawYaml = yaml.dump(parsed, { lineWidth: 120 });
 		} catch (e) {
-			toast.error('Erreur de conversion: ' + (e instanceof Error ? e.message : ''));
+			toast.error('Conversion error: ' + (e instanceof Error ? e.message : ''));
 		}
 	}
 
@@ -207,11 +207,11 @@
 						{editorTab === 'form' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}"
 				>
 					<FormInput class="h-4 w-4" />
-					Formulaire visuel
+					Visual form
 				</button>
 			</div>
 			<select bind:value={selectedInstance} onchange={load} class="px-2 py-1 rounded border bg-background text-sm">
-				<option value="">Défaut</option>
+				<option value="">Default</option>
 				{#each $instances as inst}
 					<option value={inst.name}>{inst.name}</option>
 				{/each}
@@ -249,7 +249,7 @@
 		<div class="flex gap-2">
 			<button onclick={previewDiff} class="flex items-center gap-2 px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-sm transition-colors">
 				<Eye class="h-4 w-4" />
-				Voir le diff
+				Preview diff
 			</button>
 		</div>
 	</div>
@@ -264,7 +264,7 @@
 				{#if diffResult.has_changes}
 					<!-- Save options -->
 					<div class="p-4 rounded-lg border space-y-3">
-						<h3 class="font-semibold text-sm">Mode de sauvegarde</h3>
+						<h3 class="font-semibold text-sm">Save mode</h3>
 						<div class="flex gap-3">
 							{#each ['disk', 'github', 'gitlab'] as mode}
 								<label class="flex items-center gap-1.5 cursor-pointer">
@@ -283,25 +283,25 @@
 								<input bind:value={gitFilePath} placeholder="alertmanager.yml" class="px-3 py-2 rounded border bg-background text-sm" />
 							</div>
 						{/if}
-						<input bind:value={webhookUrl} placeholder="Webhook URL (optionnel)" class="w-full px-3 py-2 rounded border bg-background text-sm" />
+						<input bind:value={webhookUrl} placeholder="Webhook URL (optional)" class="w-full px-3 py-2 rounded border bg-background text-sm" />
 					</div>
 
 					<div class="flex gap-2">
 						<button onclick={() => step = 'edit'} class="px-4 py-2 rounded-md border text-sm hover:bg-muted transition-colors">
-							Retour
+							Back
 						</button>
 						<button onclick={save} disabled={saving} class="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 text-sm disabled:opacity-50 transition-colors">
 							<Save class="h-4 w-4" />
-							{saving ? 'Sauvegarde...' : 'Confirmer et sauvegarder'}
+							{saving ? 'Saving...' : 'Confirm and save'}
 						</button>
 					</div>
 				{/if}
 			</div>
 		{:else if routeData}
-			<h2 class="font-semibold">Aperçu du routing tree</h2>
+			<h2 class="font-semibold">Routing tree preview</h2>
 			<RoutingTree route={routeData.route} />
 		{:else if loading}
-			<div class="py-12 text-center text-muted-foreground animate-pulse">Chargement…</div>
+			<div class="py-12 text-center text-muted-foreground animate-pulse">Loading…</div>
 		{/if}
 	</div>
 </div>
