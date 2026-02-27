@@ -7,6 +7,8 @@ AlertLens makes creating and managing Alertmanager silences fast and friction-fr
 
 ---
 
+![AlertLens – Silences list](../assets/screenshots/silences-lists.png)
+
 ## Creating a Silence from an Alert
 
 1. Click on any active alert to open its detail panel.
@@ -19,6 +21,8 @@ AlertLens makes creating and managing Alertmanager silences fast and friction-fr
 The silence is created via the Alertmanager API and takes effect immediately.
 
 ---
+
+![AlertLens – Create silence](../assets/screenshots/silences-create.png)
 
 ## Duration Picker
 

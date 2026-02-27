@@ -4,6 +4,8 @@ Visual Ack is AlertLens's mechanism for acknowledging ownership of an alert — 
 
 ---
 
+![AlertLens – Visual Ack](../assets/screenshots/visual-ack.png)
+
 ## The Problem
 
 Alertmanager silences mute alerts entirely: they disappear from the UI. This makes it hard to track which alerts are being actively investigated.

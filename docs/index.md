@@ -50,6 +50,8 @@ Unlike read-only dashboards, AlertLens lets you **understand, visualize, and act
 
 </div>
 
+![AlertLens – Alerts overview](assets/screenshots/alerts-overview.png)
+
 ---
 
 ## Quick Start

@@ -4,6 +4,8 @@ AlertLens provides a rich interface to visualize alerts from one or multiple Ale
 
 ---
 
+![AlertLens – Alerts overview](../assets/screenshots/alerts-overview.png)
+
 ## Display Modes
 
 ### Kanban View
