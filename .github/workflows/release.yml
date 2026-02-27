@@ -184,3 +184,37 @@ jobs:
           # GitHub Actions cache speeds up layer reuse across runs
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # ── Package and push Helm chart to GHCR OCI registry ───────────────────────
+  # Runs in parallel with build-binaries and docker.
+  helm:
+    name: Helm chart
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.17.0
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+            helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # Strip the leading "v" from the tag (v0.1.0 → 0.1.0) for the chart version.
+      - name: Extract chart version
+        run: echo "CHART_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Package Helm chart
+        run: |
+          helm package charts/alertlens \
+            --version "${{ env.CHART_VERSION }}" \
+            --app-version "${{ env.CHART_VERSION }}"
+
+      - name: Push Helm chart to GHCR
+        run: |
+          helm push "alertlens-${{ env.CHART_VERSION }}.tgz" \
+            oci://ghcr.io/${{ github.repository_owner }}/charts

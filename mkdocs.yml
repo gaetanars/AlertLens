@@ -85,4 +85,5 @@ nav:
   - Deployment:
     - Docker: deployment/docker.md
     - Binary / From Source: deployment/binary.md
+    - Kubernetes (Helm): deployment/kubernetes.md
   - Changelog: changelog.md
