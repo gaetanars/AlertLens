@@ -1,5 +1,7 @@
 # AlertLens
 
+![AlertLens](assets/logo.png){ width=140 }
+
 **AlertLens** is a lightweight, modern UI for Prometheus Alertmanager and Grafana Mimir that bridges the gap between alert visualization and configuration management.
 
 Unlike read-only dashboards, AlertLens lets you **understand, visualize, and act** on the full alert lifecycle — all from a single, stateless binary.

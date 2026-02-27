@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/assets/logo.png" alt="AlertLens" width="120" />
+
 # AlertLens
 
 **A modern UI for Prometheus Alertmanager — visualize, silence, and manage configurations with ease.**

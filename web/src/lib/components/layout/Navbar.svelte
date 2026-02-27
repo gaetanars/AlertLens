@@ -4,7 +4,7 @@
 	import { isAdmin, authStore } from '$lib/stores/auth';
 	import { logout } from '$lib/api/auth';
 	import { instances } from '$lib/stores/alerts';
-	import { Bell, GitBranch, Volume2, Settings, LogOut, LogIn, Sun, Moon } from 'lucide-svelte';
+	import { GitBranch, Volume2, Settings, LogOut, LogIn, Sun, Moon, Bell } from 'lucide-svelte';
 	import { mode, toggleMode } from 'mode-watcher';
 
 	const navItems = [
@@ -28,7 +28,7 @@
 	<div class="flex h-14 items-center px-4 gap-4">
 		<!-- Brand -->
 		<a href="/alerts" class="flex items-center gap-2 font-bold text-lg text-primary">
-			<Bell class="h-5 w-5" />
+			<img src="/logo.png" alt="AlertLens" class="h-7 w-7" />
 			AlertLens
 		</a>
 
@@ -80,7 +80,7 @@
 			class="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
 			title="Changer de thème"
 		>
-			{#if $mode === 'dark'}
+			{#if mode.current === 'dark'}
 				<Sun class="h-4 w-4" />
 			{:else}
 				<Moon class="h-4 w-4" />
