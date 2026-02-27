@@ -9,6 +9,10 @@ AlertLens uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Helm chart OCI registry path corrected from `ghcr.io/gaetanars/charts/alertlens` to `ghcr.io/gaetanars/chart/alertlens` in the release workflow, chart README, and Kubernetes deployment documentation.
+
 ---
 
 ## [v0.1.0] — 2026-02-27

@@ -220,4 +220,4 @@ jobs:
       - name: Push Helm chart to GHCR
         run: |
           helm push "alertlens-${{ env.CHART_VERSION }}.tgz" \
-            oci://ghcr.io/${{ github.repository_owner }}/charts
+            oci://ghcr.io/${{ github.repository_owner }}/chart

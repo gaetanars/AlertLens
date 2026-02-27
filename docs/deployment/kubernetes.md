@@ -18,7 +18,7 @@ AlertLens ships an official Helm chart published to the GitHub Container Registr
 
     ```bash
     helm install alertlens \
-      oci://ghcr.io/gaetanars/charts/alertlens \
+      oci://ghcr.io/gaetanars/chart/alertlens \
       --set alertlens.alertmanagers[0].url=http://alertmanager.monitoring:9093
     ```
 
@@ -28,7 +28,7 @@ AlertLens ships an official Helm chart published to the GitHub Container Registr
 
     ```bash
     helm install alertlens \
-      oci://ghcr.io/gaetanars/charts/alertlens \
+      oci://ghcr.io/gaetanars/chart/alertlens \
       --set alertlens.alertmanagers[0].url=http://alertmanager.monitoring:9093 \
       --set alertlens.adminPassword=your-strong-password
     ```
@@ -37,7 +37,7 @@ AlertLens ships an official Helm chart published to the GitHub Container Registr
 
     ```bash
     helm install alertlens \
-      oci://ghcr.io/gaetanars/charts/alertlens \
+      oci://ghcr.io/gaetanars/chart/alertlens \
       -f alertlens-values.yaml
     ```
 
@@ -195,7 +195,7 @@ topologySpreadConstraints:
 ## Upgrading
 
 ```bash
-helm upgrade alertlens oci://ghcr.io/gaetanars/charts/alertlens \
+helm upgrade alertlens oci://ghcr.io/gaetanars/chart/alertlens \
   --reuse-values \
   --version 0.2.0
 ```
@@ -233,5 +233,5 @@ The chart enforces Kubernetes security best practices out of the box:
 See the [chart README](https://github.com/gaetanars/AlertLens/blob/main/chart/alertlens/README.md) or run:
 
 ```bash
-helm show values oci://ghcr.io/gaetanars/charts/alertlens
+helm show values oci://ghcr.io/gaetanars/chart/alertlens
 ```

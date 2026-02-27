@@ -5,7 +5,7 @@ A modern UI for Prometheus Alertmanager — visualize, silence, and manage confi
 ## TL;DR
 
 ```bash
-helm install alertlens oci://ghcr.io/gaetanars/charts/alertlens \
+helm install alertlens oci://ghcr.io/gaetanars/chart/alertlens \
   --set alertlens.alertmanagers[0].url=http://alertmanager:9093
 ```
 
@@ -31,11 +31,11 @@ AlertLens is a **stateless** single binary — all state lives in Alertmanager. 
 
 ```bash
 # Minimal — read-only mode, no admin password
-helm install alertlens oci://ghcr.io/gaetanars/charts/alertlens \
+helm install alertlens oci://ghcr.io/gaetanars/chart/alertlens \
   --set alertlens.alertmanagers[0].url=http://alertmanager.monitoring:9093
 
 # With admin password (enables silence creation and config editing)
-helm install alertlens oci://ghcr.io/gaetanars/charts/alertlens \
+helm install alertlens oci://ghcr.io/gaetanars/chart/alertlens \
   --set alertlens.alertmanagers[0].url=http://alertmanager.monitoring:9093 \
   --set alertlens.adminPassword=my-strong-password
 ```
@@ -43,7 +43,7 @@ helm install alertlens oci://ghcr.io/gaetanars/charts/alertlens \
 Or with a `values.yaml` file:
 
 ```bash
-helm install alertlens oci://ghcr.io/gaetanars/charts/alertlens -f values.yaml
+helm install alertlens oci://ghcr.io/gaetanars/chart/alertlens -f values.yaml
 ```
 
 ## Uninstalling the chart
