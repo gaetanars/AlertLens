@@ -1,4 +1,4 @@
-.PHONY: build dev test clean web-build go-build
+.PHONY: build dev test clean web-build go-build dev-up dev-down dev-logs
 
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BINARY  := alertlens
@@ -22,6 +22,16 @@ go-build:
 		-o $(BINARY) .
 
 # ─── Development ────────────────────────────────────────────────────────────
+
+dev-up:
+	docker compose -f dev/docker-compose.yml up -d --build
+	@echo "✓ Dev stack running — AlertLens UI at http://localhost:9000"
+
+dev-down:
+	docker compose -f dev/docker-compose.yml down
+
+dev-logs:
+	docker compose -f dev/docker-compose.yml logs -f
 
 dev-backend:
 	go run . -config config.example.yaml
