@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    tags: ["v*"]
 
 # One release at a time
 concurrency:
@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write   # Create GitHub Release and upload assets
-  packages: write   # Push to GHCR
+  contents: write # Create GitHub Release and upload assets
+  packages: write # Push to GHCR
 
 jobs:
   # ── Gate: tests must pass before anything is published ─────────────────────
@@ -25,6 +25,9 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+
+      - name: Create dist placeholder
+        run: mkdir -p dist && touch dist/.keep
 
       - name: go vet
         run: go vet ./...
@@ -42,7 +45,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
           cache: npm
           cache-dependency-path: web/package-lock.json
 
