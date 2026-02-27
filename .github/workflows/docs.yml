@@ -1,0 +1,55 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+# Allow one concurrent deployment
+concurrency:
+  group: docs-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history required: mike reads and writes the gh-pages branch
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+
+      - name: Install MkDocs + mike
+        run: pip install -r requirements-docs.txt
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # ── Push to main: update the "dev" version ──────────────────────────────
+      # Set dev as the root default only if stable has not been published yet.
+      - name: Deploy dev docs
+        if: github.ref == 'refs/heads/main'
+        run: |
+          mike deploy --push dev
+          mike list | grep -q "^stable " || mike set-default --push dev
+
+      # ── New tag vX.Y.Z: publish versioned docs and mark as stable ──────────
+      - name: Deploy release docs
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          mike deploy --push --update-aliases "$VERSION" stable
+          mike set-default --push stable

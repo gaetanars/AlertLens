@@ -1,0 +1,24 @@
+# Binary
+alertlens
+
+# Build artifacts
+dist/
+web/build/
+web/.svelte-kit/
+web/node_modules/
+
+# Go
+*.test
+*.out
+coverage.html
+
+# Config with secrets (use config.example.yaml as template)
+alertlens.yaml
+
+# OS
+.DS_Store
+*.swp
+
+# Claude Code — personal memory and machine-specific session data
+# .claude/settings.json is intentionally tracked (shared project permissions)
+.claude/projects/

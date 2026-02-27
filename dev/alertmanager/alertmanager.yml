@@ -1,0 +1,107 @@
+global:
+  resolve_timeout: 5m
+  # MailHog SMTP relay (no TLS, no auth — purely for local testing)
+  smtp_smarthost: 'mailhog:1025'
+  smtp_from: 'alertmanager@alertlens.dev'
+  smtp_require_tls: false
+
+# ─── Routing tree ──────────────────────────────────────────────────────────────
+# Designed to exercise AlertLens routing visualisation and the visual
+# route-builder editor (tab "Formulaire visuel").
+route:
+  receiver: 'null'
+  group_by: ['alertname', 'environment']
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 1h
+
+  routes:
+    # Critical: fire webhook immediately, then also send email to on-call
+    - matchers:
+        - severity="critical"
+      receiver: webhook-ops
+      group_by: ['alertname', 'team']
+      group_wait: 5s
+      group_interval: 30s
+      continue: true          # also evaluate the next sibling route
+
+    - matchers:
+        - severity="critical"
+      receiver: email-oncall
+
+    # Warning from infra team: dedicated infra mailbox
+    - matchers:
+        - severity="warning"
+        - team="infra"
+      receiver: email-infra
+
+    # Other warnings: generic team mailbox, muted on weekends
+    - matchers:
+        - severity="warning"
+      receiver: email-team
+      mute_time_intervals: [weekends]
+
+    # Infra on-call: only active during business hours
+    - matchers:
+        - team="infra"
+      receiver: email-oncall
+      active_time_intervals: [business-hours]
+
+# ─── Receivers ────────────────────────────────────────────────────────────────
+receivers:
+  - name: 'null'   # silent catch-all
+
+  - name: email-team
+    email_configs:
+      - to: 'team@alertlens.dev'
+        send_resolved: true
+        headers:
+          Subject: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }} — {{ .CommonLabels.environment }}'
+
+  - name: email-infra
+    email_configs:
+      - to: 'infra@alertlens.dev'
+        send_resolved: true
+
+  - name: email-oncall
+    email_configs:
+      - to: 'oncall@alertlens.dev'
+        send_resolved: true
+
+  - name: webhook-ops
+    # Points to the echo-server container — inspect payloads via:
+    #   docker logs alertlens-webhook
+    # or the service running on http://localhost:8090
+    webhook_configs:
+      - url: 'http://webhook-receiver:8080/'
+        send_resolved: true
+
+# ─── Inhibition rules ─────────────────────────────────────────────────────────
+# Suppress warnings when a critical alert fires for the same service.
+inhibit_rules:
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal: ['alertname', 'team']
+
+# ─── Time intervals ───────────────────────────────────────────────────────────
+# Named intervals referenced in routes as mute_time_intervals or
+# active_time_intervals.  Useful to test the Time Intervals editor in AlertLens.
+time_intervals:
+  - name: weekends
+    time_intervals:
+      - weekdays: [saturday, sunday]
+
+  - name: maintenance-window
+    time_intervals:
+      - times:
+          - start_time: '02:00'
+            end_time: '04:00'
+
+  - name: business-hours
+    time_intervals:
+      - weekdays: [monday, tuesday, wednesday, thursday, friday]
+        times:
+          - start_time: '09:00'
+            end_time: '18:00'

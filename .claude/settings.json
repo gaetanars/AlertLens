@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make *)",
+      "Bash(go build *)",
+      "Bash(go test *)",
+      "Bash(go vet *)",
+      "Bash(go run *)",
+      "Bash(npm *)",
+      "Bash(docker *)",
+      "Bash(mise install)",
+      "Bash(mise trust)",
+      "Bash(mise exec -- *)"
+    ]
+  }
+}

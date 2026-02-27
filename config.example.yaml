@@ -1,0 +1,32 @@
+server:
+  host: "0.0.0.0"   # ALERTLENS_SERVER_HOST
+  port: 9000         # ALERTLENS_SERVER_PORT
+
+auth:
+  # If empty, admin mode is disabled (read-only only)
+  admin_password: "" # ALERTLENS_AUTH_ADMIN_PASSWORD
+
+alertmanagers:
+  - name: "default"
+    url: "http://localhost:9093"
+    basic_auth:
+      username: ""
+      password: ""
+    # Grafana Mimir multi-tenant: X-Scope-OrgID header
+    tenant_id: ""
+    tls_skip_verify: false
+    # For Module C: path to alertmanager.yml on disk (optional)
+    config_file_path: ""
+
+  # Example of a second instance:
+  # - name: "staging"
+  #   url: "http://alertmanager-staging:9093"
+  #   tenant_id: "team-platform"
+  #   tls_skip_verify: true
+
+gitops:
+  github:
+    token: "" # ALERTLENS_GITOPS_GITHUB_TOKEN
+  gitlab:
+    token: "" # ALERTLENS_GITOPS_GITLAB_TOKEN
+    url: "https://gitlab.com"

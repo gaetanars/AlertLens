@@ -1,0 +1,111 @@
+groups:
+
+  # ── Always-firing test alerts ─────────────────────────────────────────────
+  # These fire immediately and never resolve — ideal for testing routing,
+  # silences, acknowledgements, and the visual route builder in AlertLens.
+  - name: test.synthetic
+    interval: 1m
+    rules:
+
+      - alert: SyntheticCritical
+        expr: vector(1) > 0
+        for: 0m
+        labels:
+          severity: critical
+          team: platform
+          environment: dev
+          service: alertlens-test
+        annotations:
+          summary: "Synthetic critical alert (always firing)"
+          description: >
+            This alert is intentionally always active. Use it to verify critical
+            routing, webhook delivery, and silence/ack workflows in AlertLens.
+
+      - alert: SyntheticWarning
+        expr: vector(1) > 0
+        for: 0m
+        labels:
+          severity: warning
+          team: app
+          environment: dev
+          service: alertlens-test
+        annotations:
+          summary: "Synthetic warning alert (always firing)"
+          description: "Warning-severity test alert to exercise the warning routing path."
+
+      - alert: SyntheticInfoPending
+        # This takes 2 minutes to go from pending → firing — useful to observe
+        # the pending state in Prometheus before it reaches Alertmanager.
+        expr: vector(1) > 0
+        for: 2m
+        labels:
+          severity: info
+          team: app
+          environment: dev
+        annotations:
+          summary: "Synthetic info alert (fires after 2 min pending)"
+          description: "Useful for testing the pending→firing state transition."
+
+  # ── Node-exporter based alerts ────────────────────────────────────────────
+  # Fire based on real host metrics. Thresholds are kept intentionally low so
+  # that they may naturally fire on a developer machine.
+  - name: test.node
+    interval: 30s
+    rules:
+
+      - alert: HighCPULoad
+        # Fires when average CPU usage (across all cores) exceeds 80 % for 2 min.
+        expr: >
+          100 - (
+            avg by (instance) (
+              irate(node_cpu_seconds_total{mode="idle"}[5m])
+            ) * 100
+          ) > 80
+        for: 2m
+        labels:
+          severity: warning
+          team: infra
+          service: node
+        annotations:
+          summary: "High CPU on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | printf \"%.1f\" }}% (threshold: 80%)"
+
+      - alert: HighMemoryUsage
+        # Fires when less than 10 % of RAM is available.
+        expr: >
+          (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)
+          / node_memory_MemTotal_bytes * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+          team: infra
+          service: node
+        annotations:
+          summary: "High memory on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | printf \"%.1f\" }}% (threshold: 90%)"
+
+      - alert: LowDiskSpace
+        # Fires when root filesystem has less than 15 % free.
+        expr: >
+          node_filesystem_avail_bytes{mountpoint="/", fstype!~"tmpfs|overlay"}
+          / node_filesystem_size_bytes{mountpoint="/", fstype!~"tmpfs|overlay"}
+          * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+          team: infra
+          service: node
+        annotations:
+          summary: "Low disk on {{ $labels.instance }}"
+          description: "Available disk: {{ $value | printf \"%.1f\" }}% (threshold: 15%)"
+
+      - alert: NodeExporterDown
+        expr: up{job="node-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infra
+          service: node-exporter
+        annotations:
+          summary: "node-exporter is unreachable"
+          description: "Prometheus cannot scrape node-exporter for more than 1 minute."

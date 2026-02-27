@@ -1,0 +1,110 @@
+name: alertlens-dev
+
+services:
+
+  # ─── Prometheus ─────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    container_name: alertlens-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - alertlens-dev
+    restart: unless-stopped
+
+  # ─── Alertmanager ───────────────────────────────────────────────────────────
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: alertlens-alertmanager
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --log.level=info
+    volumes:
+      - ./alertmanager:/etc/alertmanager  # writable: AlertLens can push config edits here
+      - alertmanager-data:/alertmanager
+    ports:
+      - "9093:9093"
+    networks:
+      - alertlens-dev
+    restart: unless-stopped
+
+  # ─── Node Exporter ──────────────────────────────────────────────────────────
+  # Provides real host metrics (CPU, memory, disk) to trigger realistic alerts.
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: alertlens-node-exporter
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/host/root
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host/root:ro,rslave
+    ports:
+      - "9100:9100"
+    networks:
+      - alertlens-dev
+    restart: unless-stopped
+
+  # ─── MailHog ────────────────────────────────────────────────────────────────
+  # Catches all outbound emails from Alertmanager. UI at http://localhost:8025
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: alertlens-mailhog
+    ports:
+      - "1025:1025"   # SMTP (Alertmanager → MailHog)
+      - "8025:8025"   # Web UI  →  http://localhost:8025
+    networks:
+      - alertlens-dev
+    restart: unless-stopped
+
+  # ─── Webhook Echo Server ─────────────────────────────────────────────────────
+  # Echoes all incoming HTTP requests — used as a dummy webhook receiver.
+  # Inspect calls at http://localhost:8090  (or: docker logs alertlens-webhook)
+  webhook-receiver:
+    image: jmalloc/echo-server:latest
+    container_name: alertlens-webhook
+    ports:
+      - "8090:8080"
+    networks:
+      - alertlens-dev
+    restart: unless-stopped
+
+  # ─── AlertLens ──────────────────────────────────────────────────────────────
+  # Built from the project root.  Admin password: "admin"
+  alertlens:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: alertlens-app
+    command:
+      - -config=/etc/alertlens/config.yaml
+    volumes:
+      - ./alertlens/config.yaml:/etc/alertlens/config.yaml:ro
+      - ./alertmanager:/etc/alertmanager  # same mount as alertmanager: disk-save works
+    ports:
+      - "9000:9000"   # UI / API  →  http://localhost:9000
+    depends_on:
+      - alertmanager
+    networks:
+      - alertlens-dev
+    restart: unless-stopped
+
+# ─── Networks & Volumes ────────────────────────────────────────────────────────
+networks:
+  alertlens-dev:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  alertmanager-data:

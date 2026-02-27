@@ -1,0 +1,88 @@
+site_name: AlertLens
+site_description: A modern UI for Alertmanager — visualize, silence, and manage configurations with ease.
+site_author: Gaetan ARS
+site_url: https://gaetanars.github.io/AlertLens/
+repo_name: gaetanars/AlertLens
+repo_url: https://github.com/gaetanars/AlertLens
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep orange
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep orange
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.action.edit
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  version:
+    provider: mike
+    default: stable
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/gaetanars/AlertLens
+
+plugins:
+  - search
+  - mike:
+      alias_type: copy
+      canonical_version: stable
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Configuration: configuration.md
+  - Features:
+    - Alert Visualization: features/visualization.md
+    - Silence Management: features/silences.md
+    - Visual Ack: features/visual-ack.md
+    - Configuration Builder: features/config-builder.md
+  - Deployment:
+    - Docker: deployment/docker.md
+    - Binary / From Source: deployment/binary.md
+  - Changelog: changelog.md
