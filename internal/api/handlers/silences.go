@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/gaetanars/alertlens/internal/alertmanager"
+	"github.com/alertlens/alertlens/internal/alertmanager"
 )
 
 // SilencesHandler handles silence-related requests.

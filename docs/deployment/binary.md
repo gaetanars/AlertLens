@@ -2,12 +2,12 @@
 
 ## Download a Pre-built Binary
 
-Pre-built binaries for Linux, macOS, and Windows are available on the [GitHub Releases](https://github.com/gaetanars/AlertLens/releases) page.
+Pre-built binaries for Linux, macOS, and Windows are available on the [GitHub Releases](https://github.com/AlertLens/AlertLens/releases) page.
 
 === "Linux (amd64)"
 
     ```bash
-    curl -LO https://github.com/gaetanars/AlertLens/releases/latest/download/alertlens-linux-amd64
+    curl -LO https://github.com/AlertLens/AlertLens/releases/latest/download/alertlens-linux-amd64
     chmod +x alertlens-linux-amd64
     sudo mv alertlens-linux-amd64 /usr/local/bin/alertlens
     ```
@@ -15,7 +15,7 @@ Pre-built binaries for Linux, macOS, and Windows are available on the [GitHub Re
 === "Linux (arm64)"
 
     ```bash
-    curl -LO https://github.com/gaetanars/AlertLens/releases/latest/download/alertlens-linux-arm64
+    curl -LO https://github.com/AlertLens/AlertLens/releases/latest/download/alertlens-linux-arm64
     chmod +x alertlens-linux-arm64
     sudo mv alertlens-linux-arm64 /usr/local/bin/alertlens
     ```
@@ -23,7 +23,7 @@ Pre-built binaries for Linux, macOS, and Windows are available on the [GitHub Re
 === "macOS (arm64)"
 
     ```bash
-    curl -LO https://github.com/gaetanars/AlertLens/releases/latest/download/alertlens-darwin-arm64
+    curl -LO https://github.com/AlertLens/AlertLens/releases/latest/download/alertlens-darwin-arm64
     chmod +x alertlens-darwin-arm64
     sudo mv alertlens-darwin-arm64 /usr/local/bin/alertlens
     ```
@@ -44,7 +44,7 @@ Pre-built binaries for Linux, macOS, and Windows are available on the [GitHub Re
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/gaetanars/AlertLens.git
+git clone https://github.com/AlertLens/AlertLens.git
 cd AlertLens
 
 # 2. Build frontend + backend (one command)

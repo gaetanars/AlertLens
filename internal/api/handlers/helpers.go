@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gaetanars/alertlens/internal/alertmanager"
+	"github.com/alertlens/alertlens/internal/alertmanager"
 )
 
 // resolveClient returns the named alertmanager client, or the first available

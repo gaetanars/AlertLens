@@ -8,10 +8,10 @@ import (
 	"github.com/go-chi/cors"
 	"go.uber.org/zap"
 
-	"github.com/gaetanars/alertlens/internal/alertmanager"
-	"github.com/gaetanars/alertlens/internal/api/handlers"
-	"github.com/gaetanars/alertlens/internal/auth"
-	"github.com/gaetanars/alertlens/internal/gitops"
+	"github.com/alertlens/alertlens/internal/alertmanager"
+	"github.com/alertlens/alertlens/internal/api/handlers"
+	"github.com/alertlens/alertlens/internal/auth"
+	"github.com/alertlens/alertlens/internal/gitops"
 )
 
 // maxRequestBodyBytes is the hard cap on incoming request bodies (10 MiB).

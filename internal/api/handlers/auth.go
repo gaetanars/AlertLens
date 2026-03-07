@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gaetanars/alertlens/internal/auth"
+	"github.com/alertlens/alertlens/internal/auth"
 )
 
 // AuthHandler holds the auth service for HTTP handler use.

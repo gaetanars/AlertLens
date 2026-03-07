@@ -9,9 +9,21 @@ AlertLens uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [v0.2.0] — 2026-03-07
+
+### Changed
+
+- Project moved to the **AlertLens** GitHub organization (`github.com/AlertLens/AlertLens`).
+- Go module path updated from `github.com/gaetanars/alertlens` to `github.com/alertlens/alertlens`.
+- Docker image renamed from `ghcr.io/gaetanars/alertlens` to `ghcr.io/alertlens/alertlens`.
+- Helm OCI chart path updated from `ghcr.io/gaetanars/chart/alertlens` to `ghcr.io/alertlens/chart/alertlens`.
+- Documentation site moved from `gaetanars.github.io/AlertLens` to `alertlens.github.io/AlertLens`.
+
 ### Fixed
 
-- Helm chart OCI registry path corrected from `ghcr.io/gaetanars/charts/alertlens` to `ghcr.io/gaetanars/chart/alertlens` in the release workflow, chart README, and Kubernetes deployment documentation.
+- Helm chart OCI registry path corrected from `ghcr.io/alertlens/charts/alertlens` to `ghcr.io/alertlens/chart/alertlens` in the release workflow, chart README, and Kubernetes deployment documentation.
 
 ---
 

@@ -14,11 +14,11 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/gaetanars/alertlens/internal/alertmanager"
-	"github.com/gaetanars/alertlens/internal/api"
-	"github.com/gaetanars/alertlens/internal/auth"
-	"github.com/gaetanars/alertlens/internal/config"
-	"github.com/gaetanars/alertlens/internal/gitops"
+	"github.com/alertlens/alertlens/internal/alertmanager"
+	"github.com/alertlens/alertlens/internal/api"
+	"github.com/alertlens/alertlens/internal/auth"
+	"github.com/alertlens/alertlens/internal/config"
+	"github.com/alertlens/alertlens/internal/gitops"
 )
 
 // version is injected at build time via -ldflags.

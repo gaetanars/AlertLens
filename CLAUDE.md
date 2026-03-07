@@ -92,7 +92,7 @@ dist/                          — compiled frontend (git-ignored, produced by `
 | Trigger | Workflow | Action |
 |---|---|---|
 | Push / PR to `main` | `ci.yml` | `go vet` + `go test -race` + build check |
-| Tag `v*` | `release.yml` | 5 cross-compiled binaries + multi-arch Docker image (`ghcr.io/gaetanars/alertlens`) |
+| Tag `v*` | `release.yml` | 5 cross-compiled binaries + multi-arch Docker image (`ghcr.io/alertlens/alertlens`) |
 | Push to `main` or tag `v*` | `docs.yml` | MkDocs Material → GitHub Pages (mike versioning) |
 
 ## Releasing

@@ -168,7 +168,7 @@ jobs:
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ghcr.io/gaetanars/alertlens
+          images: ghcr.io/alertlens/alertlens
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}

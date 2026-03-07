@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gaetanars/alertlens/internal/alertmanager"
+	"github.com/alertlens/alertlens/internal/alertmanager"
 )
 
 // AlertsHandler handles alert-related requests.

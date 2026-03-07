@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gaetanars/alertlens/internal/alertmanager"
+	"github.com/alertlens/alertlens/internal/alertmanager"
 )
 
 // AlertmanagersHandler handles requests about AM instances.

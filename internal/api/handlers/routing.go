@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gaetanars/alertlens/internal/alertmanager"
+	"github.com/alertlens/alertlens/internal/alertmanager"
 	amconfig "github.com/prometheus/alertmanager/config"
 	"gopkg.in/yaml.v3"
 )

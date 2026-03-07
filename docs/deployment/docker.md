@@ -13,7 +13,7 @@ docker run -d \
   -e ALERTLENS_AUTH_ADMIN_PASSWORD="your-strong-password" \
   -e ALERTLENS_ALERTMANAGERS_0_URL="http://alertmanager:9093" \
   --restart unless-stopped \
-  ghcr.io/gaetanars/alertlens:latest
+  ghcr.io/alertlens/alertlens:latest
 ```
 
 ---
@@ -41,7 +41,7 @@ docker run -d \
   --name alertlens \
   -p 9000:9000 \
   -v $(pwd)/alertlens.yaml:/etc/alertlens/alertlens.yaml:ro \
-  ghcr.io/gaetanars/alertlens:latest \
+  ghcr.io/alertlens/alertlens:latest \
   -config /etc/alertlens/alertlens.yaml
 ```
 
@@ -66,7 +66,7 @@ services:
     restart: unless-stopped
 
   alertlens:
-    image: ghcr.io/gaetanars/alertlens:latest
+    image: ghcr.io/alertlens/alertlens:latest
     command: [-config, /etc/alertlens/alertlens.yaml]
     volumes:
       - ./alertlens.yaml:/etc/alertlens/alertlens.yaml:ro

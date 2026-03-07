@@ -61,7 +61,7 @@ Unlike read-only dashboards, AlertLens lets you **understand, visualize, and act
     ```bash
     docker run -p 9000:9000 \
       -e ALERTLENS_ALERTMANAGERS_0_URL=http://alertmanager:9093 \
-      ghcr.io/gaetanars/alertlens:latest
+      ghcr.io/alertlens/alertlens:latest
     ```
 
 === "Binary"

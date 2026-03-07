@@ -1,4 +1,4 @@
-module github.com/gaetanars/alertlens
+module github.com/alertlens/alertlens
 
 go 1.25
 

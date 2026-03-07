@@ -5,13 +5,13 @@ A modern UI for Prometheus Alertmanager — visualize, silence, and manage confi
 ## TL;DR
 
 ```bash
-helm install alertlens oci://ghcr.io/gaetanars/chart/alertlens \
+helm install alertlens oci://ghcr.io/alertlens/chart/alertlens \
   --set alertlens.alertmanagers[0].url=http://alertmanager:9093
 ```
 
 ## Introduction
 
-This chart deploys [AlertLens](https://github.com/gaetanars/AlertLens) on a Kubernetes cluster.
+This chart deploys [AlertLens](https://github.com/AlertLens/AlertLens) on a Kubernetes cluster.
 
 AlertLens is a **stateless** single binary — all state lives in Alertmanager. The chart deploys:
 
@@ -31,11 +31,11 @@ AlertLens is a **stateless** single binary — all state lives in Alertmanager. 
 
 ```bash
 # Minimal — read-only mode, no admin password
-helm install alertlens oci://ghcr.io/gaetanars/chart/alertlens \
+helm install alertlens oci://ghcr.io/alertlens/chart/alertlens \
   --set alertlens.alertmanagers[0].url=http://alertmanager.monitoring:9093
 
 # With admin password (enables silence creation and config editing)
-helm install alertlens oci://ghcr.io/gaetanars/chart/alertlens \
+helm install alertlens oci://ghcr.io/alertlens/chart/alertlens \
   --set alertlens.alertmanagers[0].url=http://alertmanager.monitoring:9093 \
   --set alertlens.adminPassword=my-strong-password
 ```
@@ -43,7 +43,7 @@ helm install alertlens oci://ghcr.io/gaetanars/chart/alertlens \
 Or with a `values.yaml` file:
 
 ```bash
-helm install alertlens oci://ghcr.io/gaetanars/chart/alertlens -f values.yaml
+helm install alertlens oci://ghcr.io/alertlens/chart/alertlens -f values.yaml
 ```
 
 ## Uninstalling the chart
@@ -178,7 +178,7 @@ autoscaling:
 
 | Parameter | Description | Default |
 |---|---|---|
-| `image.repository` | Image repository | `ghcr.io/gaetanars/alertlens` |
+| `image.repository` | Image repository | `ghcr.io/alertlens/alertlens` |
 | `image.tag` | Image tag (defaults to chart AppVersion) | `""` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
 | `imagePullSecrets` | Image pull secrets | `[]` |
@@ -264,9 +264,9 @@ The chart follows Kubernetes security best practices out of the box:
 
 ## Source code
 
-- [AlertLens](https://github.com/gaetanars/AlertLens)
-- [Helm chart](https://github.com/gaetanars/AlertLens/tree/main/chart/alertlens)
+- [AlertLens](https://github.com/AlertLens/AlertLens)
+- [Helm chart](https://github.com/AlertLens/AlertLens/tree/main/chart/alertlens)
 
 ## License
 
-[Apache 2.0](https://github.com/gaetanars/AlertLens/blob/main/LICENSE)
+[Apache 2.0](https://github.com/AlertLens/AlertLens/blob/main/LICENSE)

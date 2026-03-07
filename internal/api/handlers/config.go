@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gaetanars/alertlens/internal/alertmanager"
-	"github.com/gaetanars/alertlens/internal/configbuilder"
-	"github.com/gaetanars/alertlens/internal/gitops"
+	"github.com/alertlens/alertlens/internal/alertmanager"
+	"github.com/alertlens/alertlens/internal/configbuilder"
+	"github.com/alertlens/alertlens/internal/gitops"
 )
 
 // ConfigHandler handles configuration builder requests.
