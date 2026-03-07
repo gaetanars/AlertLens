@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gaetanars/alertlens/internal/auth"
+	"github.com/alertlens/alertlens/internal/auth"
 )
 
 // ─── helpers ──────────────────────────────────────────────────────────────────

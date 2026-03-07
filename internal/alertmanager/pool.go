@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"sync"
 
-	"github.com/gaetanars/alertlens/internal/config"
+	"github.com/alertlens/alertlens/internal/config"
 	"go.uber.org/zap"
 )
 

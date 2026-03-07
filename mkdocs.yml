@@ -1,9 +1,9 @@
 site_name: AlertLens
 site_description: A modern UI for Alertmanager — visualize, silence, and manage configurations with ease.
 site_author: Gaetan ARS
-site_url: https://gaetanars.github.io/AlertLens/
-repo_name: gaetanars/AlertLens
-repo_url: https://github.com/gaetanars/AlertLens
+site_url: https://alertlens.github.io/AlertLens/
+repo_name: AlertLens/AlertLens
+repo_url: https://github.com/AlertLens/AlertLens
 edit_uri: edit/main/docs/
 
 theme:
@@ -45,7 +45,7 @@ extra:
     default: stable
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/gaetanars/AlertLens
+      link: https://github.com/AlertLens/AlertLens
 
 plugins:
   - search

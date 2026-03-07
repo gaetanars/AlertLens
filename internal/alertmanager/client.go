@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gaetanars/alertlens/internal/config"
+	"github.com/alertlens/alertlens/internal/config"
 )
 
 const (

@@ -18,7 +18,7 @@
       --name alertlens \
       -p 9000:9000 \
       -v $(pwd)/alertlens.yaml:/etc/alertlens/alertlens.yaml:ro \
-      ghcr.io/gaetanars/alertlens:latest \
+      ghcr.io/alertlens/alertlens:latest \
       -config /etc/alertlens/alertlens.yaml
     ```
 
@@ -26,11 +26,11 @@
 
 === "Pre-built binary"
 
-    Download the latest binary from the [GitHub Releases](https://github.com/gaetanars/AlertLens/releases) page:
+    Download the latest binary from the [GitHub Releases](https://github.com/AlertLens/AlertLens/releases) page:
 
     ```bash
     # Linux amd64
-    curl -LO https://github.com/gaetanars/AlertLens/releases/latest/download/alertlens-linux-amd64
+    curl -LO https://github.com/AlertLens/AlertLens/releases/latest/download/alertlens-linux-amd64
     chmod +x alertlens-linux-amd64
     ./alertlens-linux-amd64 -config alertlens.yaml
     ```
@@ -40,7 +40,7 @@
     Requires Go 1.25+ and Node.js 20+.
 
     ```bash
-    git clone https://github.com/gaetanars/AlertLens.git
+    git clone https://github.com/AlertLens/AlertLens.git
     cd AlertLens
     make build
     ./alertlens -config alertlens.yaml

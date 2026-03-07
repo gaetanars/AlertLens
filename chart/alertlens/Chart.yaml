@@ -5,10 +5,10 @@ type: application
 version: 0.1.0
 appVersion: "0.1.0"
 
-home: https://github.com/gaetanars/AlertLens
+home: https://github.com/AlertLens/AlertLens
 sources:
-  - https://github.com/gaetanars/AlertLens
-icon: https://raw.githubusercontent.com/gaetanars/AlertLens/main/web/static/favicon.png
+  - https://github.com/AlertLens/AlertLens
+icon: https://raw.githubusercontent.com/AlertLens/AlertLens/main/web/static/favicon.png
 
 keywords:
   - alertmanager
@@ -19,18 +19,18 @@ keywords:
   - observability
 
 maintainers:
-  - name: gaetanars
-    url: https://github.com/gaetanars
+  - name: AlertLens
+    url: https://github.com/AlertLens
 
 annotations:
   artifacthub.io/license: Apache-2.0
   artifacthub.io/links: |
     - name: Documentation
-      url: https://gaetanars.github.io/AlertLens/
+      url: https://alertlens.github.io/AlertLens/
     - name: GitHub
-      url: https://github.com/gaetanars/AlertLens
+      url: https://github.com/AlertLens/AlertLens
     - name: Docker image
-      url: https://github.com/gaetanars/AlertLens/pkgs/container/alertlens
+      url: https://github.com/AlertLens/AlertLens/pkgs/container/alertlens
   artifacthub.io/changes: |
     - kind: added
       description: Initial release of AlertLens Helm chart
