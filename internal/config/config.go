@@ -26,7 +26,15 @@ type ServerConfig struct {
 }
 
 type AuthConfig struct {
-	AdminPassword string `yaml:"admin_password" env:"ALERTLENS_AUTH_ADMIN_PASSWORD"`
+	AdminPassword string       `yaml:"admin_password" env:"ALERTLENS_AUTH_ADMIN_PASSWORD"`
+	Users         []UserConfig `yaml:"users"`
+}
+
+// UserConfig defines an additional role-bound user credential.
+// The Role field must be one of: viewer, silencer, config-editor, admin.
+type UserConfig struct {
+	Password string `yaml:"password"`
+	Role     string `yaml:"role"`
 }
 
 type AlertmanagerConfig struct {

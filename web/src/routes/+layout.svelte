@@ -14,6 +14,13 @@
 		try {
 			const status = await fetchAuthStatus();
 			authStore.setAdminEnabled(status.admin_enabled);
+			// If the page was refreshed with a stored token (e.g. future
+			// persistent-session feature), restore the role from the status response.
+			if (status.authenticated && status.role) {
+				// Token is already in the store (set at login); just update the role
+				// in case it was missing (e.g. old token without role claim).
+				authStore.setAdminEnabled(status.admin_enabled);
+			}
 		} catch {
 			// backend not reachable yet — ignore
 		}

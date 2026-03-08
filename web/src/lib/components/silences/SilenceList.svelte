@@ -5,7 +5,7 @@
 	import { formatRelative } from '$lib/utils/duration';
 	import { toast } from 'svelte-sonner';
 	import { Trash2, User, Pencil } from 'lucide-svelte';
-	import { isAdmin } from '$lib/stores/auth';
+	import { canSilence } from '$lib/stores/auth';
 
 	let { silences, onEdit }: {
 		silences: Silence[];
@@ -64,7 +64,7 @@
 			{/if}
 			<p class="text-xs text-muted-foreground">Until {new Date(s.endsAt).toLocaleString('en-US')}</p>
 		</div>
-		{#if $isAdmin && s.status.state === 'active'}
+		{#if $canSilence && s.status.state === 'active'}
 			<div class="flex gap-1 flex-shrink-0">
 				{#if onEdit}
 					<button

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { isAdmin, authStore } from '$lib/stores/auth';
+	import { isAdmin, canEditConfig, canSilence, authStore } from '$lib/stores/auth';
 	import { logout } from '$lib/api/auth';
 	import { instances } from '$lib/stores/alerts';
 	import { GitBranch, Volume2, Settings, LogOut, LogIn, Sun, Moon, Bell } from 'lucide-svelte';
@@ -57,7 +57,7 @@
 					{item.label}
 				</a>
 			{/each}
-			{#if $isAdmin}
+			{#if $canEditConfig}
 				<a
 					href="/config/routing"
 					class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors

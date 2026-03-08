@@ -14,8 +14,9 @@
 		loading = true; error = '';
 		try {
 			const res = await login(password);
-			authStore.setToken(res.token, res.expires_at);
-			toast.success('Signed in as admin');
+			authStore.setToken(res.token, res.expires_at, res.role);
+			const roleLabel = res.role ? ` as ${res.role}` : '';
+			toast.success(`Signed in${roleLabel}`);
 			goto('/alerts');
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Incorrect password';
