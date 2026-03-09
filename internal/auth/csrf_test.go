@@ -12,7 +12,7 @@ var testCSRFSecret = []byte("test-secret-csrf")
 // ─── CSRFMiddleware ───────────────────────────────────────────────────────────
 
 func TestCSRF_SafeMethod_SetsCookieAndHeader(t *testing.T) {
-	handler := CSRFMiddleware(testCSRFSecret)(okHandler())
+	handler := CSRFMiddleware(testCSRFSecret, false)(okHandler())
 
 	req := httptest.NewRequest(http.MethodGet, "/api/auth/status", nil)
 	rec := httptest.NewRecorder()
@@ -45,7 +45,7 @@ func TestCSRF_BearerRequest_SkipsValidation(t *testing.T) {
 	svc := NewService("secret")
 	tokenStr, _, _ := svc.Login("secret")
 
-	handler := CSRFMiddleware(testCSRFSecret)(okHandler())
+	handler := CSRFMiddleware(testCSRFSecret, false)(okHandler())
 
 	// POST without CSRF cookie/header but with Bearer token — should pass.
 	req := httptest.NewRequest(http.MethodPost, "/api/silences", strings.NewReader("{}"))
@@ -59,7 +59,7 @@ func TestCSRF_BearerRequest_SkipsValidation(t *testing.T) {
 }
 
 func TestCSRF_MutatingRequest_NoCookie_Returns403(t *testing.T) {
-	handler := CSRFMiddleware(testCSRFSecret)(okHandler())
+	handler := CSRFMiddleware(testCSRFSecret, false)(okHandler())
 
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader("{}"))
 	rec := httptest.NewRecorder()
@@ -71,7 +71,7 @@ func TestCSRF_MutatingRequest_NoCookie_Returns403(t *testing.T) {
 }
 
 func TestCSRF_MutatingRequest_NoHeader_Returns403(t *testing.T) {
-	handler := CSRFMiddleware(testCSRFSecret)(okHandler())
+	handler := CSRFMiddleware(testCSRFSecret, false)(okHandler())
 
 	// Obtain a valid token first via GET.
 	getReq := httptest.NewRequest(http.MethodGet, "/api/auth/status", nil)
@@ -93,7 +93,7 @@ func TestCSRF_MutatingRequest_NoHeader_Returns403(t *testing.T) {
 }
 
 func TestCSRF_MutatingRequest_ValidTokens_Passes(t *testing.T) {
-	handler := CSRFMiddleware(testCSRFSecret)(okHandler())
+	handler := CSRFMiddleware(testCSRFSecret, false)(okHandler())
 
 	// Step 1: GET to obtain the token.
 	getReq := httptest.NewRequest(http.MethodGet, "/api/auth/status", nil)
@@ -117,7 +117,7 @@ func TestCSRF_MutatingRequest_ValidTokens_Passes(t *testing.T) {
 }
 
 func TestCSRF_MutatingRequest_MismatchedTokens_Returns403(t *testing.T) {
-	handler := CSRFMiddleware(testCSRFSecret)(okHandler())
+	handler := CSRFMiddleware(testCSRFSecret, false)(okHandler())
 
 	// Step 1: GET to obtain a valid cookie.
 	getReq := httptest.NewRequest(http.MethodGet, "/api/auth/status", nil)

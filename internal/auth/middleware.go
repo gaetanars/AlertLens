@@ -20,17 +20,17 @@ const (
 func (s *Service) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !s.enabled {
-			http.Error(w, `{"error":"admin mode is not enabled"}`, http.StatusUnauthorized)
+			writeAuthError(w, "admin mode is not enabled", http.StatusUnauthorized)
 			return
 		}
 		tokenStr := ExtractBearerToken(r)
 		if tokenStr == "" {
-			http.Error(w, `{"error":"missing authorization token"}`, http.StatusUnauthorized)
+			writeAuthError(w, "missing authorization token", http.StatusUnauthorized)
 			return
 		}
 		_, role, err := s.Validate(tokenStr)
 		if err != nil {
-			http.Error(w, `{"error":"invalid or expired token"}`, http.StatusUnauthorized)
+			writeAuthError(w, "invalid or expired token", http.StatusUnauthorized)
 			return
 		}
 		ctx := context.WithValue(r.Context(), ctxKeyAdmin, true)
@@ -46,21 +46,21 @@ func (s *Service) RequireRole(required Role) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if !s.enabled {
-				http.Error(w, `{"error":"admin mode is not enabled"}`, http.StatusUnauthorized)
+				writeAuthError(w, "admin mode is not enabled", http.StatusUnauthorized)
 				return
 			}
 			tokenStr := ExtractBearerToken(r)
 			if tokenStr == "" {
-				http.Error(w, `{"error":"missing authorization token"}`, http.StatusUnauthorized)
+				writeAuthError(w, "missing authorization token", http.StatusUnauthorized)
 				return
 			}
 			_, role, err := s.Validate(tokenStr)
 			if err != nil {
-				http.Error(w, `{"error":"invalid or expired token"}`, http.StatusUnauthorized)
+				writeAuthError(w, "invalid or expired token", http.StatusUnauthorized)
 				return
 			}
 			if !role.HasAtLeast(required) {
-				http.Error(w, `{"error":"insufficient permissions"}`, http.StatusForbidden)
+				writeAuthError(w, "insufficient permissions", http.StatusForbidden)
 				return
 			}
 			ctx := context.WithValue(r.Context(), ctxKeyAdmin, role == RoleAdmin)
