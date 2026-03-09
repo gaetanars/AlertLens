@@ -8,6 +8,7 @@ import (
 
 	"github.com/alertlens/alertlens/internal/config"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 // Pool manages multiple Alertmanager clients and provides aggregated access.
@@ -40,146 +41,139 @@ func (p *Pool) Clients() []*Client {
 	return p.clients
 }
 
-// ─── Aggregated operations ───────────────────────────────────────────────────
+// ─── Partial failure metadata ─────────────────────────────────────────────────
 
-// instanceResult holds the result of querying a single AM instance.
-type instanceResult[T any] struct {
-	name  string
-	items []T
-	err   error
+// InstanceError records a per-instance fetch error for metadata reporting.
+type InstanceError struct {
+	Instance string `json:"instance"`
+	Error    string `json:"error"`
 }
 
-// GetAggregatedAlerts fetches alerts from all instances concurrently and
-// returns a flat list enriched with instance name and ack information.
-func (p *Pool) GetAggregatedAlerts(ctx context.Context, params AlertsQueryParams) ([]EnrichedAlert, error) {
-	type alertResult struct {
-		name    string
-		alerts  []Alert
-		silences []Silence
-		err     error
+// ─── Aggregated operations ───────────────────────────────────────────────────
+
+// alertInstanceResult holds the fetched data for a single AM instance.
+type alertInstanceResult struct {
+	name     string
+	alerts   []Alert
+	silences []Silence
+}
+
+// GetAggregatedAlerts fetches alerts from all instances concurrently using
+// errgroup and returns a flat list enriched with instance name and ack info.
+// Partial failures are logged and returned via the errors slice so callers can
+// surface degraded-mode metadata to the UI (COR-02/ERR-04).
+func (p *Pool) GetAggregatedAlerts(ctx context.Context, params AlertsQueryParams) ([]EnrichedAlert, []InstanceError) {
+	// Filter to the requested instance(s).
+	targets := p.selectClients(params.Instance)
+	if len(targets) == 0 {
+		return nil, nil
 	}
 
-	results := make([]alertResult, len(p.clients))
-	var wg sync.WaitGroup
+	resultsMu := sync.Mutex{}
+	results := make([]alertInstanceResult, 0, len(targets))
+	var instanceErrors []InstanceError
 
-	for i, c := range p.clients {
-		// Apply instance filter: skip if a specific instance is requested and
-		// this is not it.
-		if params.Instance != "" && c.name != params.Instance {
-			continue
-		}
-
-		wg.Add(1)
-		go func(idx int, client *Client) {
-			defer wg.Done()
-			res := alertResult{name: client.name}
-
-			alerts, err := client.GetAlerts(ctx, params)
+	g, gCtx := errgroup.WithContext(ctx)
+	for _, c := range targets {
+		c := c // capture loop variable
+		g.Go(func() error {
+			alerts, err := c.GetAlerts(gCtx, params)
 			if err != nil {
-				res.err = err
-				p.logger.Warn("failed to fetch alerts", zap.String("instance", client.name), zap.Error(err))
-				results[idx] = res
-				return
+				p.logger.Warn("failed to fetch alerts",
+					zap.String("instance", c.name), zap.Error(err))
+				resultsMu.Lock()
+				instanceErrors = append(instanceErrors, InstanceError{
+					Instance: c.name,
+					Error:    err.Error(),
+				})
+				resultsMu.Unlock()
+				// Do NOT propagate the error: partial failure is acceptable.
+				return nil
 			}
-			res.alerts = alerts
 
-			// Fetch silences to compute visual-ack info.
-			silences, err := client.GetSilences(ctx)
-			if err != nil {
+			// Fetch silences for visual-ack computation; failure is non-fatal.
+			silences, silErr := c.GetSilences(gCtx)
+			if silErr != nil {
 				p.logger.Warn("failed to fetch silences for ack computation",
-					zap.String("instance", client.name), zap.Error(err))
+					zap.String("instance", c.name), zap.Error(silErr))
 			}
-			res.silences = silences
-			results[idx] = res
-		}(i, c)
+
+			resultsMu.Lock()
+			results = append(results, alertInstanceResult{
+				name:     c.name,
+				alerts:   alerts,
+				silences: silences,
+			})
+			resultsMu.Unlock()
+			return nil
+		})
 	}
 
-	wg.Wait()
+	// errgroup.Wait only returns errors from goroutines that returned non-nil,
+	// which we suppressed above — so the error here is always nil.
+	_ = g.Wait() //nolint:errcheck
 
+	// COR-02/ERR-04: if every queried instance failed, surface a hard error
+	// via the instanceErrors slice (the caller decides how to handle it).
 	var enriched []EnrichedAlert
-	queried := 0
-	failed := 0
 	for _, res := range results {
-		if res.name == "" {
-			continue // slot was not used (instance filter skipped it)
-		}
-		queried++
-		if res.err != nil {
-			failed++
-			continue
-		}
-		// Build ack index from silences.
 		ackIndex := buildAckIndex(res.silences)
-
 		for _, a := range res.alerts {
-			ea := EnrichedAlert{Alert: a, Alertmanager: res.name}
+			ea := EnrichedAlert{Alert: a, Alertmanager: res.name, InstanceID: res.name}
 			ea.Ack = findAck(a, ackIndex)
 			enriched = append(enriched, ea)
 		}
 	}
 
-	// COR-02/ERR-04: return an error only when every queried instance failed.
-	if queried > 0 && queried == failed {
-		return nil, fmt.Errorf("all alertmanager instances failed to respond")
-	}
-
-	return enriched, nil
+	return enriched, instanceErrors
 }
 
 // GetAggregatedSilences fetches silences from all instances concurrently.
-func (p *Pool) GetAggregatedSilences(ctx context.Context, params SilenceQueryParams) ([]EnrichedSilence, error) {
-	type silResult = instanceResult[Silence]
-	results := make([]silResult, len(p.clients))
-	var wg sync.WaitGroup
-
-	for i, c := range p.clients {
-		if params.Instance != "" && c.name != params.Instance {
-			continue
-		}
-		wg.Add(1)
-		go func(idx int, client *Client) {
-			defer wg.Done()
-			silences, err := client.GetSilences(ctx)
-			if err != nil {
-				p.logger.Warn("failed to fetch silences", zap.String("instance", client.name), zap.Error(err))
-				results[idx] = silResult{name: client.name, err: err}
-				return
-			}
-			results[idx] = silResult{name: client.name, items: silences}
-		}(i, c)
+// Partial failures are logged and returned as InstanceErrors.
+func (p *Pool) GetAggregatedSilences(ctx context.Context, params SilenceQueryParams) ([]EnrichedSilence, []InstanceError) {
+	targets := p.selectClients(params.Instance)
+	if len(targets) == 0 {
+		return nil, nil
 	}
 
-	wg.Wait()
-
+	mu := sync.Mutex{}
 	var out []EnrichedSilence
-	queried := 0
-	failed := 0
-	for _, res := range results {
-		if res.name == "" {
-			continue // slot was not used (instance filter skipped it)
-		}
-		queried++
-		if res.err != nil {
-			failed++
-			continue
-		}
-		for _, s := range res.items {
-			if params.Type == "ack" && !IsAckSilence(s) {
-				continue
+	var instanceErrors []InstanceError
+
+	g, gCtx := errgroup.WithContext(ctx)
+	for _, c := range targets {
+		c := c
+		g.Go(func() error {
+			silences, err := c.GetSilences(gCtx)
+			if err != nil {
+				p.logger.Warn("failed to fetch silences",
+					zap.String("instance", c.name), zap.Error(err))
+				mu.Lock()
+				instanceErrors = append(instanceErrors, InstanceError{
+					Instance: c.name,
+					Error:    err.Error(),
+				})
+				mu.Unlock()
+				return nil
 			}
-			if params.Type == "silence" && IsAckSilence(s) {
-				continue
+
+			mu.Lock()
+			for _, s := range silences {
+				if params.Type == "ack" && !IsAckSilence(s) {
+					continue
+				}
+				if params.Type == "silence" && IsAckSilence(s) {
+					continue
+				}
+				out = append(out, EnrichedSilence{Silence: s, Alertmanager: c.name})
 			}
-			out = append(out, EnrichedSilence{Silence: s, Alertmanager: res.name})
-		}
+			mu.Unlock()
+			return nil
+		})
 	}
 
-	// COR-02/ERR-04: return an error only when every queried instance failed.
-	if queried > 0 && queried == failed {
-		return nil, fmt.Errorf("all alertmanager instances failed to respond")
-	}
-
-	return out, nil
+	_ = g.Wait() //nolint:errcheck
+	return out, instanceErrors
 }
 
 // GetInstanceStatuses fetches the status of all AM instances concurrently.
@@ -210,6 +204,20 @@ func (p *Pool) GetInstanceStatuses(ctx context.Context) []InstanceStatus {
 
 	wg.Wait()
 	return statuses
+}
+
+// selectClients returns the subset of clients to query.
+// When instance is empty, all clients are returned.
+func (p *Pool) selectClients(instance string) []*Client {
+	if instance == "" {
+		return p.clients
+	}
+	for _, c := range p.clients {
+		if c.name == instance {
+			return []*Client{c}
+		}
+	}
+	return nil
 }
 
 // ─── Ack helpers ─────────────────────────────────────────────────────────────
@@ -333,9 +341,12 @@ type EnrichedSilence struct {
 // This is the main entry point for the alerts list/kanban API endpoint.
 func (p *Pool) GetAlertsView(ctx context.Context, params AlertsViewParams) (*AlertsResponse, error) {
 	// Step 1 – fetch raw enriched alerts from all matching instances.
-	raw, err := p.GetAggregatedAlerts(ctx, params.AlertsQueryParams)
-	if err != nil {
-		return nil, err
+	raw, instanceErrors := p.GetAggregatedAlerts(ctx, params.AlertsQueryParams)
+
+	// COR-02/ERR-04: if all instances failed (nothing fetched, all errored),
+	// return a hard error so the UI displays a clear failure state.
+	if len(raw) == 0 && len(instanceErrors) > 0 && len(instanceErrors) == len(p.selectClients(params.Instance)) {
+		return nil, fmt.Errorf("all alertmanager instances failed to respond")
 	}
 
 	// Step 2 – apply view-layer filters (severity, status) not handled by AM.
@@ -375,10 +386,11 @@ func (p *Pool) GetAlertsView(ctx context.Context, params AlertsViewParams) (*Ale
 	}
 
 	return &AlertsResponse{
-		Groups: groups,
-		Total:  total,
-		Limit:  limit,
-		Offset: offset,
+		Groups:         groups,
+		Total:          total,
+		Limit:          limit,
+		Offset:         offset,
+		PartialFailures: instanceErrors,
 	}, nil
 }
 

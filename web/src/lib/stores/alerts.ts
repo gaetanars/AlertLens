@@ -1,5 +1,5 @@
 import { writable, derived, get } from 'svelte/store';
-import type { Alert, AlertGroup, AlertsResponse, InstanceStatus } from '$lib/api/types';
+import type { Alert, AlertGroup, AlertsResponse, InstanceStatus, InstanceError } from '$lib/api/types';
 import { fetchAlerts, fetchAlertmanagers } from '$lib/api/alerts';
 
 // ─── Raw data stores ─────────────────────────────────────────────────────────
@@ -16,6 +16,8 @@ export const alertsTotal = writable(0);
 export const instances = writable<InstanceStatus[]>([]);
 export const alertsLoading = writable(false);
 export const alertsError = writable<string | null>(null);
+/** Partial failures: instances that failed to respond in the last fetch. */
+export const alertsPartialFailures = writable<InstanceError[]>([]);
 
 // ─── Filter/view state ───────────────────────────────────────────────────────
 
@@ -126,6 +128,7 @@ export async function loadAlerts() {
 		alerts.set(flat);
 		alertsGrouped.set(resp.groups);
 		alertsTotal.set(resp.total);
+		alertsPartialFailures.set(resp.partial_failures ?? []);
 	} catch (e) {
 		alertsError.set(e instanceof Error ? e.message : 'Failed to load alerts');
 	} finally {
