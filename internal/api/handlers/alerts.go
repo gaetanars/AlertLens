@@ -56,8 +56,16 @@ func (h *AlertsHandler) List(w http.ResponseWriter, r *http.Request) {
 	status := q["status"]
 	status = splitCommaSeparated(status)
 
-	limit, _ := strconv.Atoi(q.Get("limit"))
-	offset, _ := strconv.Atoi(q.Get("offset"))
+	// Safely parse and validate pagination parameters
+	limit, err := strconv.Atoi(q.Get("limit"))
+	if err != nil || limit <= 0 || limit > 5000 {
+		limit = 500 // default limit
+	}
+
+	offset, err := strconv.Atoi(q.Get("offset"))
+	if err != nil || offset < 0 {
+		offset = 0 // default offset
+	}
 
 	params := alertmanager.AlertsViewParams{
 		AlertsQueryParams: base,
