@@ -6,6 +6,7 @@
 		viewMode,
 		alertsLoading,
 		alertsError,
+		alertsPartialFailures,
 		alertsTotal,
 		alertsOffset,
 		alertsLimit,
@@ -89,10 +90,24 @@
 	{/if}
 </div>
 
-<!-- Error banner -->
+<!-- Hard error banner -->
 {#if $alertsError}
 	<div class="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm" role="alert">
 		{$alertsError}
+	</div>
+{/if}
+
+<!-- Degraded-mode banner: partial failures, some instances still serving data -->
+{#if $alertsPartialFailures.length > 0}
+	<div
+		class="mb-4 p-3 rounded-md bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 text-sm"
+		role="alert"
+		aria-label="Degraded mode: some instances are unavailable"
+	>
+		<strong>⚠ Degraded mode</strong> — {$alertsPartialFailures.length}
+		{$alertsPartialFailures.length === 1 ? 'instance' : 'instances'} failed to respond:
+		{$alertsPartialFailures.map((f) => f.instance).join(', ')}.
+		Showing alerts from available instances only.
 	</div>
 {/if}
 
@@ -105,14 +120,14 @@
 		alerts={$filteredAlerts}
 		groups={$filteredGrouped}
 		groupByLabel={$groupByLabel}
-		{onSilence}
-		{onAck}
+		onSilence={openSilence}
+		onAck={openAck}
 	/>
 {:else}
 	<AlertList
 		alerts={$filteredAlerts}
-		{onSilence}
-		{onAck}
+		onSilence={openSilence}
+		onAck={openAck}
 	/>
 {/if}
 

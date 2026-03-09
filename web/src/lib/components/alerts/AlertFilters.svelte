@@ -18,9 +18,11 @@
 		statusFilter,
 		groupByLabel,
 		viewMode,
-		instances
+		instances,
+		loadAlerts
 	} from '$lib/stores/alerts';
 	import { Search, LayoutGrid, List, RefreshCw, X } from 'lucide-svelte';
+	import InstanceSelector from '$lib/components/alerts/InstanceSelector.svelte';
 
 	let { onRefresh }: { onRefresh?: () => void } = $props();
 
@@ -96,16 +98,11 @@
 		</div>
 
 		<!-- Instance filter -->
-		<select
+		<InstanceSelector
 			bind:value={$instanceFilter}
-			aria-label="Filter by instance"
-			class="px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring min-w-[140px]"
-		>
-			<option value="">All instances</option>
-			{#each $instances as inst}
-				<option value={inst.name}>{inst.name}</option>
-			{/each}
-		</select>
+			instances={$instances}
+			onChange={() => loadAlerts()}
+		/>
 
 		<!-- Group by (kanban mode) -->
 		{#if $viewMode === 'kanban'}

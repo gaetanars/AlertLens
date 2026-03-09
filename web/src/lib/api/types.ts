@@ -22,7 +22,13 @@ export interface AlertStatus {
 
 export interface Alert {
 	fingerprint: string;
+	/** Name of the Alertmanager instance this alert originated from. */
 	alertmanager: string;
+	/**
+	 * InstanceID is an alias for alertmanager.
+	 * Present in API responses from Feature #2 onward.
+	 */
+	instance_id?: string;
 	labels: Record<string, string>;
 	annotations: Record<string, string>;
 	state: string;
@@ -60,6 +66,12 @@ export interface AlertGroup {
 	count: number;
 }
 
+/** Per-instance error when one Alertmanager instance failed to respond. */
+export interface InstanceError {
+	instance: string;
+	error: string;
+}
+
 /** Top-level response from GET /api/alerts with grouping & pagination. */
 export interface AlertsResponse {
 	groups: AlertGroup[];
@@ -67,6 +79,11 @@ export interface AlertsResponse {
 	total: number;
 	limit: number;
 	offset: number;
+	/**
+	 * partial_failures is non-empty when one or more instances failed.
+	 * The response still contains alerts from healthy instances (degraded mode).
+	 */
+	partial_failures?: InstanceError[];
 }
 
 export interface InstanceStatus {

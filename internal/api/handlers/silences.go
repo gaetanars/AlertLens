@@ -26,9 +26,11 @@ func (h *SilencesHandler) List(w http.ResponseWriter, r *http.Request) {
 		Instance: q.Get("instance"),
 		Type:     q.Get("type"),
 	}
-	silences, err := h.pool.GetAggregatedSilences(r.Context(), params)
-	if err != nil {
-		writeError(w, err.Error(), http.StatusBadGateway)
+	silences, errs := h.pool.GetAggregatedSilences(r.Context(), params)
+	// COR-02/ERR-04: if every instance failed and no silences were returned,
+	// return a gateway error; otherwise serve partial results with metadata.
+	if len(silences) == 0 && len(errs) > 0 {
+		writeError(w, "all alertmanager instances failed to respond", http.StatusBadGateway)
 		return
 	}
 	if silences == nil {

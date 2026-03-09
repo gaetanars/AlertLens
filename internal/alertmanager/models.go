@@ -24,10 +24,14 @@ type AlertStatus struct {
 }
 
 // EnrichedAlert is an Alert enriched with its Alertmanager instance name and ack info.
+// InstanceID is an alias for Alertmanager for API clarity.
 type EnrichedAlert struct {
 	Alert
+	// Alertmanager is the name of the instance this alert was fetched from.
 	Alertmanager string `json:"alertmanager"`
-	Ack          *Ack   `json:"ack,omitempty"`
+	// InstanceID mirrors Alertmanager for forward-compatibility with multi-instance API.
+	InstanceID string `json:"instance_id,omitempty"`
+	Ack        *Ack   `json:"ack,omitempty"`
 }
 
 // Ack holds visual-ack metadata reconstructed from silence labels.
@@ -167,6 +171,10 @@ type AlertsResponse struct {
 	// Limit and Offset echo back the pagination params used.
 	Limit  int `json:"limit"`
 	Offset int `json:"offset"`
+	// PartialFailures lists per-instance errors when one or more instances
+	// failed to respond. An empty slice means all instances succeeded.
+	// Non-empty but with data present = degraded mode (partial results).
+	PartialFailures []InstanceError `json:"partial_failures,omitempty"`
 }
 
 // SilenceQueryParams contains query parameters for fetching silences.
