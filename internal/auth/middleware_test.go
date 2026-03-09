@@ -170,6 +170,52 @@ func TestExtractBearerToken_BearerWithSpace(t *testing.T) {
 	}
 }
 
+// ─── Content-Type on error responses (CWE-116 regression) ────────────────────
+
+func TestMiddleware_ErrorResponses_AreJSON(t *testing.T) {
+	svc := NewService("secret")
+
+	cases := []struct {
+		name    string
+		handler http.Handler
+		setup   func(r *http.Request)
+	}{
+		{
+			name:    "missing token",
+			handler: svc.Middleware(okHandler()),
+			setup:   func(r *http.Request) {},
+		},
+		{
+			name:    "invalid token",
+			handler: svc.Middleware(okHandler()),
+			setup: func(r *http.Request) {
+				r.Header.Set("Authorization", "Bearer bad.token.here")
+			},
+		},
+		{
+			name:    "insufficient role",
+			handler: svc.RequireRole(RoleAdmin)(okHandler()),
+			setup: func(r *http.Request) {
+				r.Header.Set("Authorization", "Bearer bad.token.here")
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			tc.setup(req)
+			rec := httptest.NewRecorder()
+			tc.handler.ServeHTTP(rec, req)
+
+			ct := rec.Header().Get("Content-Type")
+			if ct != "application/json" {
+				t.Errorf("expected Content-Type application/json, got %q", ct)
+			}
+		})
+	}
+}
+
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 func okHandler() http.Handler {

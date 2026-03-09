@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/alertlens/alertlens/internal/alertmanager"
@@ -20,7 +21,10 @@ func resolveClient(pool *alertmanager.Pool, w http.ResponseWriter, instance stri
 	}
 	c := pool.Client(instance)
 	if c == nil {
-		writeError(w, "unknown alertmanager instance: "+instance, http.StatusBadRequest)
+		// Use fmt.Sprintf so the instance name is a typed argument rather than
+		// a raw string concatenation; writeError routes through json.Encoder
+		// which handles any special characters correctly.
+		writeError(w, fmt.Sprintf("unknown alertmanager instance: %q", instance), http.StatusBadRequest)
 		return nil
 	}
 	return c
