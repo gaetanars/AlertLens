@@ -7,6 +7,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// maxYAMLSize is the hard upper bound for Alertmanager configuration YAML
+// submitted for validation or saving (1 MiB).
+//
+// Real-world Alertmanager configs are well under 100 KiB.  Enforcing a size
+// limit before calling the YAML parser prevents resource-exhaustion attacks
+// ("YAML bombs") that exploit deeply nested structures or anchor/alias
+// expansion to consume disproportionate CPU or memory.
+//
+// SEC-CWE-400: reject oversized input early, before any parsing work.
+const maxYAMLSize = 1 << 20 // 1 MiB
+
 // ValidationResult holds the outcome of a config validation.
 type ValidationResult struct {
 	Valid    bool     `json:"valid"`
@@ -17,6 +28,17 @@ type ValidationResult struct {
 // Validate parses and validates an Alertmanager config YAML using the
 // official Prometheus Alertmanager package.
 func Validate(rawYAML []byte) ValidationResult {
+	// SEC-CWE-400: reject oversized payloads before involving the YAML parser.
+	if len(rawYAML) > maxYAMLSize {
+		return ValidationResult{
+			Valid: false,
+			Errors: []string{fmt.Sprintf(
+				"config YAML exceeds maximum allowed size (%d bytes); got %d bytes",
+				maxYAMLSize, len(rawYAML),
+			)},
+		}
+	}
+
 	cfg, err := amconfig.Load(string(rawYAML))
 	if err != nil {
 		return ValidationResult{
