@@ -1,4 +1,4 @@
-// ─── Shared types matching the Go backend models ────────────────────────────
+// ─── Shared types matching the Go backend models ─────────────────────────────
 
 export interface Matcher {
 	name: string;
@@ -48,6 +48,25 @@ export interface Silence {
 	createdBy: string;
 	comment: string;
 	status: SilenceStatus;
+}
+
+// ─── Alert views API ──────────────────────────────────────────────────────────
+
+/** A group of alerts sharing the same groupBy label values. */
+export interface AlertGroup {
+	/** Grouping key-value pairs (empty when no group_by was specified). */
+	labels: Record<string, string>;
+	alerts: Alert[];
+	count: number;
+}
+
+/** Top-level response from GET /api/alerts with grouping & pagination. */
+export interface AlertsResponse {
+	groups: AlertGroup[];
+	/** Total alerts before pagination. */
+	total: number;
+	limit: number;
+	offset: number;
 }
 
 export interface InstanceStatus {

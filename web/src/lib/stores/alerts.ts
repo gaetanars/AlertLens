@@ -1,23 +1,51 @@
-import { writable, derived } from 'svelte/store';
-import type { Alert, InstanceStatus } from '$lib/api/types';
+import { writable, derived, get } from 'svelte/store';
+import type { Alert, AlertGroup, AlertsResponse, InstanceStatus } from '$lib/api/types';
 import { fetchAlerts, fetchAlertmanagers } from '$lib/api/alerts';
 
 // ─── Raw data stores ─────────────────────────────────────────────────────────
 
+/** Flat alert list (unwrapped from groups). Used by AlertList / AlertTable. */
 export const alerts = writable<Alert[]>([]);
+
+/** Grouped response from the latest API call. Used by AlertKanban. */
+export const alertsGrouped = writable<AlertGroup[]>([]);
+
+/** Total alert count before pagination (from last API response). */
+export const alertsTotal = writable(0);
+
 export const instances = writable<InstanceStatus[]>([]);
 export const alertsLoading = writable(false);
 export const alertsError = writable<string | null>(null);
 
 // ─── Filter/view state ───────────────────────────────────────────────────────
 
+/** Free-form text/matcher query (client-side filter). */
 export const filterQuery = writable('');
+
+/** Filter by alertmanager instance (client-side after fetch, also sent to API). */
 export const instanceFilter = writable('');
-export const groupByLabel = writable('severity');
+
+/** Severity filter sent to the API (multi-select). */
+export const severityFilter = writable<string[]>([]);
+
+/** Status filter sent to the API (multi-select). */
+export const statusFilter = writable<string[]>([]);
+
+/** Label key to group by. Sent to API as group_by param. */
+export const groupByLabel = writable<string>('severity');
+
+/** Current view mode. */
 export const viewMode = writable<'kanban' | 'list'>('kanban');
+
+/** Selected alert fingerprints for bulk actions. */
 export const selectedFingerprints = writable<Set<string>>(new Set());
 
-// ─── Derived: filtered alerts ────────────────────────────────────────────────
+// ─── Pagination state ─────────────────────────────────────────────────────────
+
+export const alertsLimit = writable(500);
+export const alertsOffset = writable(0);
+
+// ─── Derived: filtered alerts (client-side text filter) ──────────────────────
 
 export const filteredAlerts = derived(
 	[alerts, filterQuery, instanceFilter],
@@ -33,7 +61,25 @@ export const filteredAlerts = derived(
 	}
 );
 
-// ─── Derived: alerts grouped by label ────────────────────────────────────────
+// ─── Derived: client-side grouped alerts (for kanban/grouping with text filter) ─
+
+export const filteredGrouped = derived(
+	[alertsGrouped, filterQuery, instanceFilter],
+	([$groups, $filter, $instance]) => {
+		if (!$filter.trim() && !$instance) return $groups;
+		// Re-filter each group's alerts.
+		return $groups
+			.map((g) => {
+				let a = g.alerts;
+				if ($instance) a = a.filter((al) => al.alertmanager === $instance);
+				if ($filter.trim()) a = a.filter((al) => matchesFilterQuery(al, $filter.trim()));
+				return { ...g, alerts: a, count: a.length };
+			})
+			.filter((g) => g.count > 0);
+	}
+);
+
+// ─── Derived: alerts grouped by label (client-side, legacy for Kanban) ────────
 
 export const groupedAlerts = derived(
 	[filteredAlerts, groupByLabel],
@@ -50,12 +96,36 @@ export const groupedAlerts = derived(
 
 // ─── Load functions ──────────────────────────────────────────────────────────
 
+/**
+ * Load alerts from the API, applying current filter/group/pagination state.
+ */
 export async function loadAlerts() {
 	alertsLoading.set(true);
 	alertsError.set(null);
+
+	const $severityFilter = get(severityFilter);
+	const $statusFilter = get(statusFilter);
+	const $groupByLabel = get(groupByLabel);
+	const $instanceFilter = get(instanceFilter);
+	const $limit = get(alertsLimit);
+	const $offset = get(alertsOffset);
+
 	try {
-		const data = await fetchAlerts({ active: true });
-		alerts.set(data ?? []);
+		const resp = await fetchAlerts({
+			active: true,
+			severity: $severityFilter.length > 0 ? $severityFilter : undefined,
+			status: $statusFilter.length > 0 ? $statusFilter : undefined,
+			groupBy: $groupByLabel ? [$groupByLabel] : undefined,
+			instance: $instanceFilter || undefined,
+			limit: $limit,
+			offset: $offset
+		});
+
+		// Store both flat and grouped forms.
+		const flat = resp.groups.flatMap((g) => g.alerts);
+		alerts.set(flat);
+		alertsGrouped.set(resp.groups);
+		alertsTotal.set(resp.total);
 	} catch (e) {
 		alertsError.set(e instanceof Error ? e.message : 'Failed to load alerts');
 	} finally {
