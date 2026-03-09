@@ -203,6 +203,29 @@ func (s *Service) Revoke(tokenStr string) {
 	s.mu.Unlock()
 }
 
+// CSRFSecret returns a CSRF-specific signing key derived from the JWT secret.
+//
+// Derivation: HMAC-SHA256(jwtSecret, "alertlens-csrf-v1")
+//
+// This guarantees:
+//   - The CSRF key is cryptographically distinct from the JWT signing key.
+//   - It rotates automatically whenever the admin password changes.
+//   - It is never a hardcoded constant, eliminating CWE-321.
+//
+// When auth is disabled (no password configured) the function returns a fixed
+// development-only key; CSRF protection remains active but relies on the
+// SameSite cookie policy since there is no per-deployment secret.
+func (s *Service) CSRFSecret() []byte {
+	// s.secret is written only during construction (NewServiceFromConfig) and
+	// never modified afterward, so reading without a lock is safe.
+	if len(s.secret) == 0 {
+		return []byte("alertlens-csrf-noauth-dev")
+	}
+	mac := hmac.New(sha256.New, s.secret)
+	mac.Write([]byte("alertlens-csrf-v1")) //nolint:errcheck
+	return mac.Sum(nil)
+}
+
 // purgeExpiredLocked removes JTIs whose tokens have already expired.
 // Must be called with s.mu held.
 func (s *Service) purgeExpiredLocked() {

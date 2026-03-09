@@ -23,6 +23,10 @@ type ServerConfig struct {
 	Host               string   `yaml:"host"                env:"ALERTLENS_SERVER_HOST"`
 	Port               int      `yaml:"port"                env:"ALERTLENS_SERVER_PORT"`
 	CORSAllowedOrigins []string `yaml:"cors_allowed_origins"`
+	// SecureCookies controls the Secure attribute on session-related cookies
+	// (e.g. the CSRF token cookie).  Set to true when AlertLens is served over
+	// HTTPS; leave false for plain HTTP (development / internal deployments).
+	SecureCookies bool `yaml:"secure_cookies" env:"ALERTLENS_SERVER_SECURE_COOKIES"`
 }
 
 type AuthConfig struct {

@@ -41,6 +41,8 @@ const cspPolicy = "default-src 'self'; " +
 // The frontendFS is served for all non-API routes (SPA fallback).
 // ghPusher / glPusher must be nil gitops.Pusher (not typed-nil) when the
 // corresponding forge is not configured, so interface nil-checks in handlers work.
+// secureCookies controls the Secure attribute on the CSRF cookie; set to true
+// when the application is served behind HTTPS.
 func NewRouter(
 	pool *alertmanager.Pool,
 	authSvc *auth.Service,
@@ -48,6 +50,7 @@ func NewRouter(
 	glPusher gitops.Pusher,
 	frontendFS http.FileSystem,
 	allowedOrigins []string,
+	secureCookies bool,
 	version string,
 	logger *zap.Logger,
 ) http.Handler {
@@ -57,11 +60,10 @@ func NewRouter(
 		allowedOrigins = []string{"*"}
 	}
 
-	// Derive CSRF secret from the auth service's secret (not exported, so we
-	// use a fixed application-level constant salted with the service identity).
-	// For a production deployment the secret should come from config; using the
-	// authSvc indirectly ensures it rotates with the admin password.
-	csrfSecret := []byte("alertlens-csrf-v1")
+	// SEC-CWE-321: derive the CSRF secret from the auth service's JWT signing
+	// key rather than using a hardcoded constant.  The derived key is unique to
+	// CSRF purposes and rotates whenever the admin password changes.
+	csrfSecret := authSvc.CSRFSecret()
 
 	loginRL := auth.NewLoginRateLimiter()
 
@@ -80,7 +82,7 @@ func NewRouter(
 	// SEC-CSP: Content-Security-Policy to prevent XSS exploitation.
 	r.Use(cspMiddleware)
 	// SEC-CSRF: Double-submit cookie CSRF protection.
-	r.Use(auth.CSRFMiddleware(csrfSecret))
+	r.Use(auth.CSRFMiddleware(csrfSecret, secureCookies))
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},

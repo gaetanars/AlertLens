@@ -101,7 +101,7 @@ func main() {
 	frontendFS := http.FS(subFS)
 
 	// ─── HTTP router ─────────────────────────────────────────────────────────
-	router := api.NewRouter(pool, authSvc, ghPusher, glPusher, frontendFS, cfg.Server.CORSAllowedOrigins, version, logger)
+	router := api.NewRouter(pool, authSvc, ghPusher, glPusher, frontendFS, cfg.Server.CORSAllowedOrigins, cfg.Server.SecureCookies, version, logger)
 
 	// ─── HTTP server ─────────────────────────────────────────────────────────
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
