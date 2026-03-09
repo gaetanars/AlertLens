@@ -2,46 +2,50 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://alertlens.github.io/AlertLens/stable/</loc>
-         <lastmod>2026-03-07</lastmod>
+         <lastmod>2026-03-09</lastmod>
+    </url>
+    <url>
+         <loc>https://alertlens.github.io/AlertLens/stable/SECURITY_ARCHITECTURE_PHASE_1/</loc>
+         <lastmod>2026-03-09</lastmod>
     </url>
     <url>
          <loc>https://alertlens.github.io/AlertLens/stable/changelog/</loc>
-         <lastmod>2026-03-07</lastmod>
+         <lastmod>2026-03-09</lastmod>
     </url>
     <url>
          <loc>https://alertlens.github.io/AlertLens/stable/configuration/</loc>
-         <lastmod>2026-03-07</lastmod>
+         <lastmod>2026-03-09</lastmod>
     </url>
     <url>
          <loc>https://alertlens.github.io/AlertLens/stable/getting-started/</loc>
-         <lastmod>2026-03-07</lastmod>
+         <lastmod>2026-03-09</lastmod>
     </url>
     <url>
          <loc>https://alertlens.github.io/AlertLens/stable/deployment/binary/</loc>
-         <lastmod>2026-03-07</lastmod>
+         <lastmod>2026-03-09</lastmod>
     </url>
     <url>
          <loc>https://alertlens.github.io/AlertLens/stable/deployment/docker/</loc>
-         <lastmod>2026-03-07</lastmod>
+         <lastmod>2026-03-09</lastmod>
     </url>
     <url>
          <loc>https://alertlens.github.io/AlertLens/stable/deployment/kubernetes/</loc>
-         <lastmod>2026-03-07</lastmod>
+         <lastmod>2026-03-09</lastmod>
     </url>
     <url>
          <loc>https://alertlens.github.io/AlertLens/stable/features/config-builder/</loc>
-         <lastmod>2026-03-07</lastmod>
+         <lastmod>2026-03-09</lastmod>
     </url>
     <url>
          <loc>https://alertlens.github.io/AlertLens/stable/features/silences/</loc>
-         <lastmod>2026-03-07</lastmod>
+         <lastmod>2026-03-09</lastmod>
     </url>
     <url>
          <loc>https://alertlens.github.io/AlertLens/stable/features/visual-ack/</loc>
-         <lastmod>2026-03-07</lastmod>
+         <lastmod>2026-03-09</lastmod>
     </url>
     <url>
          <loc>https://alertlens.github.io/AlertLens/stable/features/visualization/</loc>
-         <lastmod>2026-03-07</lastmod>
+         <lastmod>2026-03-09</lastmod>
     </url>
 </urlset>
