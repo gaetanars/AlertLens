@@ -15,6 +15,13 @@ import (
 	"github.com/alertlens/alertlens/internal/config"
 )
 
+// silencePath returns the Alertmanager API v2 path for a specific silence.
+// url.PathEscape is used to prevent path injection when the caller-supplied
+// id contains characters such as '/', '?', or '#' (CWE-73).
+func silencePath(id string) string {
+	return "/api/v2/silence/" + url.PathEscape(id)
+}
+
 const (
 	labelAckType    = "alertlens_ack_type"
 	labelAckBy      = "alertlens_ack_by"
@@ -103,7 +110,7 @@ func (c *Client) GetSilences(ctx context.Context) ([]Silence, error) {
 // GetSilence fetches a single silence by ID.
 func (c *Client) GetSilence(ctx context.Context, id string) (*Silence, error) {
 	var silence Silence
-	if err := c.get(ctx, "/api/v2/silence/"+id, &silence); err != nil {
+	if err := c.get(ctx, silencePath(id), &silence); err != nil {
 		return nil, err
 	}
 	return &silence, nil
@@ -135,7 +142,7 @@ func (c *Client) UpdateSilence(ctx context.Context, id string, input SilenceInpu
 // ExpireSilence expires a silence by ID.
 func (c *Client) ExpireSilence(ctx context.Context, id string) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete,
-		c.baseURL+"/api/v2/silence/"+id, nil)
+		c.baseURL+silencePath(id), nil)
 	if err != nil {
 		return err
 	}
