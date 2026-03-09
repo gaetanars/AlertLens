@@ -22,14 +22,17 @@ func NewAuthHandler(svc *auth.Service) *AuthHandler {
 func (h *AuthHandler) Status(w http.ResponseWriter, r *http.Request) {
 	token := auth.ExtractBearerToken(r)
 	authenticated := false
+	role := ""
 	if token != "" {
-		if _, err := h.svc.Validate(token); err == nil {
+		if _, r, err := h.svc.Validate(token); err == nil {
 			authenticated = true
+			role = string(r)
 		}
 	}
 	writeJSON(w, map[string]any{
 		"admin_enabled": h.svc.AdminEnabled(),
 		"authenticated": authenticated,
+		"role":          role,
 	})
 }
 

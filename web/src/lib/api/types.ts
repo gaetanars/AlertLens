@@ -84,9 +84,13 @@ export interface CreateSilenceRequest {
 	ack_comment?: string;
 }
 
+export type UserRole = 'viewer' | 'silencer' | 'config-editor' | 'admin' | '';
+
 export interface AuthStatus {
 	admin_enabled: boolean;
 	authenticated: boolean;
+	/** Role granted to the current token. Empty string when not authenticated. */
+	role: UserRole;
 }
 
 export interface ValidationResult {

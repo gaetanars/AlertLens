@@ -12,10 +12,20 @@
 
 	onMount(async () => {
 		try {
+			// SEC-CSRF: fetchAuthStatus() is a GET request. The backend sets a
+			// fresh signed csrf_token cookie AND echoes it in the X-CSRF-Token
+			// response header on every safe-method response (see CSRFMiddleware).
+			// The api client captures that header automatically (updateCSRFToken),
+			// so after this call the in-memory CSRF token is primed and every
+			// subsequent mutating request (POST/PUT/DELETE) will carry it.
 			const status = await fetchAuthStatus();
 			authStore.setAdminEnabled(status.admin_enabled);
+			if (status.authenticated && status.role) {
+				authStore.setAdminEnabled(status.admin_enabled);
+			}
 		} catch {
-			// backend not reachable yet — ignore
+			// backend not reachable yet — ignore; the cookie fallback in
+			// readCSRFCookie() will be used if the in-memory token is empty.
 		}
 		loadInstances();
 	});

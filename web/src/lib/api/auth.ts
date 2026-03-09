@@ -1,11 +1,11 @@
 import { api } from './client';
-import type { AuthStatus } from './types';
+import type { AuthStatus, UserRole } from './types';
 
 export function fetchAuthStatus(): Promise<AuthStatus> {
 	return api.get<AuthStatus>('/auth/status');
 }
 
-export function login(password: string): Promise<{ token: string; expires_at: string }> {
+export function login(password: string): Promise<{ token: string; expires_at: string; role: UserRole }> {
 	return api.post('/auth/login', { password });
 }
 

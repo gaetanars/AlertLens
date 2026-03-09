@@ -126,3 +126,38 @@ func TestValidate_ValidationResult_NilWarningsOnValid(t *testing.T) {
 		t.Errorf("expected nil errors, got: %v", result.Errors)
 	}
 }
+
+// ─── Size limit (CWE-400) ─────────────────────────────────────────────────────
+
+func TestValidate_OversizedInput_ReturnsError(t *testing.T) {
+	// Build a payload that exceeds maxYAMLSize (1 MiB).
+	huge := make([]byte, maxYAMLSize+1)
+	for i := range huge {
+		huge[i] = 'a'
+	}
+	result := Validate(huge)
+	if result.Valid {
+		t.Error("expected invalid result for oversized YAML")
+	}
+	if len(result.Errors) == 0 {
+		t.Error("expected at least one error for oversized YAML")
+	}
+}
+
+func TestValidate_ExactlyAtSizeLimit_Parsed(t *testing.T) {
+	// A payload exactly at maxYAMLSize must reach the parser (may or may not be
+	// valid YAML, but must not be rejected by the size check alone).
+	exactly := make([]byte, maxYAMLSize)
+	for i := range exactly {
+		exactly[i] = '#' // comment byte — valid YAML, not a bomb
+	}
+	result := Validate(exactly)
+	// We only assert it is NOT rejected for being too large; it will be invalid
+	// because there's no route/receivers, but that's the parser's business.
+	for _, e := range result.Errors {
+		if len(e) > 0 && e[:6] == "config" {
+			// "config YAML exceeds..." — this should NOT appear
+			t.Errorf("should not be rejected by size check at exactly maxYAMLSize: %s", e)
+		}
+	}
+}

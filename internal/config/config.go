@@ -23,10 +23,22 @@ type ServerConfig struct {
 	Host               string   `yaml:"host"                env:"ALERTLENS_SERVER_HOST"`
 	Port               int      `yaml:"port"                env:"ALERTLENS_SERVER_PORT"`
 	CORSAllowedOrigins []string `yaml:"cors_allowed_origins"`
+	// SecureCookies controls the Secure attribute on session-related cookies
+	// (e.g. the CSRF token cookie).  Set to true when AlertLens is served over
+	// HTTPS; leave false for plain HTTP (development / internal deployments).
+	SecureCookies bool `yaml:"secure_cookies" env:"ALERTLENS_SERVER_SECURE_COOKIES"`
 }
 
 type AuthConfig struct {
-	AdminPassword string `yaml:"admin_password" env:"ALERTLENS_AUTH_ADMIN_PASSWORD"`
+	AdminPassword string       `yaml:"admin_password" env:"ALERTLENS_AUTH_ADMIN_PASSWORD"`
+	Users         []UserConfig `yaml:"users"`
+}
+
+// UserConfig defines an additional role-bound user credential.
+// The Role field must be one of: viewer, silencer, config-editor, admin.
+type UserConfig struct {
+	Password string `yaml:"password"`
+	Role     string `yaml:"role"`
 }
 
 type AlertmanagerConfig struct {

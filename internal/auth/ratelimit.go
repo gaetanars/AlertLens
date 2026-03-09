@@ -72,10 +72,8 @@ func (rl *LoginRateLimiter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := extractRemoteIP(r.RemoteAddr)
 		if !rl.getLimiter(ip).Allow() {
-			w.Header().Set("Content-Type", "application/json")
 			w.Header().Set("Retry-After", "60")
-			w.WriteHeader(http.StatusTooManyRequests)
-			w.Write([]byte(`{"error":"too many login attempts, please try again later"}`)) //nolint:errcheck
+			writeAuthError(w, "too many login attempts, please try again later", http.StatusTooManyRequests)
 			return
 		}
 		next.ServeHTTP(w, r)

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isAdmin } from '$lib/stores/auth';
+	import { canEditConfig } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
@@ -8,7 +8,7 @@
 	let { children } = $props();
 
 	onMount(() => {
-		if (!$isAdmin) goto('/login');
+		if (!$canEditConfig) goto('/login');
 	});
 
 	const tabs = [
@@ -22,7 +22,7 @@
 	<div class="flex items-center gap-2">
 		<Settings class="h-5 w-5 text-primary" />
 		<h1 class="text-xl font-bold">Configuration Builder</h1>
-		<span class="px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary font-medium">Admin</span>
+		<span class="px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary font-medium">Config Editor</span>
 	</div>
 
 	<!-- Sub-tabs -->

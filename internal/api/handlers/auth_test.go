@@ -201,7 +201,7 @@ func TestAuthHandler_Logout_WithValidToken(t *testing.T) {
 		t.Errorf("expected 204, got %d", rec.Code)
 	}
 	// Token must now be invalid.
-	if _, err := svc.Validate(tokenStr); err == nil {
+	if _, _, err := svc.Validate(tokenStr); err == nil {
 		t.Error("expected token to be invalid after logout")
 	}
 }
