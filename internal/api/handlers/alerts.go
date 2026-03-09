@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/alertlens/alertlens/internal/alertmanager"
 )
@@ -19,16 +20,24 @@ func NewAlertsHandler(pool *alertmanager.Pool) *AlertsHandler {
 
 // List handles GET /api/alerts.
 //
-// Query params:
-//   - filter  (multi-value): Alertmanager matcher strings
-//   - instance: restrict to one AM instance
-//   - silenced: bool (default false)
-//   - inhibited: bool (default false)
-//   - active: bool (default true)
+// Query params (forwarded to Alertmanager):
+//   - filter      (multi-value): Alertmanager matcher strings, e.g. filter=severity="critical"
+//   - instance    : restrict to one AM instance name
+//   - silenced    : bool (default false)
+//   - inhibited   : bool (default false)
+//   - active      : bool (default true)
+//
+// View-layer params (applied by the handler):
+//   - severity    (multi-value): filter by severity label, e.g. severity=critical&severity=warning
+//   - status      (multi-value): filter by alert state (active|suppressed|unprocessed)
+//   - group_by    (multi-value): group results by label key(s), e.g. group_by=severity
+//   - limit       : max alerts per page (default 500, max 5000)
+//   - offset      : pagination offset (default 0)
 func (h *AlertsHandler) List(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
-	params := alertmanager.AlertsQueryParams{
+	// Build base query params (forwarded to Alertmanager API).
+	base := alertmanager.AlertsQueryParams{
 		Filter:    q["filter"],
 		Instance:  q.Get("instance"),
 		Silenced:  parseBool(q.Get("silenced"), false),
@@ -36,15 +45,54 @@ func (h *AlertsHandler) List(w http.ResponseWriter, r *http.Request) {
 		Active:    parseBool(q.Get("active"), true),
 	}
 
-	alerts, err := h.pool.GetAggregatedAlerts(r.Context(), params)
+	// Parse view-layer params.
+	groupBy := q["group_by"]
+	// Convenience: allow comma-separated values in a single param
+	groupBy = splitCommaSeparated(groupBy)
+
+	severity := q["severity"]
+	severity = splitCommaSeparated(severity)
+
+	status := q["status"]
+	status = splitCommaSeparated(status)
+
+	limit, _ := strconv.Atoi(q.Get("limit"))
+	offset, _ := strconv.Atoi(q.Get("offset"))
+
+	params := alertmanager.AlertsViewParams{
+		AlertsQueryParams: base,
+		GroupBy:           groupBy,
+		Severity:          severity,
+		Status:            status,
+		Limit:             limit,
+		Offset:            offset,
+	}
+
+	resp, err := h.pool.GetAlertsView(r.Context(), params)
 	if err != nil {
 		writeError(w, err.Error(), http.StatusBadGateway)
 		return
 	}
-	if alerts == nil {
-		alerts = []alertmanager.EnrichedAlert{}
+	writeJSON(w, resp)
+}
+
+// splitCommaSeparated expands any comma-separated values within the slice and
+// trims whitespace, so both ?group_by=severity,status and
+// ?group_by=severity&group_by=status work.
+func splitCommaSeparated(vals []string) []string {
+	if len(vals) == 0 {
+		return vals
 	}
-	writeJSON(w, alerts)
+	var out []string
+	for _, v := range vals {
+		for _, part := range strings.Split(v, ",") {
+			part = strings.TrimSpace(part)
+			if part != "" {
+				out = append(out, part)
+			}
+		}
+	}
+	return out
 }
 
 func parseBool(s string, def bool) bool {

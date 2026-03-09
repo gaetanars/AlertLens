@@ -101,6 +101,7 @@ func NewRouter(
 	cfgH    := handlers.NewConfigHandler(pool, ghPusher, glPusher)
 
 	// ─── Role middleware shorthands ──────────────────────────────────────────
+	requireViewer       := authSvc.RequireViewer
 	requireSilencer     := authSvc.RequireRole(auth.RoleSilencer)
 	requireConfigEditor := authSvc.RequireRole(auth.RoleConfigEditor)
 
@@ -117,8 +118,8 @@ func NewRouter(
 		// Alertmanager instances
 		r.Get("/alertmanagers", amH.List)
 
-		// Alerts (read-only, public)
-		r.Get("/alerts", alH.List)
+		// Alerts — viewer role minimum when auth is enabled; public otherwise.
+		r.With(requireViewer).Get("/alerts", alH.List)
 
 		// Silences:
 		//   read   → public (viewer-level, no token required)

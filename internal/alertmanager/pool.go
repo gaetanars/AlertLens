@@ -326,3 +326,148 @@ type EnrichedSilence struct {
 	Silence
 	Alertmanager string `json:"alertmanager"`
 }
+
+// ─── View-layer helpers ──────────────────────────────────────────────────────
+
+// GetAlertsView fetches, filters and groups alerts according to AlertsViewParams.
+// This is the main entry point for the alerts list/kanban API endpoint.
+func (p *Pool) GetAlertsView(ctx context.Context, params AlertsViewParams) (*AlertsResponse, error) {
+	// Step 1 – fetch raw enriched alerts from all matching instances.
+	raw, err := p.GetAggregatedAlerts(ctx, params.AlertsQueryParams)
+	if err != nil {
+		return nil, err
+	}
+
+	// Step 2 – apply view-layer filters (severity, status) not handled by AM.
+	filtered := applyViewFilters(raw, params)
+
+	// Step 3 – group.
+	groups := groupAlerts(filtered, params.GroupBy)
+
+	// Step 4 – total before pagination.
+	total := len(filtered)
+
+	// Step 5 – pagination across the flat list (within groups is too complex for MVP).
+	limit := params.Limit
+	if limit <= 0 {
+		limit = 500
+	}
+	if limit > 5000 {
+		limit = 5000
+	}
+	offset := params.Offset
+	if offset < 0 {
+		offset = 0
+	}
+
+	// Re-flatten, paginate, re-group.
+	if offset > 0 || len(filtered) > limit {
+		end := offset + limit
+		if offset >= len(filtered) {
+			filtered = nil
+		} else {
+			if end > len(filtered) {
+				end = len(filtered)
+			}
+			filtered = filtered[offset:end]
+		}
+		groups = groupAlerts(filtered, params.GroupBy)
+	}
+
+	return &AlertsResponse{
+		Groups: groups,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	}, nil
+}
+
+// applyViewFilters filters alerts by severity and status.
+func applyViewFilters(alerts []EnrichedAlert, params AlertsViewParams) []EnrichedAlert {
+	if len(params.Severity) == 0 && len(params.Status) == 0 {
+		return alerts
+	}
+
+	severitySet := make(map[string]struct{}, len(params.Severity))
+	for _, s := range params.Severity {
+		severitySet[s] = struct{}{}
+	}
+	statusSet := make(map[string]struct{}, len(params.Status))
+	for _, s := range params.Status {
+		statusSet[s] = struct{}{}
+	}
+
+	out := make([]EnrichedAlert, 0, len(alerts))
+	for _, a := range alerts {
+		if len(severitySet) > 0 {
+			sev := a.Labels["severity"]
+			if _, ok := severitySet[sev]; !ok {
+				continue
+			}
+		}
+		if len(statusSet) > 0 {
+			if _, ok := statusSet[a.Status.State]; !ok {
+				continue
+			}
+		}
+		out = append(out, a)
+	}
+	return out
+}
+
+// groupAlerts groups alerts by the provided label keys.
+// When groupBy is empty a single group with empty Labels is returned.
+func groupAlerts(alerts []EnrichedAlert, groupBy []string) []AlertGroup {
+	if len(groupBy) == 0 {
+		return []AlertGroup{{
+			Labels: map[string]string{},
+			Alerts: alerts,
+			Count:  len(alerts),
+		}}
+	}
+
+	type groupKey = string
+	order := []groupKey{}
+	index := map[groupKey]*AlertGroup{}
+
+	for _, a := range alerts {
+		key, labels := buildGroupKey(a, groupBy)
+		if _, exists := index[key]; !exists {
+			order = append(order, key)
+			g := &AlertGroup{Labels: labels, Alerts: []EnrichedAlert{}}
+			index[key] = g
+		}
+		g := index[key]
+		g.Alerts = append(g.Alerts, a)
+		g.Count++
+	}
+
+	groups := make([]AlertGroup, 0, len(order))
+	for _, k := range order {
+		groups = append(groups, *index[k])
+	}
+	return groups
+}
+
+// buildGroupKey builds a stable string key and the label map for a group.
+// Special virtual key "alertmanager" maps to EnrichedAlert.Alertmanager.
+func buildGroupKey(a EnrichedAlert, groupBy []string) (string, map[string]string) {
+	labels := make(map[string]string, len(groupBy))
+	key := ""
+	for i, k := range groupBy {
+		var v string
+		if k == "alertmanager" {
+			v = a.Alertmanager
+		} else if k == "status" {
+			v = a.Status.State
+		} else {
+			v = a.Labels[k]
+		}
+		labels[k] = v
+		if i > 0 {
+			key += "\x00"
+		}
+		key += k + "=" + v
+	}
+	return key, labels
+}

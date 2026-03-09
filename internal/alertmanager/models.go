@@ -121,11 +121,52 @@ type InstanceStatus struct {
 
 // AlertsQueryParams contains query parameters for fetching alerts.
 type AlertsQueryParams struct {
-	Filter   []string // Alertmanager matcher strings
-	Instance string   // filter to a single instance name
-	Silenced bool
+	Filter    []string // Alertmanager matcher strings
+	Instance  string   // filter to a single instance name
+	Silenced  bool
 	Inhibited bool
-	Active   bool
+	Active    bool
+}
+
+// AlertsViewParams extends AlertsQueryParams with view-layer options that are
+// applied by the API handler (not forwarded to Alertmanager).
+type AlertsViewParams struct {
+	AlertsQueryParams
+	// GroupBy holds label keys to group alerts by in the response.
+	// e.g. ["severity"], ["status"], ["alertmanager"], ["team","env"]
+	GroupBy []string
+	// Severity filters results to alerts whose "severity" label matches any of
+	// the provided values. Empty = no filter.
+	Severity []string
+	// Status filters by alert state: "active" | "suppressed" | "unprocessed"
+	// Empty = no filter.
+	Status []string
+	// Limit caps the number of alerts returned (default 500, max 5000).
+	Limit int
+	// Offset skips the first N alerts (for pagination).
+	Offset int
+}
+
+// AlertGroup represents a set of alerts sharing common label values.
+type AlertGroup struct {
+	// Labels are the grouping key-value pairs.
+	Labels map[string]string `json:"labels"`
+	// Alerts in this group.
+	Alerts []EnrichedAlert `json:"alerts"`
+	// Count is len(Alerts) for convenience.
+	Count int `json:"count"`
+}
+
+// AlertsResponse is the envelope returned by GET /api/v2/alerts.
+type AlertsResponse struct {
+	// Groups contains alerts arranged by the requested GroupBy keys.
+	// When GroupBy is empty there is a single group with empty Labels.
+	Groups []AlertGroup `json:"groups"`
+	// Total is the total number of alerts before pagination (after filtering).
+	Total int `json:"total"`
+	// Limit and Offset echo back the pagination params used.
+	Limit  int `json:"limit"`
+	Offset int `json:"offset"`
 }
 
 // SilenceQueryParams contains query parameters for fetching silences.
