@@ -23,6 +23,10 @@
 	});
 
 	function render(root: RouteNode) {
+		// SEC-XSS: resetting innerHTML to '' clears child nodes before D3 rebuilds
+		// the SVG. No user-controlled content is inserted here — all data from the
+		// API is injected via D3's .text() which sets textContent (not innerHTML),
+		// so it is automatically XSS-safe.
 		container.innerHTML = '';
 
 		const hierarchy = d3.hierarchy<RouteNode>(root, (d) => d.routes ?? []);
