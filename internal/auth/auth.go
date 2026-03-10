@@ -17,9 +17,11 @@ import (
 const tokenTTL = 24 * time.Hour
 
 // userEntry stores a hashed password and the role it grants.
+// totpSecret, if non-empty, enables TOTP MFA for this user.
 type userEntry struct {
-	hash []byte
-	role Role
+	hash       []byte
+	role       Role
+	totpSecret string // base32-encoded TOTP secret; empty = MFA disabled
 }
 
 // Service handles password verification and JWT lifecycle.
@@ -63,7 +65,11 @@ func NewServiceFromConfig(cfg config.AuthConfig) *Service {
 			continue
 		}
 		h := sha256.Sum256([]byte(u.Password))
-		svc.users = append(svc.users, userEntry{hash: h[:], role: r})
+		svc.users = append(svc.users, userEntry{
+			hash:       h[:],
+			role:       r,
+			totpSecret: u.TOTPSecret, // empty = MFA disabled for this user
+		})
 		if !svc.enabled {
 			// If no admin password is configured, derive the signing secret
 			// from the first user password found.
@@ -85,29 +91,48 @@ func NewService(password string) *Service {
 // AdminEnabled returns true if at least one user / password has been configured.
 func (s *Service) AdminEnabled() bool { return s.enabled }
 
-// roleForPassword performs a constant-time scan of all user entries and
-// returns the role for the first matching password hash, or "" if none match.
-func (s *Service) roleForPassword(password string) Role {
+// matchUser performs a constant-time scan of all user entries and returns the
+// first entry whose password hash matches.  Returns nil if no match.
+func (s *Service) matchUser(password string) *userEntry {
 	h := sha256.Sum256([]byte(password))
-	for _, u := range s.users {
+	for i := range s.users {
 		// SEC-01: constant-time comparison to prevent timing attacks.
-		if hmac.Equal(h[:], u.hash) {
-			return u.role
+		if hmac.Equal(h[:], s.users[i].hash) {
+			return &s.users[i]
 		}
 	}
-	return ""
+	return nil
 }
 
-// Login verifies the password and returns a signed JWT if correct.
-// The token carries a "role" claim reflecting the privilege level granted.
-func (s *Service) Login(password string) (string, time.Time, error) {
+// Login verifies the password (and optionally a TOTP code) and returns a
+// signed JWT if authentication succeeds.
+//
+// MFA behaviour:
+//   - If the matching user has a TOTP secret configured:
+//     • totpCode must be provided and valid, otherwise ErrMFARequired or
+//       ErrInvalidTOTP is returned (no token issued).
+//   - If the user has no TOTP secret, totpCode is ignored.
+//
+// The issued JWT carries a "role" claim reflecting the privilege level.
+func (s *Service) Login(password, totpCode string) (string, time.Time, error) {
 	if !s.enabled {
 		return "", time.Time{}, errors.New("admin mode is not enabled")
 	}
 
-	role := s.roleForPassword(password)
-	if role == "" {
+	u := s.matchUser(password)
+	if u == nil {
 		return "", time.Time{}, errors.New("invalid password")
+	}
+	role := u.role
+
+	// MFA validation — only enforced when a TOTP secret is configured.
+	if u.totpSecret != "" {
+		if totpCode == "" {
+			return "", time.Time{}, ErrMFARequired
+		}
+		if err := ValidateTOTP(u.totpSecret, totpCode); err != nil {
+			return "", time.Time{}, err // ErrInvalidTOTP or wrapped error
+		}
 	}
 
 	now := time.Now()

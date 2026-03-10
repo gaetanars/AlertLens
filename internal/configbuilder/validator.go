@@ -47,7 +47,8 @@ func Validate(rawYAML []byte) ValidationResult {
 		}
 	}
 
-	var warnings []string
+	// Use a non-nil slice so JSON always serialises as [] rather than null.
+	warnings := make([]string, 0)
 	if cfg.Route == nil {
 		warnings = append(warnings, "no route defined")
 	}

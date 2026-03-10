@@ -28,7 +28,7 @@ func TestNewService_WithPassword_AdminEnabled(t *testing.T) {
 
 func TestLogin_ValidPassword(t *testing.T) {
 	svc := NewService("hunter2")
-	token, exp, err := svc.Login("hunter2")
+	token, exp, err := svc.Login("hunter2", "")
 	if err != nil {
 		t.Fatalf("Login returned error: %v", err)
 	}
@@ -43,7 +43,7 @@ func TestLogin_ValidPassword(t *testing.T) {
 
 func TestLogin_InvalidPassword(t *testing.T) {
 	svc := NewService("hunter2")
-	_, _, err := svc.Login("wrongpassword")
+	_, _, err := svc.Login("wrongpassword", "")
 	if err == nil {
 		t.Error("expected error for wrong password")
 	}
@@ -51,7 +51,7 @@ func TestLogin_InvalidPassword(t *testing.T) {
 
 func TestLogin_AdminDisabled(t *testing.T) {
 	svc := NewService("")
-	_, _, err := svc.Login("anypassword")
+	_, _, err := svc.Login("anypassword", "")
 	if err == nil {
 		t.Error("expected error when admin mode is disabled")
 	}
@@ -59,7 +59,7 @@ func TestLogin_AdminDisabled(t *testing.T) {
 
 func TestLogin_TokenIsJWT(t *testing.T) {
 	svc := NewService("secret")
-	tokenStr, _, err := svc.Login("secret")
+	tokenStr, _, err := svc.Login("secret", "")
 	if err != nil {
 		t.Fatalf("Login: %v", err)
 	}
@@ -74,7 +74,7 @@ func TestLogin_TokenIsJWT(t *testing.T) {
 
 func TestValidate_ValidToken(t *testing.T) {
 	svc := NewService("secret")
-	tokenStr, _, err := svc.Login("secret")
+	tokenStr, _, err := svc.Login("secret", "")
 	if err != nil {
 		t.Fatalf("Login: %v", err)
 	}
@@ -113,7 +113,7 @@ func TestValidate_AdminDisabled(t *testing.T) {
 
 func TestValidate_TokenSignedWithDifferentSecret(t *testing.T) {
 	other := NewService("otherpassword")
-	tokenStr, _, err := other.Login("otherpassword")
+	tokenStr, _, err := other.Login("otherpassword", "")
 	if err != nil {
 		t.Fatalf("Login with other svc: %v", err)
 	}
@@ -174,7 +174,7 @@ func TestValidate_WrongSigningAlgorithm(t *testing.T) {
 
 func TestRevoke_ValidToken_SubsequentValidateFails(t *testing.T) {
 	svc := NewService("secret")
-	tokenStr, _, err := svc.Login("secret")
+	tokenStr, _, err := svc.Login("secret", "")
 	if err != nil {
 		t.Fatalf("Login: %v", err)
 	}
@@ -201,7 +201,7 @@ func TestRevoke_InvalidToken_NoPanic(t *testing.T) {
 
 func TestRevoke_TokenFromDifferentSecret_NoPanic(t *testing.T) {
 	other := NewService("other")
-	tokenStr, _, _ := other.Login("other")
+	tokenStr, _, _ := other.Login("other", "")
 
 	svc := NewService("secret")
 	svc.Revoke(tokenStr) // should not panic
@@ -209,7 +209,7 @@ func TestRevoke_TokenFromDifferentSecret_NoPanic(t *testing.T) {
 
 func TestRevoke_Idempotent(t *testing.T) {
 	svc := NewService("secret")
-	tokenStr, _, _ := svc.Login("secret")
+	tokenStr, _, _ := svc.Login("secret", "")
 
 	svc.Revoke(tokenStr)
 	svc.Revoke(tokenStr) // second revocation must not panic or change behaviour
@@ -231,7 +231,7 @@ func TestPurgeExpiredLocked_RemovesExpiredEntries(t *testing.T) {
 	svc.mu.Unlock()
 
 	// Trigger a revocation which calls purgeExpiredLocked internally.
-	tokenStr, _, _ := svc.Login("secret")
+	tokenStr, _, _ := svc.Login("secret", "")
 	svc.Revoke(tokenStr)
 
 	svc.mu.RLock()
@@ -245,7 +245,7 @@ func TestPurgeExpiredLocked_RemovesExpiredEntries(t *testing.T) {
 
 func TestPurgeExpiredLocked_KeepsActiveEntries(t *testing.T) {
 	svc := NewService("secret")
-	tokenStr, _, _ := svc.Login("secret")
+	tokenStr, _, _ := svc.Login("secret", "")
 	svc.Revoke(tokenStr)
 
 	// The just-revoked token's jti should still be in the set (not yet expired).
@@ -262,7 +262,7 @@ func TestPurgeExpiredLocked_KeepsActiveEntries(t *testing.T) {
 
 func TestLogin_AdminPassword_GrantsAdminRole(t *testing.T) {
 	svc := NewService("adminpass")
-	tokenStr, _, err := svc.Login("adminpass")
+	tokenStr, _, err := svc.Login("adminpass", "")
 	if err != nil {
 		t.Fatalf("Login: %v", err)
 	}

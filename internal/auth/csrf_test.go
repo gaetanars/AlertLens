@@ -43,7 +43,7 @@ func TestCSRF_SafeMethod_SetsCookieAndHeader(t *testing.T) {
 
 func TestCSRF_BearerRequest_SkipsValidation(t *testing.T) {
 	svc := NewService("secret")
-	tokenStr, _, _ := svc.Login("secret")
+	tokenStr, _, _ := svc.Login("secret", "")
 
 	handler := CSRFMiddleware(testCSRFSecret, false)(okHandler())
 
