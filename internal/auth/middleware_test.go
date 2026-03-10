@@ -58,7 +58,7 @@ func TestMiddleware_ValidToken_CallsNext(t *testing.T) {
 	})
 	handler := svc.Middleware(next)
 
-	tokenStr, _, err := svc.Login("secret")
+	tokenStr, _, err := svc.Login("secret", "")
 	if err != nil {
 		t.Fatalf("Login: %v", err)
 	}
@@ -78,7 +78,7 @@ func TestMiddleware_ValidToken_CallsNext(t *testing.T) {
 
 func TestMiddleware_RevokedToken_Returns401(t *testing.T) {
 	svc := NewService("secret")
-	tokenStr, _, _ := svc.Login("secret")
+	tokenStr, _, _ := svc.Login("secret", "")
 	svc.Revoke(tokenStr)
 
 	handler := svc.Middleware(okHandler())
@@ -94,7 +94,7 @@ func TestMiddleware_RevokedToken_Returns401(t *testing.T) {
 
 func TestMiddleware_ValidToken_SetsAdminContext(t *testing.T) {
 	svc := NewService("secret")
-	tokenStr, _, _ := svc.Login("secret")
+	tokenStr, _, _ := svc.Login("secret", "")
 
 	var adminInContext bool
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -228,7 +228,7 @@ func okHandler() http.Handler {
 
 func TestRequireRole_AdminToken_PassesAllRoles(t *testing.T) {
 	svc := NewService("secret") // NewService grants admin role
-	tokenStr, _, _ := svc.Login("secret")
+	tokenStr, _, _ := svc.Login("secret", "")
 
 	for _, required := range []Role{RoleViewer, RoleSilencer, RoleConfigEditor, RoleAdmin} {
 		called := false
@@ -254,7 +254,7 @@ func TestRequireRole_AdminToken_PassesAllRoles(t *testing.T) {
 
 func TestRequireRole_InsufficientRole_Returns403(t *testing.T) {
 	svc := NewService("secret")
-	tokenStr, _, _ := svc.Login("secret")
+	tokenStr, _, _ := svc.Login("secret", "")
 
 	// Manually forge a viewer token for testing (reuse internal package access).
 	// We cannot downgrade via Login since NewService only has admin.
@@ -264,7 +264,7 @@ func TestRequireRole_InsufficientRole_Returns403(t *testing.T) {
 
 func TestMiddleware_ValidToken_SetsRoleContext(t *testing.T) {
 	svc := NewService("secret")
-	tokenStr, _, _ := svc.Login("secret")
+	tokenStr, _, _ := svc.Login("secret", "")
 
 	var roleInContext Role
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

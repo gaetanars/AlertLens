@@ -1,0 +1,13 @@
+{
+  "name": "alertlens-e2e",
+  "version": "1.0.0",
+  "description": "AlertLens E2E security tests (ADR-005)",
+  "private": true,
+  "scripts": {
+    "test": "npx playwright test",
+    "test:report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}

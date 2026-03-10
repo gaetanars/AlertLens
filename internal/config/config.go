@@ -36,9 +36,12 @@ type AuthConfig struct {
 
 // UserConfig defines an additional role-bound user credential.
 // The Role field must be one of: viewer, silencer, config-editor, admin.
+// TOTPSecret, if non-empty, enables TOTP-based MFA for this user.  The value
+// must be a base32-encoded secret compatible with standard authenticator apps.
 type UserConfig struct {
-	Password string `yaml:"password"`
-	Role     string `yaml:"role"`
+	Password   string `yaml:"password"`
+	Role       string `yaml:"role"`
+	TOTPSecret string `yaml:"totp_secret,omitempty"`
 }
 
 type AlertmanagerConfig struct {

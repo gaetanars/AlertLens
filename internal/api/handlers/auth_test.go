@@ -67,7 +67,7 @@ func TestAuthHandler_Status_AdminEnabled_Authenticated(t *testing.T) {
 	svc := auth.NewService("secret")
 	h := NewAuthHandler(svc)
 
-	tokenStr, _, err := svc.Login("secret")
+	tokenStr, _, err := svc.Login("secret", "")
 	if err != nil {
 		t.Fatalf("Login: %v", err)
 	}
@@ -191,7 +191,7 @@ func TestAuthHandler_Logout_WithValidToken(t *testing.T) {
 	svc := auth.NewService("secret")
 	h := NewAuthHandler(svc)
 
-	tokenStr, _, _ := svc.Login("secret")
+	tokenStr, _, _ := svc.Login("secret", "")
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/logout", nil)
 	req.Header.Set("Authorization", "Bearer "+tokenStr)
 	rec := httptest.NewRecorder()

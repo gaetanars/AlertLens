@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 
@@ -37,17 +38,35 @@ func (h *AuthHandler) Status(w http.ResponseWriter, r *http.Request) {
 }
 
 // Login handles POST /api/auth/login.
+//
+// Request body:
+//
+//	{ "password": "...", "totp_code": "123456" }
+//
+// totp_code is required when the user's account has MFA enabled.
+// If the password is correct but MFA is required and totp_code is absent,
+// the response is 401 with { "error": "MFA challenge required", "mfa_required": true }.
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		Password string `json:"password"`
+		TOTPCode string `json:"totp_code"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		writeError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	token, exp, err := h.svc.Login(body.Password)
+	token, exp, err := h.svc.Login(body.Password, body.TOTPCode)
 	if err != nil {
+		if errors.Is(err, auth.ErrMFARequired) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]any{ //nolint:errcheck
+				"error":        err.Error(),
+				"mfa_required": true,
+			})
+			return
+		}
 		writeError(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
