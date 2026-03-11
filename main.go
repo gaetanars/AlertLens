@@ -19,6 +19,7 @@ import (
 	"github.com/alertlens/alertlens/internal/auth"
 	"github.com/alertlens/alertlens/internal/config"
 	"github.com/alertlens/alertlens/internal/gitops"
+	"github.com/alertlens/alertlens/internal/incident"
 )
 
 // version is injected at build time via -ldflags.
@@ -100,8 +101,11 @@ func main() {
 	}
 	frontendFS := http.FS(subFS)
 
+	// ─── Incident store (in-memory immutable ledger) ─────────────────────────
+	incidentStore := incident.NewStore()
+
 	// ─── HTTP router ─────────────────────────────────────────────────────────
-	router := api.NewRouter(pool, authSvc, ghPusher, glPusher, frontendFS, cfg.Server.CORSAllowedOrigins, cfg.Server.SecureCookies, version, logger)
+	router := api.NewRouter(pool, authSvc, ghPusher, glPusher, frontendFS, cfg.Server.CORSAllowedOrigins, cfg.Server.SecureCookies, version, logger, incidentStore)
 
 	// ─── HTTP server ─────────────────────────────────────────────────────────
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)

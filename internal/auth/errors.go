@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 )
 
@@ -33,5 +34,7 @@ func writeAuthError(w http.ResponseWriter, msg string, status int) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Write(body) //nolint:errcheck
+	if _, err := w.Write(body); err != nil {
+		log.Printf("failed to write auth error response: %v", err)
+	}
 }

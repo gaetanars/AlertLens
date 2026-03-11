@@ -12,6 +12,7 @@ import (
 	"github.com/alertlens/alertlens/internal/api/handlers"
 	"github.com/alertlens/alertlens/internal/auth"
 	"github.com/alertlens/alertlens/internal/gitops"
+	"github.com/alertlens/alertlens/internal/incident"
 )
 
 // maxRequestBodyBytes is the hard cap on incoming request bodies (10 MiB).
@@ -27,7 +28,7 @@ const maxRequestBodyBytes = 10 << 20 // 10 MiB
 //   - Blocking <object>, <embed> and <frame*> entirely.
 //   - Pinning base-uri and form-action to 'self'.
 const cspPolicy = "default-src 'self'; " +
-	"script-src 'self'; " +
+	"script-src 'self' 'unsafe-inline'; " +
 	"style-src 'self' 'unsafe-inline'; " +
 	"img-src 'self' data: blob:; " +
 	"font-src 'self'; " +
@@ -53,6 +54,7 @@ func NewRouter(
 	secureCookies bool,
 	version string,
 	logger *zap.Logger,
+	incidentStore *incident.Store,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -99,6 +101,10 @@ func NewRouter(
 	silH    := handlers.NewSilencesHandler(pool)
 	rtH     := handlers.NewRoutingHandler(pool)
 	cfgH    := handlers.NewConfigHandler(pool, ghPusher, glPusher)
+	bulkH   := handlers.NewBulkHandler(pool)
+	bldrH   := handlers.NewBuilderHandler(pool)
+	hubH    := handlers.NewHubHandler(pool, logger)
+	incH    := handlers.NewIncidentsHandler(incidentStore)
 
 	// ─── Role middleware shorthands ──────────────────────────────────────────
 	requireViewer       := authSvc.RequireViewer
@@ -117,6 +123,9 @@ func NewRouter(
 
 		// Alertmanager instances
 		r.Get("/alertmanagers", amH.List)
+
+		// Hub-and-spoke topology (aggregated view of all AM instances)
+		r.Get("/hub/topology", hubH.Topology)
 
 		// Alerts — viewer role minimum when auth is enabled; public otherwise.
 		r.With(requireViewer).Get("/alerts", alH.List)
@@ -139,6 +148,50 @@ func NewRouter(
 		r.With(requireConfigEditor).Post("/config/validate", cfgH.Validate)
 		r.With(requireConfigEditor).Post("/config/diff", cfgH.Diff)
 		r.With(requireConfigEditor).Post("/config/save", cfgH.Save)
+
+		// Structured config builder — CRUD for time intervals, receivers, routes.
+		// All endpoints require config-editor role and return {raw_yaml, validation}.
+		r.Route("/builder", func(r chi.Router) {
+			r.Use(requireConfigEditor)
+
+			// Time intervals
+			r.Get("/time-intervals", bldrH.ListTimeIntervals)
+			r.Post("/time-intervals/validate", bldrH.ValidateTimeInterval)
+			r.Get("/time-intervals/{name}", bldrH.GetTimeInterval)
+			r.Put("/time-intervals/{name}", bldrH.UpsertTimeInterval)
+			r.Delete("/time-intervals/{name}", bldrH.DeleteTimeInterval)
+
+			// Receivers
+			r.Get("/receivers", bldrH.ListReceivers)
+			r.Post("/receivers/validate", bldrH.ValidateReceiver)
+			r.Get("/receivers/{name}", bldrH.GetReceiver)
+			r.Put("/receivers/{name}", bldrH.UpsertReceiver)
+			r.Delete("/receivers/{name}", bldrH.DeleteReceiver)
+
+			// Root route
+			r.Get("/route", bldrH.GetRoute)
+			r.Put("/route", bldrH.SetRoute)
+
+			// Full config assembly + export (validate-only, no save)
+			r.Post("/export", bldrH.ExportConfig)
+		})
+
+		// Incidents — immutable-ledger lifecycle tracking (ADR-008).
+		//   read  → viewer role minimum
+		//   write → silencer role minimum (ACK/INVESTIGATING/RESOLVED require accountability)
+		r.Route("/incidents", func(r chi.Router) {
+			r.With(requireViewer).Get("/", incH.List)
+			r.With(requireSilencer).Post("/", incH.Create)
+			r.With(requireViewer).Get("/{id}", incH.Get)
+			r.With(requireViewer).Get("/{id}/timeline", incH.Timeline)
+			r.With(requireSilencer).Post("/{id}/events", incH.AddEvent)
+		})
+
+		// Bulk actions (ADR-007) — silencer role minimum.
+		// POST /api/v1/bulk: smart-merge silence/ack for multiple selected alerts.
+		r.Route("/v1", func(r chi.Router) {
+			r.With(requireSilencer).Post("/bulk", bulkH.Create)
+		})
 	})
 
 	// ─── SPA fallback ────────────────────────────────────────────────────────
@@ -175,7 +228,7 @@ func spaHandler(fs http.FileSystem) http.Handler {
 			// File not found → SPA client-side route, serve index.html.
 			r.URL.Path = "/"
 		} else {
-			f.Close()
+			_ = f.Close()
 		}
 		// Prevent the browser from caching index.html; hashed assets are fine.
 		if r.URL.Path == "/" {

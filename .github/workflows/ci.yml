@@ -27,8 +27,9 @@ jobs:
       - name: Run tests
         run: go test ./... -race -count=1 -cover
 
-  build-check:
-    name: Build check (frontend + Go)
+  build-and-e2e:
+    name: Build & E2E
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,10 +42,6 @@ jobs:
 
       - name: Install frontend deps
         run: npm ci
-        working-directory: web
-
-      - name: Run frontend tests
-        run: npm test
         working-directory: web
 
       - name: Build frontend
@@ -60,4 +57,19 @@ jobs:
         run: |
           CGO_ENABLED=0 go build \
             -ldflags="-s -w -X main.version=ci-check" \
-            -o /dev/null .
+            -o alertlens .
+
+      - name: Install Playwright
+        run: |
+          cd e2e
+          npm ci
+          npx playwright install --with-deps
+
+      - name: Start AlertLens
+        run: |
+          ./alertlens -config config.example.yaml &
+
+      - name: Run E2E
+        run: |
+          cd e2e
+          npx playwright test

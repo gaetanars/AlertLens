@@ -19,9 +19,15 @@ func NewRoutingHandler(pool *alertmanager.Pool) *RoutingHandler {
 	return &RoutingHandler{pool: pool}
 }
 
-// Get handles GET /api/routing?instance=<name>.
+// Get handles GET /api/routing?instance=<name>&annotate_alerts=true.
+//
+// When annotate_alerts=true the handler fetches live alerts from the instance
+// and annotates every route node with the count of alerts whose labels satisfy
+// that node's matchers.  The root node receives the total alert count; child
+// nodes receive the subset that matches their additional constraints.
 func (h *RoutingHandler) Get(w http.ResponseWriter, r *http.Request) {
 	instanceName := r.URL.Query().Get("instance")
+	annotate := r.URL.Query().Get("annotate_alerts") == "true"
 
 	client := resolveClient(h.pool, w, instanceName)
 	if client == nil {
@@ -40,9 +46,20 @@ func (h *RoutingHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	routeMap := routeToMap(cfg.Route)
+
+	if annotate {
+		// Fetch active alerts for annotation — failure is non-fatal; we log and
+		// return the tree without counts rather than error the whole request.
+		alerts, fetchErr := client.GetAlerts(r.Context(), alertmanager.AlertsQueryParams{Active: true})
+		if fetchErr == nil {
+			annotateRouteCounts(routeMap, alerts)
+		}
+	}
+
 	writeJSON(w, map[string]any{
 		"alertmanager": client.Name(),
-		"route":        routeToMap(cfg.Route),
+		"route":        routeMap,
 	})
 }
 
@@ -181,4 +198,99 @@ func routeMatchesLabels(route *amconfig.Route, labels map[string]string) bool {
 		}
 	}
 	return true
+}
+
+// ─── Alert count annotation ───────────────────────────────────────────────────
+
+// routeNodeMatcher is a lightweight matcher extracted from a routeToMap node.
+type routeNodeMatcher struct {
+	name    string
+	value   string
+	isRegex bool
+	isEqual bool
+}
+
+// annotateRouteCounts walks a routeToMap result (a nested map[string]any tree)
+// and adds "alert_count" and "severity_counts" fields to each node based on
+// how many of the provided alerts satisfy that node's matchers.
+//
+// The root node (which typically has no matchers) will receive the total alert
+// count.  Child nodes receive the subset of alerts whose labels satisfy their
+// own matchers — regardless of routing stop semantics, because for the
+// visualiser we want to show "which alerts flow through each branch" rather
+// than "which alerts are finally delivered here".
+func annotateRouteCounts(node map[string]any, alerts []alertmanager.Alert) {
+	var nodeMatchers []routeNodeMatcher
+	if raw, ok := node["matchers"].([]map[string]any); ok {
+		for _, m := range raw {
+			nm := routeNodeMatcher{
+				name:    mapStrVal(m, "name"),
+				value:   mapStrVal(m, "value"),
+				isEqual: true, // default
+			}
+			if v, ok := m["is_regex"].(bool); ok {
+				nm.isRegex = v
+			}
+			if v, ok := m["is_equal"].(bool); ok {
+				nm.isEqual = v
+			}
+			nodeMatchers = append(nodeMatchers, nm)
+		}
+	}
+
+	count := 0
+	severityCounts := map[string]int{}
+	for _, a := range alerts {
+		if nodeMatchesAlertLabels(nodeMatchers, a.Labels) {
+			count++
+			if sev := a.Labels["severity"]; sev != "" {
+				severityCounts[sev]++
+			}
+		}
+	}
+	node["alert_count"] = count
+	node["severity_counts"] = severityCounts
+
+	// Recurse into children.
+	if routes, ok := node["routes"].([]map[string]any); ok {
+		for _, child := range routes {
+			annotateRouteCounts(child, alerts)
+		}
+	}
+}
+
+// nodeMatchesAlertLabels returns true if all routeNodeMatchers are satisfied
+// by the given label set.  Empty matcher list = catch-all (always matches).
+func nodeMatchesAlertLabels(matchers []routeNodeMatcher, labels map[string]string) bool {
+	for _, m := range matchers {
+		val := labels[m.name]
+		if m.isRegex {
+			re, err := alertmanager.CachedRegex(m.value)
+			if err != nil {
+				return false // treat invalid regex as non-matching
+			}
+			matched := re.MatchString(val)
+			if m.isEqual && !matched {
+				return false
+			}
+			if !m.isEqual && matched {
+				return false
+			}
+		} else {
+			if m.isEqual && val != m.value {
+				return false
+			}
+			if !m.isEqual && val == m.value {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func mapStrVal(m map[string]any, key string) string {
+	if v, ok := m[key].(string); ok {
+		return v
+	}
+	return ""
 }

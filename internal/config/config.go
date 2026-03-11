@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -101,7 +102,13 @@ func Load(path string) (*Config, []string, error) {
 	cfg := defaults()
 
 	if path != "" {
-		data, err := os.ReadFile(path)
+		// Sanitize path to prevent directory traversal attacks.
+		// Use filepath.Clean to normalize the path and reject traversal attempts.
+		cleanPath := filepath.Clean(path)
+		if strings.HasPrefix(cleanPath, "..") || strings.Contains(cleanPath, "/..") {
+			return nil, nil, fmt.Errorf("invalid path: directory traversal detected in %q", path)
+		}
+		data, err := os.ReadFile(cleanPath)
 		if err != nil {
 			return nil, nil, fmt.Errorf("reading config file %q: %w", path, err)
 		}

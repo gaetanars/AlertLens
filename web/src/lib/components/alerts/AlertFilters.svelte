@@ -23,6 +23,8 @@
 	} from '$lib/stores/alerts';
 	import { Search, LayoutGrid, List, RefreshCw, X } from 'lucide-svelte';
 	import InstanceSelector from '$lib/components/alerts/InstanceSelector.svelte';
+	import { syncURLState, parseAlertURLState } from '$lib/utils/urlState';
+	import type { AlertURLState } from '$lib/utils/urlState';
 
 	let { onRefresh }: { onRefresh?: () => void } = $props();
 
@@ -39,14 +41,31 @@
 		{ value: 'alertname',    label: 'alertname' }
 	] as const;
 
+	// Initialize stores from URL on mount. This ensures URL params are applied
+	// even if the component remounts within the same page session.
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		const params = new URLSearchParams(window.location.search);
+		const s = parseAlertURLState(params);
+
+		filterQuery.set(s.q);
+		instanceFilter.set(s.instance);
+		severityFilter.set(s.severity);
+		statusFilter.set(s.status);
+		groupByLabel.set(s.groupBy);
+	});
+
 	// Toggle a severity filter value.
 	function toggleSeverity(sev: string) {
 		severityFilter.update((cur) => {
 			const next = new Set(cur);
 			if (next.has(sev)) next.delete(sev);
 			else next.add(sev);
-			return [...next];
+			const newState = [...next];
+			syncURLState({ ...currentURLState(), severity: newState }, false);
+			return newState;
 		});
+		loadAlerts();
 	}
 
 	// Toggle a status filter value.
@@ -55,8 +74,11 @@
 			const next = new Set(cur);
 			if (next.has(st)) next.delete(st);
 			else next.add(st);
-			return [...next];
+			const newState = [...next];
+			syncURLState({ ...currentURLState(), status: newState }, false);
+			return newState;
 		});
+		loadAlerts();
 	}
 
 	function clearAllFilters() {
@@ -64,6 +86,18 @@
 		instanceFilter.set('');
 		severityFilter.set([]);
 		statusFilter.set([]);
+		// Force sync URL after clearing.
+		syncURLState({
+			view:      $viewMode,
+			q:         '',
+			instance:  '',
+			severity:  [],
+			status:    [],
+			groupBy:   $groupByLabel,
+			sort:      currentURLState().sort,
+			sortDir:   currentURLState().sortDir,
+		}, false);
+		loadAlerts();
 	}
 
 	const hasActiveFilters = $derived(
@@ -81,6 +115,36 @@
 		warning:  'ring-2 ring-yellow-500',
 		info:     'ring-2 ring-blue-500'
 	};
+
+	// Helper to get current URL state for `syncURLState` calls.
+	function currentURLState(): AlertURLState {
+		const params = new URLSearchParams(window.location.search);
+		return parseAlertURLState(params);
+	}
+
+	// Bindings for direct input changes (q, instance, groupBy).
+	function onQueryChange(e: Event) {
+		filterQuery.set((e.target as HTMLInputElement).value);
+		syncURLState({ ...currentURLState(), q: $filterQuery }, false);
+		loadAlerts();
+	}
+
+	function onInstanceChange(instance: string) {
+		instanceFilter.set(instance);
+		syncURLState({ ...currentURLState(), instance }, false);
+		loadAlerts();
+	}
+
+	function onGroupByChange(e: Event) {
+		groupByLabel.set((e.target as HTMLSelectElement).value);
+		syncURLState({ ...currentURLState(), groupBy: $groupByLabel }, false);
+		loadAlerts();
+	}
+
+	function onViewModeChange(mode: 'kanban' | 'list') {
+		viewMode.set(mode);
+		syncURLState({ ...currentURLState(), view: $viewMode }, true); // Push state for view changes
+	}
 </script>
 
 <div class="flex flex-col gap-3 mb-4">
@@ -92,16 +156,17 @@
 			<input
 				type="text"
 				placeholder='e.g. severity="critical", env=~"prod.*"'
-				bind:value={$filterQuery}
+				value={$filterQuery}
+				oninput={onQueryChange}
 				class="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 			/>
 		</div>
 
 		<!-- Instance filter -->
 		<InstanceSelector
-			bind:value={$instanceFilter}
+			value={$instanceFilter}
 			instances={$instances}
-			onChange={() => loadAlerts()}
+			onChange={onInstanceChange}
 		/>
 
 		<!-- Group by (kanban mode) -->
@@ -110,7 +175,8 @@
 				<label for="groupby" class="text-sm text-muted-foreground whitespace-nowrap">Group by</label>
 				<select
 					id="groupby"
-					bind:value={$groupByLabel}
+					value={$groupByLabel}
+					onchange={onGroupByChange}
 					class="px-3 py-1.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 				>
 					{#each GROUP_BY_OPTIONS as opt}
@@ -123,7 +189,7 @@
 		<!-- View toggle -->
 		<div class="flex rounded-md border overflow-hidden" role="group" aria-label="View mode">
 			<button
-				onclick={() => viewMode.set('kanban')}
+				onclick={() => onViewModeChange('kanban')}
 				aria-pressed={$viewMode === 'kanban'}
 				aria-label="Kanban view"
 				title="Kanban view"
@@ -134,7 +200,7 @@
 				<LayoutGrid class="h-4 w-4" />
 			</button>
 			<button
-				onclick={() => viewMode.set('list')}
+				onclick={() => onViewModeChange('list')}
 				aria-pressed={$viewMode === 'list'}
 				aria-label="List view"
 				title="List view"

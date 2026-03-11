@@ -106,6 +106,137 @@ export interface RouteNode {
 	mute_time_intervals?: string[];
 	active_time_intervals?: string[];
 	routes: RouteNode[];
+	/** Number of active alerts that match this node's matchers (populated when annotate_alerts=true). */
+	alert_count?: number;
+	/** Per-severity alert counts for this node (populated when annotate_alerts=true). */
+	severity_counts?: Record<string, number>;
+}
+
+// ─── Hub topology types ───────────────────────────────────────────────────────
+
+/** Per-instance statistics returned by GET /api/hub/topology. */
+export interface SpokeStats {
+	name: string;
+	url: string;
+	healthy: boolean;
+	version: string;
+	error?: string;
+	alert_count: number;
+	active_count: number;
+	suppressed_count: number;
+	severity_counts: Record<string, number>;
+}
+
+/** Hub-level aggregate stats. */
+export interface HubStats {
+	name: string;
+	total_instances: number;
+	healthy_instances: number;
+	total_alerts: number;
+	critical_alerts: number;
+}
+
+/** Response envelope for GET /api/hub/topology. */
+export interface HubTopology {
+	hub: HubStats;
+	spokes: SpokeStats[];
+}
+
+// ─── Incident tracking types ─────────────────────────────────────────────────
+
+/**
+ * Lifecycle status of an incident.
+ * Valid transitions enforced by the backend state machine:
+ *   OPEN → ACK | INVESTIGATING | RESOLVED
+ *   ACK  → INVESTIGATING | RESOLVED | OPEN (reopen)
+ *   INVESTIGATING → RESOLVED | OPEN (reopen)
+ *   RESOLVED → OPEN (reopen)
+ */
+export type IncidentStatus = 'OPEN' | 'ACK' | 'INVESTIGATING' | 'RESOLVED';
+
+/** Classifies each entry in the immutable event ledger. */
+export type IncidentEventKind =
+	| 'CREATED'
+	| 'ACK'
+	| 'INVESTIGATING'
+	| 'RESOLVED'
+	| 'REOPENED'
+	| 'COMMENT';
+
+/** Single immutable entry in the incident event ledger. */
+export interface IncidentEvent {
+	/** 1-based sequence number within the incident. */
+	seq: number;
+	kind: IncidentEventKind;
+	/** Status after this event (empty string for COMMENT events). */
+	status: IncidentStatus | '';
+	actor: string;
+	message?: string;
+	occurred_at: string; // ISO 8601
+}
+
+/** Full incident with complete event log. Returned by GET /api/incidents/{id}. */
+export interface Incident {
+	id: string;
+	title: string;
+	severity: string;
+	alert_fingerprint?: string;
+	alertmanager_instance?: string;
+	labels?: Record<string, string>;
+	status: IncidentStatus;
+	created_at: string;  // ISO 8601
+	updated_at: string;  // ISO 8601
+	resolved_at?: string; // ISO 8601
+	/** Complete immutable event log (timeline). */
+	events: IncidentEvent[];
+}
+
+/** Lightweight summary used in list responses (no event log). */
+export interface IncidentListItem {
+	id: string;
+	title: string;
+	severity: string;
+	alert_fingerprint?: string;
+	alertmanager_instance?: string;
+	labels?: Record<string, string>;
+	status: IncidentStatus;
+	created_at: string;
+	updated_at: string;
+	resolved_at?: string;
+	event_count: number;
+}
+
+/** Paginated list response from GET /api/incidents. */
+export interface ListIncidentsResponse {
+	incidents: IncidentListItem[];
+	total: number;
+	limit: number;
+	offset: number;
+}
+
+/** Timeline-only response from GET /api/incidents/{id}/timeline. */
+export interface IncidentTimelineResponse {
+	incident_id: string;
+	status: IncidentStatus;
+	events: IncidentEvent[];
+}
+
+/** Payload for POST /api/incidents. */
+export interface CreateIncidentRequest {
+	title: string;
+	severity: string;
+	alert_fingerprint?: string;
+	alertmanager_instance?: string;
+	labels?: Record<string, string>;
+	initial_message?: string;
+	created_by: string;
+}
+
+/** Payload for POST /api/incidents/{id}/events. */
+export interface AddEventRequest {
+	kind: Exclude<IncidentEventKind, 'CREATED'>;
+	actor: string;
+	message?: string;
 }
 
 export interface CreateSilenceRequest {

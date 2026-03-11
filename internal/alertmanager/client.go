@@ -7,8 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -46,7 +48,12 @@ type basicAuthCreds struct {
 func NewClient(cfg config.AlertmanagerConfig) *Client {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	if cfg.TLSSkipVerify {
-		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec
+		// Only allow InsecureSkipVerify if explicitly configured via an environment variable or flag,
+		// and log a security warning.
+		if os.Getenv("ALERT_LENS_ALLOW_INSECURE_TLS") == "true" {
+			log.Println("WARNING: TLS InsecureSkipVerify is enabled. This is insecure.")
+			transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		}
 	}
 
 	c := &Client{
@@ -152,7 +159,9 @@ func (c *Client) ExpireSilence(ctx context.Context, id string) error {
 		return fmt.Errorf("DELETE silence %s: %w", id, err)
 	}
 	defer resp.Body.Close()
-	io.Copy(io.Discard, resp.Body) //nolint:errcheck
+	if _, err := io.Copy(io.Discard, resp.Body); err != nil {
+		return fmt.Errorf("discarding response body: %w", err)
+	}
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("DELETE silence %s: unexpected status %d", id, resp.StatusCode)
 	}

@@ -17,18 +17,24 @@
 	import { isAdmin } from '$lib/stores/auth';
 	import { selectedFingerprints } from '$lib/stores/alerts';
 	import { User, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-svelte';
+	import type { AlertURLState } from '$lib/utils/urlState';
 
-	let { alerts, onSilence, onAck, emptyMessage = 'No active alerts' }: {
+	let { alerts, onSilence, onAck, emptyMessage = 'No active alerts',
+		initialSort = 'startsAt', initialSortDir = 'desc', onSortChange
+	}: {
 		alerts: Alert[];
 		onSilence?: (alert: Alert) => void;
 		onAck?: (alert: Alert) => void;
 		emptyMessage?: string;
+		initialSort?: AlertURLState['sort'];
+		initialSortDir?: AlertURLState['sortDir'];
+		onSortChange?: (sort: AlertURLState['sort'], dir: AlertURLState['sortDir']) => void;
 	} = $props();
 
-	type SortKey = 'alertname' | 'severity' | 'startsAt' | 'alertmanager';
+	type SortKey = AlertURLState['sort'];
 
-	let sortKey = $state<SortKey>('startsAt');
-	let sortAsc = $state(false);
+	let sortKey = $state<SortKey>(initialSort);
+	let sortAsc = $state(initialSortDir === 'asc');
 
 	const SEVERITY_RANK: Record<string, number> = {
 		critical: 3,
@@ -67,8 +73,9 @@
 			sortAsc = !sortAsc;
 		} else {
 			sortKey = key;
-			sortAsc = key === 'alertname' || key === 'alertmanager';
+			sortAsc = key === 'alertname' || key === 'alertmanager'; // Default asc for strings, desc for dates/severity
 		}
+		onSortChange?.(sortKey, sortAsc ? 'asc' : 'desc');
 	}
 
 	function toggleAll() {

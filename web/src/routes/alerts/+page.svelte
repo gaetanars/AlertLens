@@ -13,7 +13,11 @@
 		loadAlerts,
 		loadInstances,
 		selectedFingerprints,
-		groupByLabel
+		groupByLabel,
+		filterQuery,
+		instanceFilter,
+		severityFilter,
+		statusFilter,
 	} from '$lib/stores/alerts';
 	import AlertFilters from '$lib/components/alerts/AlertFilters.svelte';
 	import AlertKanban from '$lib/components/alerts/AlertKanban.svelte';
@@ -21,6 +25,8 @@
 	import AlertBulkActions from '$lib/components/alerts/AlertBulkActions.svelte';
 	import SilenceForm from '$lib/components/silences/SilenceForm.svelte';
 	import AckForm from '$lib/components/silences/AckForm.svelte';
+	import { parseAlertURLState, syncURLState } from '$lib/utils/urlState';
+	import type { AlertURLState } from '$lib/utils/urlState';
 	import type { Alert, Matcher } from '$lib/api/types';
 
 	let silenceAlert = $state<Alert | null>(null);
@@ -29,16 +35,89 @@
 	let bulkAckMatchers = $state<Matcher[]>([]);
 	let modal: 'silence' | 'ack' | 'bulk-silence' | 'bulk-ack' | null = $state(null);
 
+	// List-view sort state (also synced to URL).
+	let listSort    = $state<AlertURLState['sort']>('startsAt');
+	let listSortDir = $state<AlertURLState['sortDir']>('desc');
+
 	let pollingInterval: ReturnType<typeof setInterval>;
 
+	/** True while we're applying URL params on initial mount (suppress re-entrant URL writes). */
+	let initialising = true;
+
+	// ─── URL → store initialisation ──────────────────────────────────────────
+
 	onMount(() => {
+		// 1. Parse URL params and hydrate all stores.
+		const params = new URLSearchParams(window.location.search);
+		const s = parseAlertURLState(params);
+
+		viewMode.set(s.view);
+		filterQuery.set(s.q);
+		instanceFilter.set(s.instance);
+		severityFilter.set(s.severity);
+		statusFilter.set(s.status);
+		groupByLabel.set(s.groupBy);
+		listSort    = s.sort;
+		listSortDir = s.sortDir;
+
+		initialising = false;
+
+		// 2. Load data.
 		loadInstances();
 		loadAlerts();
-		// ADR-004: 30-second polling interval.
+
+		// 3. ADR-004: 30-second polling.
 		pollingInterval = setInterval(loadAlerts, 30_000);
+
+		// 4. Handle browser Back/Forward restoring a previous URL state.
+		const onPop = () => {
+			const ps = parseAlertURLState(new URLSearchParams(window.location.search));
+			viewMode.set(ps.view);
+			filterQuery.set(ps.q);
+			instanceFilter.set(ps.instance);
+			severityFilter.set(ps.severity);
+			statusFilter.set(ps.status);
+			groupByLabel.set(ps.groupBy);
+			listSort    = ps.sort;
+			listSortDir = ps.sortDir;
+		};
+		window.addEventListener('popstate', onPop);
+
+		return () => window.removeEventListener('popstate', onPop);
 	});
 
 	onDestroy(() => clearInterval(pollingInterval));
+
+	// ─── Store → URL sync (runs whenever derived state changes) ─────────────
+
+	function currentURLState(): AlertURLState {
+		return {
+			view:     $viewMode,
+			q:        $filterQuery,
+			instance: $instanceFilter,
+			severity: $severityFilter,
+			status:   $statusFilter,
+			groupBy:  $groupByLabel,
+			sort:     listSort,
+			sortDir:  listSortDir,
+		};
+	}
+
+	// Sync URL whenever filter stores change (replaceState — no history entry).
+	$effect(() => {
+		// Access reactive stores so Svelte tracks them.
+		void $filterQuery; void $instanceFilter; void $severityFilter;
+		void $statusFilter; void $groupByLabel;
+		if (!initialising) syncURLState(currentURLState(), false);
+	});
+
+	// View-mode changes get a pushState so Back/Forward work.
+	$effect(() => {
+		void $viewMode;
+		if (!initialising) syncURLState(currentURLState(), true);
+	});
+
+	// ─── Modal helpers ───────────────────────────────────────────────────────
 
 	function openSilence(alert: Alert) { silenceAlert = alert; modal = 'silence'; }
 	function openAck(alert: Alert)     { ackAlert = alert;     modal = 'ack'; }
@@ -58,7 +137,16 @@
 		modal = 'bulk-ack';
 	}
 
-	// Pagination helpers.
+	// ─── List-view sort callbacks ─────────────────────────────────────────────
+
+	function onSortChange(sort: AlertURLState['sort'], dir: AlertURLState['sortDir']) {
+		listSort    = sort;
+		listSortDir = dir;
+		if (!initialising) syncURLState(currentURLState(), false);
+	}
+
+	// ─── Pagination ───────────────────────────────────────────────────────────
+
 	function prevPage() {
 		alertsOffset.update((o) => Math.max(0, o - $alertsLimit));
 		loadAlerts();
@@ -126,6 +214,9 @@
 {:else}
 	<AlertList
 		alerts={$filteredAlerts}
+		initialSort={listSort}
+		initialSortDir={listSortDir}
+		onSortChange={onSortChange}
 		onSilence={openSilence}
 		onAck={openAck}
 	/>

@@ -283,6 +283,13 @@ var regexCache sync.Map // map[string]*regexp.Regexp
 // cachedRegex returns a compiled *regexp.Regexp for the given pattern,
 // reusing a previously compiled instance when available.
 func cachedRegex(pattern string) (*regexp.Regexp, error) {
+	return CachedRegex(pattern)
+}
+
+// CachedRegex is the exported variant of cachedRegex, used by other packages
+// (e.g. API handlers) that need to match labels against route node matchers
+// without duplicating the cache.
+func CachedRegex(pattern string) (*regexp.Regexp, error) {
 	if v, ok := regexCache.Load(pattern); ok {
 		return v.(*regexp.Regexp), nil
 	}

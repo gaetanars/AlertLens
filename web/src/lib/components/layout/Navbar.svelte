@@ -4,13 +4,15 @@
 	import { isAdmin, canEditConfig, canSilence, authStore } from '$lib/stores/auth';
 	import { logout } from '$lib/api/auth';
 	import { instances } from '$lib/stores/alerts';
-	import { GitBranch, Volume2, Settings, LogOut, LogIn, Sun, Moon, Bell } from 'lucide-svelte';
+	import { GitBranch, Volume2, Settings, LogOut, LogIn, Sun, Moon, Bell, AlertTriangle } from 'lucide-svelte';
 	import { mode, toggleMode } from 'mode-watcher';
+	import { activeIncidentCount } from '$lib/stores/incidents';
 
 	const navItems = [
-		{ href: '/alerts',   label: 'Alerts',       icon: Bell },
-		{ href: '/silences', label: 'Silences',       icon: Volume2 },
-		{ href: '/routing',  label: 'Routing Tree',   icon: GitBranch },
+		{ href: '/alerts',    label: 'Alerts',       icon: Bell },
+		{ href: '/silences',  label: 'Silences',      icon: Volume2 },
+		{ href: '/routing',   label: 'Routing Tree',  icon: GitBranch },
+		{ href: '/incidents', label: 'Incidents',     icon: AlertTriangle },
 	];
 
 	async function handleLogout() {
@@ -48,13 +50,21 @@
 				{@const NavIcon = item.icon}
 				<a
 					href={item.href}
-					class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+					class="relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors
 						{page.url.pathname.startsWith(item.href)
 							? 'bg-accent text-accent-foreground'
 							: 'text-muted-foreground hover:text-foreground hover:bg-accent/50'}"
 				>
 					<NavIcon class="h-4 w-4" />
 					{item.label}
+					{#if item.href === '/incidents' && $activeIncidentCount > 0}
+						<span
+							class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center
+								rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1"
+						>
+							{$activeIncidentCount}
+						</span>
+					{/if}
 				</a>
 			{/each}
 			{#if $canEditConfig}

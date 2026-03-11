@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"time"
 
@@ -61,10 +62,12 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, auth.ErrMFARequired) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]any{ //nolint:errcheck
+			if err := json.NewEncoder(w).Encode(map[string]any{
 				"error":        err.Error(),
 				"mfa_required": true,
-			})
+			}); err != nil {
+				log.Printf("failed to encode MFA response: %v", err)
+			}
 			return
 		}
 		writeError(w, err.Error(), http.StatusUnauthorized)
@@ -90,7 +93,9 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 func writeJSON(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(v) //nolint:errcheck
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		log.Printf("failed to encode JSON response: %v", err)
+	}
 }
 
 // writeJSONStatus writes v as JSON with an explicit HTTP status code.
@@ -99,12 +104,16 @@ func writeJSON(w http.ResponseWriter, v any) {
 func writeJSONStatus(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v) //nolint:errcheck
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		log.Printf("failed to encode JSON response: %v", err)
+	}
 }
 
 func writeError(w http.ResponseWriter, msg string, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(map[string]string{"error": msg}) //nolint:errcheck
+	if err := json.NewEncoder(w).Encode(map[string]string{"error": msg}); err != nil {
+		log.Printf("failed to encode error response: %v", err)
+	}
 }
 

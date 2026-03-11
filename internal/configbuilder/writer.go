@@ -22,15 +22,15 @@ func WriteToFile(path string, content []byte) error {
 	tmpName := tmp.Name()
 	defer func() {
 		// Clean up temp file if rename failed.
-		os.Remove(tmpName) //nolint:errcheck
+		_ = os.Remove(tmpName)
 	}()
 
 	if _, err := tmp.Write(content); err != nil {
-		tmp.Close()
+		_ = tmp.Close()
 		return fmt.Errorf("writing temp file: %w", err)
 	}
 	if err := tmp.Sync(); err != nil {
-		tmp.Close()
+		_ = tmp.Close()
 		return fmt.Errorf("syncing temp file: %w", err)
 	}
 	if err := tmp.Close(); err != nil {
@@ -64,7 +64,9 @@ func CallWebhook(ctx context.Context, webhookURL string, payload []byte) error {
 		return fmt.Errorf("calling webhook: %w", err)
 	}
 	defer resp.Body.Close()
-	io.Copy(io.Discard, resp.Body) //nolint:errcheck
+	if _, err := io.Copy(io.Discard, resp.Body); err != nil {
+		return fmt.Errorf("discarding webhook response body: %w", err)
+	}
 
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("webhook returned status %d", resp.StatusCode)

@@ -12,7 +12,7 @@
 	let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
 
 	const NODE_W = 220;
-	const NODE_H = 90;
+	const NODE_H = 96;  // slightly taller to accommodate alert count row
 	const GAP_X = 60;
 	const GAP_Y = 20;
 
@@ -145,6 +145,47 @@
 			.attr('font-size', 9)
 			.attr('fill', 'hsl(var(--primary))')
 			.text('continue');
+
+		// ── Alert count badge (top-left corner, when annotated) ───────────────
+		// Nodes with alert_count > 0 get a coloured pill showing the count.
+		node.filter((d) => (d.data.alert_count ?? 0) > 0)
+			.append('rect')
+			.attr('x', NODE_W - 46)
+			.attr('y', NODE_H - 18)
+			.attr('width', 38)
+			.attr('height', 14)
+			.attr('rx', 7)
+			.attr('fill', (d) => {
+				const sc = d.data.severity_counts ?? {};
+				if ((sc['critical'] ?? 0) > 0) return '#ef4444';
+				if ((sc['warning'] ?? 0) > 0)  return '#f59e0b';
+				return '#22c55e';
+			})
+			.attr('opacity', 0.9);
+
+		node.filter((d) => (d.data.alert_count ?? 0) > 0)
+			.append('text')
+			.attr('x', NODE_W - 27)
+			.attr('y', NODE_H - 8)
+			.attr('text-anchor', 'middle')
+			.attr('font-size', 8)
+			.attr('font-weight', 700)
+			.attr('fill', '#fff')
+			.text((d) => {
+				const cnt = d.data.alert_count!;
+				return cnt > 99 ? '99+' : `${cnt} alert${cnt !== 1 ? 's' : ''}`;
+			});
+
+		// Nodes with alert_count = 0 (annotated, but no match) get a subtle grey pill
+		node.filter((d) => d.data.alert_count === 0 && d.data.severity_counts !== undefined)
+			.append('text')
+			.attr('x', NODE_W - 27)
+			.attr('y', NODE_H - 8)
+			.attr('text-anchor', 'middle')
+			.attr('font-size', 8)
+			.attr('fill', 'hsl(var(--muted-foreground))')
+			.attr('opacity', 0.6)
+			.text('0 alerts');
 
 		// ── Time interval badges ──────────────────────────────────────────────
 		// Separator line — only on nodes that have at least one interval
