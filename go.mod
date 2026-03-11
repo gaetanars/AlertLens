@@ -8,7 +8,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-github/v66 v66.0.0
 	github.com/prometheus/alertmanager v0.27.0
-	github.com/sergi/go-diff v1.3.1
+	github.com/sergi/go-diff v1.4.0
 	github.com/xanzy/go-gitlab v0.115.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.24.0
@@ -16,11 +16,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require golang.org/x/sync v0.10.0 // indirect
+require golang.org/x/sync v0.10.0
 
 require (
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
-	github.com/pquerna/otp v1.5.0 // indirect
+	github.com/pquerna/otp v1.5.0
 )
 
 require (
