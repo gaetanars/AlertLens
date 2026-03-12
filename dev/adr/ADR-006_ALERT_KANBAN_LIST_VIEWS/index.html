@@ -12,7 +12,7 @@
         <meta name="author" content="Gaetan ARS">
       
       
-        <link rel="canonical" href="https://alertlens.github.io/AlertLens/stable/SECURITY_ARCHITECTURE_PHASE_1/">
+        <link rel="canonical" href="https://alertlens.github.io/AlertLens/stable/adr/ADR-006_ALERT_KANBAN_LIST_VIEWS/">
       
       
       
@@ -20,19 +20,19 @@
         
       
       
-      <link rel="icon" href="../assets/logo.png">
+      <link rel="icon" href="../../assets/logo.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
-        <title>SECURITY ARCHITECTURE PHASE 1 - AlertLens</title>
+        <title>ADR-006 — Alert Kanban / List Views with URL-synced State - AlertLens</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -51,7 +51,7 @@
       
     
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -75,6 +75,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#adr-006-alert-kanban-list-views-with-url-synced-state" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -89,9 +94,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="AlertLens" class="md-header__button md-logo" aria-label="AlertLens" data-md-component="logo">
+    <a href="../.." title="AlertLens" class="md-header__button md-logo" aria-label="AlertLens" data-md-component="logo">
       
-  <img src="../assets/logo.png" alt="logo">
+  <img src="../../assets/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -108,7 +113,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              SECURITY ARCHITECTURE PHASE 1
+              ADR-006 — Alert Kanban / List Views with URL-synced State
             
           </span>
         </div>
@@ -221,7 +226,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -240,7 +245,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../getting-started/" class="md-tabs__link">
+      <a href="../../getting-started/" class="md-tabs__link">
         
   
   
@@ -259,7 +264,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../configuration/" class="md-tabs__link">
+      <a href="../../configuration/" class="md-tabs__link">
         
   
   
@@ -280,7 +285,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../features/visualization/" class="md-tabs__link">
+        <a href="../../features/visualization/" class="md-tabs__link">
           
   
   
@@ -300,7 +305,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../deployment/docker/" class="md-tabs__link">
+        <a href="../../deployment/docker/" class="md-tabs__link">
           
   
   
@@ -318,7 +323,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../changelog/" class="md-tabs__link">
+      <a href="../../changelog/" class="md-tabs__link">
         
   
   
@@ -353,9 +358,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="AlertLens" class="md-nav__button md-logo" aria-label="AlertLens" data-md-component="logo">
+    <a href="../.." title="AlertLens" class="md-nav__button md-logo" aria-label="AlertLens" data-md-component="logo">
       
-  <img src="../assets/logo.png" alt="logo">
+  <img src="../../assets/logo.png" alt="logo">
 
     </a>
     AlertLens
@@ -382,7 +387,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -409,7 +414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
+      <a href="../../getting-started/" class="md-nav__link">
         
   
   
@@ -436,7 +441,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
+      <a href="../../configuration/" class="md-nav__link">
         
   
   
@@ -515,7 +520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/visualization/" class="md-nav__link">
+      <a href="../../features/visualization/" class="md-nav__link">
         
   
   
@@ -543,7 +548,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/silences/" class="md-nav__link">
+      <a href="../../features/silences/" class="md-nav__link">
         
   
   
@@ -571,7 +576,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/visual-ack/" class="md-nav__link">
+      <a href="../../features/visual-ack/" class="md-nav__link">
         
   
   
@@ -599,7 +604,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/config-builder/" class="md-nav__link">
+      <a href="../../features/config-builder/" class="md-nav__link">
         
   
   
@@ -686,7 +691,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deployment/docker/" class="md-nav__link">
+      <a href="../../deployment/docker/" class="md-nav__link">
         
   
   
@@ -714,7 +719,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deployment/binary/" class="md-nav__link">
+      <a href="../../deployment/binary/" class="md-nav__link">
         
   
   
@@ -742,7 +747,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deployment/kubernetes/" class="md-nav__link">
+      <a href="../../deployment/kubernetes/" class="md-nav__link">
         
   
   
@@ -777,7 +782,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../changelog/" class="md-nav__link">
+      <a href="../../changelog/" class="md-nav__link">
         
   
   
@@ -814,6 +819,127 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#url-parameter-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        URL parameter contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-responsibilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component responsibilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#url-update-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        URL update strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Consequences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#positive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Positive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#negative-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Negative / Trade-offs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternatives considered
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -830,7 +956,7 @@
 
 
   
-    <a href="https://github.com/AlertLens/AlertLens/edit/main/docs/SECURITY_ARCHITECTURE_PHASE_1.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/AlertLens/AlertLens/edit/main/docs/adr/ADR-006_ALERT_KANBAN_LIST_VIEWS.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -838,15 +964,161 @@
   
 
 
-  <h1>SECURITY ARCHITECTURE PHASE 1</h1>
-
-<p>I have successfully designed the security architecture for Phase 1 of the AlertLens project, addressing the GitHub issues #30, #31, #32, and #33.</p>
-<p>I have created a detailed architecture document titled <code>SECURITY_ARCHITECTURE_PHASE_1.md</code> which includes:
-*   <strong>Prevention of YAML injection</strong> in Alertmanager configurations, recommending schema validation, secure parsers, containerization with minimal privileges, and static analysis.
-*   <strong>Prevention of authentication bypass</strong>, proposing MFA, OAuth2/OIDC, rate limiting, and secure JWTs with short lifespans.
-*   <strong>Protection against CSRF</strong>, detailing the use of synchronizer tokens, SameSite cookies, and Referer/Origin header validation.
-*   <strong>Protection against XSS</strong>, through strict output encoding, a restrictive Content Security Policy (CSP), and avoiding unsafe DOM manipulation.</p>
-<p>This document provides specific technical solutions for each identified security concern.</p>
+<h1 id="adr-006-alert-kanban-list-views-with-url-synced-state">ADR-006 — Alert Kanban / List Views with URL-synced State<a class="headerlink" href="#adr-006-alert-kanban-list-views-with-url-synced-state" title="Permanent link">&para;</a></h1>
+<p><strong>Status:</strong> Accepted<br />
+<strong>Date:</strong> 2026-03-10<br />
+<strong>Deciders:</strong> AlertLens core team  </p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>AlertLens displays active Prometheus Alertmanager alerts on a single page (<code>/alerts</code>).
+Two view modes are needed:</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Use-case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kanban</td>
+<td>At-a-glance grouped view (by severity, status, team…). Preferred for NOC dashboards.</td>
+</tr>
+<tr>
+<td>List</td>
+<td>Dense sortable table. Preferred for investigating large alert floods.</td>
+</tr>
+</tbody>
+</table>
+<p>Users reported that:</p>
+<ol>
+<li>Refreshing the browser resets the view mode to Kanban (the default), losing filter state.</li>
+<li>Sharing a URL with a colleague does not preserve the selected view, filters, or sort order.</li>
+<li>The group-by label and sort column/direction are not bookmarkable.</li>
+</ol>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p><strong>Persist all user-facing view state in the URL search params</strong> so that:</p>
+<ul>
+<li>Hard-refreshing the page restores the exact view.</li>
+<li>Copying and sharing the URL reproduces the same filtered, sorted view.</li>
+<li>The browser Back/Forward buttons navigate between meaningfully different filter states.</li>
+</ul>
+<h3 id="url-parameter-contract">URL parameter contract<a class="headerlink" href="#url-parameter-contract" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Type</th>
+<th>Default</th>
+<th>Affects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>view</code></td>
+<td><code>kanban</code> | <code>list</code></td>
+<td><code>kanban</code></td>
+<td>Which component is rendered</td>
+</tr>
+<tr>
+<td><code>q</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Free-text / matcher filter</td>
+</tr>
+<tr>
+<td><code>instance</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Instance selector</td>
+</tr>
+<tr>
+<td><code>severity</code></td>
+<td>comma-separated string list</td>
+<td><code>""</code></td>
+<td>Severity chip filter</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>comma-separated string list</td>
+<td><code>""</code></td>
+<td>Status chip filter</td>
+</tr>
+<tr>
+<td><code>groupBy</code></td>
+<td>string</td>
+<td><code>severity</code></td>
+<td>Kanban group-by label</td>
+</tr>
+<tr>
+<td><code>sort</code></td>
+<td><code>alertname\|severity\|startsAt\|alertmanager</code></td>
+<td><code>startsAt</code></td>
+<td>List sort column</td>
+</tr>
+<tr>
+<td><code>sortDir</code></td>
+<td><code>asc</code> | <code>desc</code></td>
+<td><code>desc</code></td>
+<td>List sort direction</td>
+</tr>
+</tbody>
+</table>
+<p>URL changes are pushed with <code>replaceState</code> (no new history entries for incremental
+filter changes) so the history stack is not polluted. Navigating <em>between</em> views
+(<code>kanban</code> ↔ <code>list</code>) uses <code>pushState</code> to allow Back/Forward.</p>
+<h3 id="component-responsibilities">Component responsibilities<a class="headerlink" href="#component-responsibilities" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>AlertFilters.svelte</code></strong> — reads initial state from URL on mount; writes back to URL on every change.</li>
+<li><strong><code>AlertList.svelte</code></strong> — reads <code>sort</code> / <code>sortDir</code> from URL on mount; writes back on column click.</li>
+<li><strong><code>+page.svelte</code></strong> — reads <code>view</code> param on mount and whenever the URL changes.</li>
+<li><strong><code>alerts</code> store</strong> — remains the single source of truth for data; filter/view state stores are initialised from URL params instead of hard-coded defaults.</li>
+</ul>
+<h3 id="url-update-strategy">URL update strategy<a class="headerlink" href="#url-update-strategy" title="Permanent link">&para;</a></h3>
+<p>SvelteKit's <code>goto(url, { replaceState: true, keepFocus: true, noScroll: true })</code> is
+used from within SvelteKit components. For components that cannot easily import
+<code>goto</code>, <code>history.replaceState</code> / <code>history.pushState</code> are used directly — safe
+because the app is served as a single-page application (static adapter, <code>index.html</code>
+fallback).</p>
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
+<h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Shareable, bookmarkable URLs for every filter/view combination.</li>
+<li>Browser reload is idempotent — same URL = same view.</li>
+<li>No additional storage (localStorage, cookies) required.</li>
+<li>Aligns with the project's "no persistent local state" principle (CLAUDE.md).</li>
+</ul>
+<h3 id="negative-trade-offs">Negative / Trade-offs<a class="headerlink" href="#negative-trade-offs" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Incremental filter changes modify the URL, which may feel noisy in the address bar.
+  Mitigated by <code>replaceState</code> (no history entries).</li>
+<li>URL length can grow when many filters are active. Acceptable for the expected filter cardinality.</li>
+<li>Alert sort state (column + direction) is only stored in the URL for list view;
+  kanban view does not sort.</li>
+</ul>
+<h2 id="alternatives-considered">Alternatives considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Alternative</th>
+<th>Rejected because</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>localStorage</code></td>
+<td>Breaks shared URLs; violates the "no persistent state" rule.</td>
+</tr>
+<tr>
+<td>Svelte store with <code>sessionStorage</code></td>
+<td>Same sharing problem.</td>
+</tr>
+<tr>
+<td>No persistence (current state)</td>
+<td>Breaks reload and sharing — the root bug.</td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -920,10 +1192,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.instant", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.action.edit"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.instant", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

@@ -12,29 +12,27 @@
         <meta name="author" content="Gaetan ARS">
       
       
-        <link rel="canonical" href="https://alertlens.github.io/AlertLens/stable/changelog/">
+        <link rel="canonical" href="https://alertlens.github.io/AlertLens/stable/adr/ADR-007_SILENCES_BULK_ACTIONS/">
       
-      
-        <link rel="prev" href="../deployment/kubernetes/">
       
       
       
         
       
       
-      <link rel="icon" href="../assets/logo.png">
+      <link rel="icon" href="../../assets/logo.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
-        <title>Changelog - AlertLens</title>
+        <title>ADR-007 — Silences + Bulk Actions - AlertLens</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,7 +51,7 @@
       
     
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#changelog" class="md-skip">
+        <a href="#adr-007-silences-bulk-actions" class="md-skip">
           Skip to content
         </a>
       
@@ -96,9 +94,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="AlertLens" class="md-header__button md-logo" aria-label="AlertLens" data-md-component="logo">
+    <a href="../.." title="AlertLens" class="md-header__button md-logo" aria-label="AlertLens" data-md-component="logo">
       
-  <img src="../assets/logo.png" alt="logo">
+  <img src="../../assets/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -115,7 +113,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Changelog
+              ADR-007 — Silences + Bulk Actions
             
           </span>
         </div>
@@ -228,7 +226,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -247,7 +245,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../getting-started/" class="md-tabs__link">
+      <a href="../../getting-started/" class="md-tabs__link">
         
   
   
@@ -266,7 +264,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../configuration/" class="md-tabs__link">
+      <a href="../../configuration/" class="md-tabs__link">
         
   
   
@@ -287,7 +285,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../features/visualization/" class="md-tabs__link">
+        <a href="../../features/visualization/" class="md-tabs__link">
           
   
   
@@ -307,7 +305,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../deployment/docker/" class="md-tabs__link">
+        <a href="../../deployment/docker/" class="md-tabs__link">
           
   
   
@@ -323,11 +321,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
         
   
   
@@ -362,9 +358,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="AlertLens" class="md-nav__button md-logo" aria-label="AlertLens" data-md-component="logo">
+    <a href="../.." title="AlertLens" class="md-nav__button md-logo" aria-label="AlertLens" data-md-component="logo">
       
-  <img src="../assets/logo.png" alt="logo">
+  <img src="../../assets/logo.png" alt="logo">
 
     </a>
     AlertLens
@@ -391,7 +387,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -418,7 +414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
+      <a href="../../getting-started/" class="md-nav__link">
         
   
   
@@ -445,7 +441,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
+      <a href="../../configuration/" class="md-nav__link">
         
   
   
@@ -524,7 +520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/visualization/" class="md-nav__link">
+      <a href="../../features/visualization/" class="md-nav__link">
         
   
   
@@ -552,7 +548,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/silences/" class="md-nav__link">
+      <a href="../../features/silences/" class="md-nav__link">
         
   
   
@@ -580,7 +576,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/visual-ack/" class="md-nav__link">
+      <a href="../../features/visual-ack/" class="md-nav__link">
         
   
   
@@ -608,7 +604,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/config-builder/" class="md-nav__link">
+      <a href="../../features/config-builder/" class="md-nav__link">
         
   
   
@@ -695,7 +691,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deployment/docker/" class="md-nav__link">
+      <a href="../../deployment/docker/" class="md-nav__link">
         
   
   
@@ -723,7 +719,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deployment/binary/" class="md-nav__link">
+      <a href="../../deployment/binary/" class="md-nav__link">
         
   
   
@@ -751,7 +747,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deployment/kubernetes/" class="md-nav__link">
+      <a href="../../deployment/kubernetes/" class="md-nav__link">
         
   
   
@@ -783,37 +779,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Changelog
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
         
   
   
@@ -829,115 +798,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#unreleased" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        [Unreleased]
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#v020-2026-03-07" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        [v0.2.0] — 2026-03-07
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="[v0.2.0] — 2026-03-07">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#changed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Changed
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fixed
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#v010-2026-02-27" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        [v0.1.0] — 2026-02-27
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="[v0.1.0] — 2026-02-27">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#added" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Added
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Architecture
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -969,44 +829,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#unreleased" class="md-nav__link">
+  <a href="#context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        [Unreleased]
+        Context
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#v020-2026-03-07" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        [v0.2.0] — 2026-03-07
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="[v0.2.0] — 2026-03-07">
+    <nav class="md-nav" aria-label="Context">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#changed" class="md-nav__link">
+  <a href="#related-prior-art-in-the-ui" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Changed
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fixed
+        Related prior art in the UI
       
     </span>
   </a>
@@ -1019,22 +857,34 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#v010-2026-02-27" class="md-nav__link">
+  <a href="#decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        [v0.1.0] — 2026-02-27
+        Decision
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="[v0.1.0] — 2026-02-27">
+    <nav class="md-nav" aria-label="Decision">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#added" class="md-nav__link">
+  <a href="#1-new-api-endpoint-post-apiv1bulk" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Added
+        1. New API endpoint: POST /api/v1/bulk
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. New API endpoint: POST /api/v1/bulk">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request
       
     </span>
   </a>
@@ -1042,10 +892,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#architecture" class="md-nav__link">
+  <a href="#response-201-created" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Architecture
+        Response (201 Created)
       
     </span>
   </a>
@@ -1054,6 +904,122 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-smart-merge-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Smart Merge algorithm
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Smart Merge algorithm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-authorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Authorization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-frontend-ux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Frontend UX
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Consequences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#positive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Positive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#negative-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Negative / Trade-offs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neutral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Neutral
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternatives Considered
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1074,7 +1040,7 @@
 
 
   
-    <a href="https://github.com/AlertLens/AlertLens/edit/main/docs/changelog.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/AlertLens/AlertLens/edit/main/docs/adr/ADR-007_SILENCES_BULK_ACTIONS.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1082,57 +1048,213 @@
   
 
 
-<h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<p>All notable changes to AlertLens are documented here.</p>
-<p>The format follows <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>.
-AlertLens uses <a href="https://semver.org/">Semantic Versioning</a>.</p>
+<h1 id="adr-007-silences-bulk-actions">ADR-007 — Silences + Bulk Actions<a class="headerlink" href="#adr-007-silences-bulk-actions" title="Permanent link">&para;</a></h1>
+<p><strong>Status:</strong> Accepted<br />
+<strong>Date:</strong> 2026-03-10<br />
+<strong>Deciders:</strong> AlertLens core team  </p>
 <hr />
-<h2 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>AlertLens already exposes individual silence CRUD at <code>/api/silences</code> (GET, POST, PUT, DELETE).
+Users on NOC dashboards need to silence <strong>multiple alerts at once</strong> without opening a form for
+each one.  A bulk-action pattern also benefits ack workflows (visual acks).</p>
+<p>Two failure modes must be avoided:</p>
+<ol>
+<li><strong>Over-silencing</strong> — a naive "one silence per alert" approach creates noise in the
+   Alertmanager silence list and makes it hard to manage later.</li>
+<li><strong>Under-silencing</strong> — computing matchers too strictly leaves some alerts unsilenced.</li>
+</ol>
+<h3 id="related-prior-art-in-the-ui">Related prior art in the UI<a class="headerlink" href="#related-prior-art-in-the-ui" title="Permanent link">&para;</a></h3>
+<p><code>AlertBulkActions.svelte</code> already computes a client-side intersection of common labels
+and passes them to <code>SilenceForm</code> for the user to review.  That flow is good for
+customisation but requires too many clicks for the common "quiet this alert storm now"
+scenario.</p>
 <hr />
-<h2 id="v020-2026-03-07">[v0.2.0] — 2026-03-07<a class="headerlink" href="#v020-2026-03-07" title="Permanent link">&para;</a></h2>
-<h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<h3 id="1-new-api-endpoint-post-apiv1bulk">1. New API endpoint: <code>POST /api/v1/bulk</code><a class="headerlink" href="#1-new-api-endpoint-post-apiv1bulk" title="Permanent link">&para;</a></h3>
+<p>A single endpoint handles both bulk silence and bulk visual-ack operations.</p>
+<h4 id="request">Request<a class="headerlink" href="#request" title="Permanent link">&para;</a></h4>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;silence&quot;</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;alerts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">&quot;fingerprint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;abc123&quot;</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="nt">&quot;alertmanager&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prod&quot;</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="nt">&quot;labels&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;alertname&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HighCPU&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prod&quot;</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">      </span><span class="nt">&quot;fingerprint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;def456&quot;</span><span class="p">,</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">      </span><span class="nt">&quot;alertmanager&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prod&quot;</span><span class="p">,</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">      </span><span class="nt">&quot;labels&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;alertname&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HighCPU&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;staging&quot;</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="nt">&quot;ends_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-10T23:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">  </span><span class="nt">&quot;created_by&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alice&quot;</span><span class="p">,</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span><span class="nt">&quot;comment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Maintenance window&quot;</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="p">}</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>action</code></td>
+<td>string</td>
+<td>✅</td>
+<td>—</td>
+<td><code>"silence"</code> or <code>"ack"</code></td>
+</tr>
+<tr>
+<td><code>alerts</code></td>
+<td>array</td>
+<td>✅</td>
+<td>—</td>
+<td>At least one item required</td>
+</tr>
+<tr>
+<td><code>ends_at</code></td>
+<td>datetime</td>
+<td>❌</td>
+<td><code>now + 1 hour</code></td>
+<td>Must be in the future</td>
+</tr>
+<tr>
+<td><code>created_by</code></td>
+<td>string</td>
+<td>❌</td>
+<td><code>"alertlens"</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>comment</code></td>
+<td>string</td>
+<td>❌</td>
+<td><code>"Bulk silenced…"</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="response-201-created">Response (201 Created)<a class="headerlink" href="#response-201-created" title="Permanent link">&para;</a></h4>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;silence_ids&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;id1&quot;</span><span class="p">],</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;merged&quot;</span><span class="p">,</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>silence_ids</code></td>
+<td>All Alertmanager silence IDs created</td>
+</tr>
+<tr>
+<td><code>strategy</code></td>
+<td><code>"merged"</code> or <code>"individual"</code> (see Smart Merge below)</td>
+</tr>
+<tr>
+<td><code>count</code></td>
+<td><code>len(silence_ids)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="2-smart-merge-algorithm">2. Smart Merge algorithm<a class="headerlink" href="#2-smart-merge-algorithm" title="Permanent link">&para;</a></h3>
+<p>Alerts are first <strong>grouped by Alertmanager instance</strong>.  Within each group:</p>
+<ol>
+<li><strong>Compute label intersection</strong> — collect labels whose key <em>and</em> value are identical
+   across <strong>every</strong> alert in the group.  Internal/meta labels (<code>alertlens_*</code>, <code>__name__</code>)
+   are excluded.</li>
+<li><strong>Merged path</strong> (common matchers found):<br />
+   Create <strong>one</strong> silence with the intersected equality matchers.<br />
+   Sets <code>strategy = "merged"</code>.</li>
+<li><strong>Individual fallback</strong> (no common matchers):<br />
+   Create one silence per alert using all its labels as equality matchers.<br />
+   Sets <code>strategy = "individual"</code>.</li>
+</ol>
+<p>The heuristic intentionally errs toward <strong>fewer, broader silences</strong> because:</p>
 <ul>
-<li>Project moved to the <strong>AlertLens</strong> GitHub organization (<code>github.com/AlertLens/AlertLens</code>).</li>
-<li>Go module path updated from <code>github.com/gaetanars/alertlens</code> to <code>github.com/alertlens/alertlens</code>.</li>
-<li>Docker image renamed from <code>ghcr.io/gaetanars/alertlens</code> to <code>ghcr.io/alertlens/alertlens</code>.</li>
-<li>Helm OCI chart path updated from <code>ghcr.io/gaetanars/chart/alertlens</code> to <code>ghcr.io/alertlens/chart/alertlens</code>.</li>
-<li>Documentation site moved from <code>gaetanars.github.io/AlertLens</code> to <code>alertlens.github.io/AlertLens</code>.</li>
+<li>A merged silence is easier to audit and expire.</li>
+<li>Alertmanager de-duplicates by matcher set; the merged silence will match new
+  instances of the same alert storm without extra configuration.</li>
+<li>Users who need precision can still use the <code>SilenceForm</code> dialog.</li>
 </ul>
-<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<h4 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h4>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Alert A labels: { alertname=HighCPU, severity=critical, env=prod,   pod=app-1 }
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Alert B labels: { alertname=HighCPU, severity=critical, env=staging, pod=app-2 }
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>Intersection:   { alertname=HighCPU, severity=critical }
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>→ ONE merged silence: alertname=&quot;HighCPU&quot;, severity=&quot;critical&quot;
+</span></code></pre></div>
+<h3 id="3-authorization">3. Authorization<a class="headerlink" href="#3-authorization" title="Permanent link">&para;</a></h3>
+<p>The <code>/api/v1/bulk</code> endpoint requires the <code>silencer</code> role (same as <code>POST /api/silences</code>).</p>
+<h3 id="4-frontend-ux">4. Frontend UX<a class="headerlink" href="#4-frontend-ux" title="Permanent link">&para;</a></h3>
+<p><code>AlertBulkActions.svelte</code> gains a <strong>"Quick Silence (1 h)"</strong> button that:</p>
+<ol>
+<li>Reads the selected alerts from the <code>selectedFingerprints</code> + <code>alerts</code> stores.</li>
+<li>Calls <code>POST /api/v1/bulk</code> with <code>ends_at = now + 1h</code>.</li>
+<li>Shows a spinner and toast (success / error).</li>
+<li>Clears the selection and refreshes alerts on success.</li>
+</ol>
+<p>The existing <strong>"Bulk silence (customize)"</strong> button (opens <code>SilenceForm</code> pre-filled
+with client-computed common matchers) is preserved for users who want control over
+matchers, duration, or comment.</p>
+<hr />
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
+<h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Helm chart OCI registry path corrected from <code>ghcr.io/alertlens/charts/alertlens</code> to <code>ghcr.io/alertlens/chart/alertlens</code> in the release workflow, chart README, and Kubernetes deployment documentation.</li>
+<li>One-click bulk silencing reduces operational friction significantly.</li>
+<li>Smart Merge minimises silence list pollution.</li>
+<li>Stateless: no DB required; all state lives in Alertmanager.</li>
+<li>Consistent with existing silence CRUD patterns.</li>
+</ul>
+<h3 id="negative-trade-offs">Negative / Trade-offs<a class="headerlink" href="#negative-trade-offs" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Merged matchers may silence more alerts than intended (broader match).
+  Mitigated by the "customize" flow and the fact that silences are always
+  time-bounded.</li>
+<li>Individual fallback can create many silences when alerts have no common labels.
+  Rare in practice (alert storms usually share <code>alertname</code>).</li>
+</ul>
+<h3 id="neutral">Neutral<a class="headerlink" href="#neutral" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Frontend still computes client-side intersection for the form-based flow;
+  this is a different (UI-only) code path and is unaffected by this ADR.</li>
 </ul>
 <hr />
-<h2 id="v010-2026-02-27">[v0.1.0] — 2026-02-27<a class="headerlink" href="#v010-2026-02-27" title="Permanent link">&para;</a></h2>
-<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Alert Visualization</strong> — Kanban and dense list view with Alertmanager native matcher syntax filtering and label-based grouping.</li>
-<li><strong>Multi-instance aggregation</strong> — Connect multiple Alertmanager or Grafana Mimir instances; alerts are aggregated into a single view with per-alert source indicators.</li>
-<li><strong>Routing Tree Visualizer</strong> — Interactive graph representation of the <code>alertmanager.yml</code> route hierarchy; click a node to see matching active alerts. Nodes display inline badges for <code>mute_time_intervals</code> (orange) and <code>active_time_intervals</code> (green).</li>
-<li><strong>1-click Silences</strong> — Create Alertmanager silences directly from active alerts with pre-filled matchers and a human-friendly duration picker.</li>
-<li><strong>Bulk Actions</strong> — Select multiple alerts and apply silence or visual ack in one operation.</li>
-<li><strong>Visual Ack</strong> — Stateless acknowledgement mechanism implemented on top of Alertmanager silences with reserved labels (<code>alertlens_ack_type</code>, <code>alertlens_ack_by</code>, <code>alertlens_ack_comment</code>). Alerts remain visible and display a badge showing the acknowledger.</li>
-<li><strong>Configuration Builder</strong> — Guided UI for editing the routing tree, receivers, and time intervals, validated with the official Prometheus library before any write.</li>
-<li><strong>Time Intervals Manager</strong> — Admin tab to manage the <code>time_intervals</code> root section of <code>alertmanager.yml</code>. Supports all spec fields: <code>weekdays</code>, <code>times</code>, <code>days_of_month</code>, <code>months</code>, <code>years</code>, <code>location</code> (timezone).</li>
-<li><strong>Route-level time interval selectors</strong> — The visual route editor exposes <code>mute_time_intervals</code> and <code>active_time_intervals</code> on child routes, with color-coded chip selectors (orange = mute, green = active). Not available on the root route (Alertmanager constraint).</li>
-<li><strong>Disk-write mode</strong> — Write <code>alertmanager.yml</code> atomically to a configured file path, with optional webhook trigger.</li>
-<li><strong>GitOps mode</strong> — Push <code>alertmanager.yml</code> changes to GitHub or GitLab via API with configurable branch, path, and commit message, plus optional webhook trigger.</li>
-<li><strong>Admin mode</strong> — Password-protected admin session (JWT, in-memory, no persistence). Read-only access is always public.</li>
-<li><strong>Rate limiting</strong> — Per-IP rate limiter on the login endpoint (5 requests/minute).</li>
-<li><strong>Single binary</strong> — SvelteKit frontend embedded via <code>go:embed</code>. Zero runtime dependencies.</li>
-<li><strong>Docker image</strong> — Multi-stage Dockerfile based on <code>gcr.io/distroless/static-debian12</code>.</li>
-<li><strong>Grafana Mimir support</strong> — <code>X-Scope-OrgID</code> header configurable per instance.</li>
-<li><strong>TLS skip verify</strong> — Per-instance option for trusted internal environments.</li>
-</ul>
-<h3 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Backend: Go 1.25, <code>go-chi/chi</code> router, <code>go.uber.org/zap</code> logger</li>
-<li>Frontend: SvelteKit + Tailwind CSS + shadcn/svelte</li>
-<li>Auth: <code>golang-jwt/jwt/v5</code>, <code>golang.org/x/time</code> rate limiter</li>
-<li>GitOps: <code>google/go-github/v66</code>, <code>xanzy/go-gitlab</code></li>
-<li>Config validation: <code>prometheus/alertmanager/config</code></li>
-<li>Diff: <code>sergi/go-diff/diffmatchpatch</code></li>
-</ul>
+<h2 id="alternatives-considered">Alternatives Considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Rejected because</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Extend <code>POST /api/silences</code> with an <code>alert_ids</code> array</td>
+<td>Mixes concerns; the current endpoint maps 1-to-1 with Alertmanager's API</td>
+</tr>
+<tr>
+<td>Always create individual silences</td>
+<td>Pollutes the silence list</td>
+</tr>
+<tr>
+<td>Use Alertmanager's inhibit rules</td>
+<td>Persistent config change, too heavy for temporary silencing</td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -1206,10 +1328,10 @@ AlertLens uses <a href="https://semver.org/">Semantic Versioning</a>.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.instant", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.action.edit"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.instant", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
