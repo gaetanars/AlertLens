@@ -8,7 +8,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-github/v66 v66.0.0
 	github.com/prometheus/alertmanager v0.27.0
-	github.com/sergi/go-diff v1.3.1
+	github.com/sergi/go-diff v1.4.0
 	github.com/xanzy/go-gitlab v0.115.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.36.0
