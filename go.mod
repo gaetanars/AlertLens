@@ -10,7 +10,7 @@ require (
 	github.com/prometheus/alertmanager v0.27.0
 	github.com/sergi/go-diff v1.4.0
 	github.com/xanzy/go-gitlab v0.115.0
-	go.uber.org/zap v1.27.0
+	go.uber.org/zap v1.27.1
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/time v0.3.0
 	gopkg.in/yaml.v3 v3.0.1
