@@ -1,28 +1,59 @@
-name: Release & Test
+name: Release
+
 on:
   push:
-    branches: [ main ]
+    tags:
+      - 'v*.*.*'
 
 permissions:
   contents: write
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with: { go-version: '1.22.2' }
-      - name: Run E2E Tests
-        run: make test-e2e
   release:
-    needs: test
     runs-on: ubuntu-latest
-    if: startsWith(github.event.head_commit.message, 'release:')
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Prepare dist directory
+        run: mkdir -p dist && touch dist/.keep
+
+      - name: Install frontend deps
+        run: npm ci
+        working-directory: web
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: web
+
+      - name: Build binaries
+        run: |
+          VERSION="${{ github.ref_name }}"
+          [[ "${VERSION}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-+].+)?$ ]] || { echo "Unexpected tag format: ${VERSION}"; exit 1; }
+          for GOOS in linux darwin; do
+            for GOARCH in amd64 arm64; do
+              OUTPUT="alertlens-${VERSION}-${GOOS}-${GOARCH}"
+              CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build \
+                -ldflags="-s -w -X main.version=${VERSION}" \
+                -o "${OUTPUT}" .
+            done
+          done
+
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
+          files: alertlens-${{ github.ref_name }}-*
