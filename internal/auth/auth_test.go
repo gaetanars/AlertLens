@@ -1,11 +1,14 @@
 package auth
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/alertlens/alertlens/internal/config"
 )
 
 // ─── NewService ───────────────────────────────────────────────────────────────
@@ -14,6 +17,14 @@ func TestNewService_NoPassword_AdminDisabled(t *testing.T) {
 	svc := NewService("")
 	if svc.AdminEnabled() {
 		t.Error("expected admin to be disabled when no password is set")
+	}
+}
+
+func TestNewService_EmptyPassword_Rejected(t *testing.T) {
+	// Empty password should result in admin being disabled, not a panic.
+	svc := NewService("")
+	if svc.AdminEnabled() {
+		t.Error("expected admin to be disabled with empty password")
 	}
 }
 
@@ -320,4 +331,73 @@ func TestRoleHasAtLeast(t *testing.T) {
 			t.Errorf("(%s).HasAtLeast(%s) = %v, want %v", tc.role, tc.required, got, tc.want)
 		}
 	}
+}
+
+// ─── Bcrypt password limit tests ─────────────────────────────────────────────
+
+func TestBcryptPasswordBoundary(t *testing.T) {
+	// bcrypt has a hard limit of 72 bytes. Test the exact boundary.
+	tests := []struct {
+		name        string
+		passwordLen int
+		shouldPanic bool
+	}{
+		{"71 bytes", 71, false},
+		{"72 bytes", 72, false},
+		{"73 bytes", 73, true},
+		{"100 bytes", 100, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			password := strings.Repeat("a", tt.passwordLen)
+
+			if tt.shouldPanic {
+				// Should panic because config validation should have caught this,
+				// but NewService will panic if it somehow gets a >72 byte password.
+				defer func() {
+					if r := recover(); r == nil {
+						t.Errorf("expected panic for %d-byte password, but did not panic", tt.passwordLen)
+					}
+				}()
+				NewService(password)
+			} else {
+				// Should not panic.
+				svc := NewService(password)
+				if !svc.AdminEnabled() {
+					t.Errorf("expected admin to be enabled for valid %d-byte password", tt.passwordLen)
+				}
+				// Verify login works.
+				token, _, err := svc.Login(password, "")
+				if err != nil {
+					t.Errorf("login failed for %d-byte password: %v", tt.passwordLen, err)
+				}
+				if token == "" {
+					t.Errorf("expected non-empty token for %d-byte password", tt.passwordLen)
+				}
+			}
+		})
+	}
+}
+
+func TestNewServiceFromConfig_AdminPassword_Over72Bytes(t *testing.T) {
+	// A 73-byte admin password should panic (config validation should prevent this,
+	// but NewServiceFromConfig panics as a fail-safe).
+	cfg := config.AuthConfig{
+		AdminPassword: strings.Repeat("x", 73),
+	}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("expected panic for admin password > 72 bytes")
+		} else {
+			// Verify the panic message mentions the 72-byte limit.
+			msg := fmt.Sprint(r)
+			if !strings.Contains(msg, "72-byte") && !strings.Contains(msg, "72 byte") {
+				t.Errorf("panic message should mention 72-byte limit, got: %v", r)
+			}
+		}
+	}()
+
+	NewServiceFromConfig(cfg, nil)
 }

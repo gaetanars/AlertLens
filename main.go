@@ -65,7 +65,7 @@ func main() {
 	pool := alertmanager.NewPool(cfg.Alertmanagers, logger)
 
 	// ─── Auth service ────────────────────────────────────────────────────────
-	authSvc := auth.NewServiceFromConfig(cfg.Auth)
+	authSvc := auth.NewServiceFromConfig(cfg.Auth, logger.Sugar())
 	if authSvc.AdminEnabled() {
 		logger.Info("admin mode enabled")
 	} else {

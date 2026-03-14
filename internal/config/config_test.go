@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -88,5 +89,113 @@ alertmanagers:
 	}
 	if len(cfg.Alertmanagers) != 1 || cfg.Alertmanagers[0].Name != "test" {
 		t.Errorf("file alertmanagers: got %+v", cfg.Alertmanagers)
+	}
+}
+
+// ─── Password validation tests ───────────────────────────────────────────────
+
+func TestValidate_AdminPassword_Over72Bytes(t *testing.T) {
+	// A password with 73 bytes should be rejected.
+	cfg := defaults()
+	cfg.Auth.AdminPassword = strings.Repeat("x", 73)
+
+	err := validate(&cfg)
+	if err == nil {
+		t.Error("expected validation error for admin password > 72 bytes")
+	}
+	if !strings.Contains(err.Error(), "72-byte") && !strings.Contains(err.Error(), "72 byte") {
+		t.Errorf("error message should mention 72-byte limit, got: %v", err)
+	}
+	if !strings.Contains(err.Error(), "73 bytes") {
+		t.Errorf("error message should show actual byte count (73), got: %v", err)
+	}
+}
+
+func TestValidate_AdminPassword_Exactly72Bytes(t *testing.T) {
+	// Exactly 72 bytes should be accepted.
+	cfg := defaults()
+	cfg.Auth.AdminPassword = strings.Repeat("a", 72)
+
+	err := validate(&cfg)
+	if err != nil {
+		t.Errorf("expected no error for 72-byte password, got: %v", err)
+	}
+}
+
+func TestValidate_AdminPassword_Under72Bytes(t *testing.T) {
+	// Under 72 bytes should be accepted.
+	cfg := defaults()
+	cfg.Auth.AdminPassword = "short-password"
+
+	err := validate(&cfg)
+	if err != nil {
+		t.Errorf("expected no error for short password, got: %v", err)
+	}
+}
+
+func TestValidate_UserPassword_Over72Bytes(t *testing.T) {
+	// A user password with > 72 bytes should be rejected.
+	cfg := defaults()
+	cfg.Auth.Users = []UserConfig{
+		{
+			Password: strings.Repeat("y", 80),
+			Role:     "viewer",
+		},
+	}
+
+	err := validate(&cfg)
+	if err == nil {
+		t.Error("expected validation error for user password > 72 bytes")
+	}
+	if !strings.Contains(err.Error(), "users[0]") {
+		t.Errorf("error should identify which user failed, got: %v", err)
+	}
+	if !strings.Contains(err.Error(), "72-byte") && !strings.Contains(err.Error(), "72 byte") {
+		t.Errorf("error message should mention 72-byte limit, got: %v", err)
+	}
+}
+
+func TestValidate_UserPassword_Empty(t *testing.T) {
+	// An empty user password should be rejected.
+	cfg := defaults()
+	cfg.Auth.Users = []UserConfig{
+		{
+			Password: "",
+			Role:     "viewer",
+		},
+	}
+
+	err := validate(&cfg)
+	if err == nil {
+		t.Error("expected validation error for empty user password")
+	}
+	if !strings.Contains(err.Error(), "cannot be empty") {
+		t.Errorf("error message should mention empty password, got: %v", err)
+	}
+}
+
+func TestValidate_UserPassword_UTF8Counting(t *testing.T) {
+	// Verify that byte counting is UTF-8 aware.
+	// "café" = 5 bytes (c, a, f, é=2 bytes in UTF-8).
+	cfg := defaults()
+	// Create a password with exactly 72 bytes using UTF-8 multi-byte chars.
+	// 36 instances of "é" (2 bytes each) = 72 bytes.
+	cfg.Auth.Users = []UserConfig{
+		{
+			Password: strings.Repeat("é", 36), // exactly 72 bytes
+			Role:     "viewer",
+		},
+	}
+
+	err := validate(&cfg)
+	if err != nil {
+		t.Errorf("expected no error for 72-byte UTF-8 password, got: %v", err)
+	}
+
+	// Now test 73 bytes (36 'é' + 1 'a' = 72 + 1).
+	cfg.Auth.Users[0].Password = strings.Repeat("é", 36) + "a"
+	err = validate(&cfg)
+	if err == nil {
+		t.Error("expected validation error for 73-byte UTF-8 password")
 	}
 }

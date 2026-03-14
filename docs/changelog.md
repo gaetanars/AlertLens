@@ -9,6 +9,20 @@ AlertLens uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- **Password hashing migrated to bcrypt** — All user passwords are now hashed using bcrypt (cost 10) instead of plain SHA-256. This significantly improves resistance to brute-force attacks.
+
+### Breaking Changes
+
+- **JWT token invalidation** — All existing JWT authentication tokens will be invalidated upon deployment. Users will need to log in again after upgrading.
+  - **Reason**: The JWT signing secret is now derived from the admin password using HMAC-SHA256. This change ensures that tokens are automatically invalidated when the password changes, improving security posture.
+
+- **Password length limit** — Passwords are now limited to **72 bytes** (bcrypt's maximum). This applies to both `admin_password` and all entries in `auth.users`.
+  - **Important**: The limit is measured in UTF-8 bytes, not characters. Non-ASCII characters may consume multiple bytes (e.g., emoji, accented characters).
+  - **Migration**: If you currently use a password exceeding 72 bytes, you must update it to a shorter password before upgrading. The application will refuse to start with an error message if the password is too long.
+  - **Validation**: Config validation now rejects passwords exceeding this limit with a clear error message showing the actual byte count.
+
 ---
 
 ## [v0.2.0] — 2026-03-07
