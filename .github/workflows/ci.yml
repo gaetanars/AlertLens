@@ -30,16 +30,40 @@ jobs:
       - name: Run tests
         run: go test ./... -race -count=1 -cover
 
-  build-and-e2e:
-    name: Build & E2E
-    needs: test
+  frontend-test:
+    name: Frontend tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+        working-directory: web
+
+      - name: Type check
+        run: npm run check
+        working-directory: web
+
+      - name: Unit tests
+        run: npm test
+        working-directory: web
+
+  build-and-e2e:
+    name: Build & E2E
+    needs: [test, frontend-test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
           cache: npm
           cache-dependency-path: web/package-lock.json
 
