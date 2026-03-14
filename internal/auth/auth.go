@@ -15,7 +15,11 @@ import (
 	"github.com/alertlens/alertlens/internal/config"
 )
 
-const tokenTTL = 24 * time.Hour
+const (
+	tokenTTL         = 24 * time.Hour
+	jwtSecretDomain  = "alertlens-jwt-secret-v1"
+	csrfSecretDomain = "alertlens-csrf-v1"
+)
 
 // userEntry stores a hashed password and the role it grants.
 // totpSecret, if non-empty, enables TOTP MFA for this user.
@@ -32,6 +36,7 @@ type userEntry struct {
 type Service struct {
 	enabled bool
 	secret  []byte
+	logger  Logger // optional logger for warnings; may be nil
 
 	// users is an ordered list of (passwordHash, role) pairs.
 	// Login iterates them in order; the first match wins.
@@ -41,20 +46,29 @@ type Service struct {
 	revokedSet map[string]time.Time // jti → token expiry (TTL-based cleanup)
 }
 
+// Logger is the minimal logging interface required by Service.
+// Satisfied by *zap.SugaredLogger (use logger.Sugar() to obtain it).
+type Logger interface {
+	Warnw(msg string, keysAndValues ...any)
+}
+
 // NewServiceFromConfig builds a Service from the AuthConfig section of the
 // application config.  Backward-compatible: if only AdminPassword is set,
 // logging in with that password grants the admin role.
-func NewServiceFromConfig(cfg config.AuthConfig) *Service {
-	svc := &Service{revokedSet: make(map[string]time.Time)}
+// The optional logger is used to emit warnings for skipped users; if nil, warnings are suppressed.
+func NewServiceFromConfig(cfg config.AuthConfig, logger Logger) *Service {
+	svc := &Service{
+		revokedSet: make(map[string]time.Time),
+		logger:     logger,
+	}
 
 	// Admin password entry (highest privilege).
 	if cfg.AdminPassword != "" {
 		// SEC-01: use bcrypt for password hashing (resistant to brute-force).
 		hash, err := bcrypt.GenerateFromPassword([]byte(cfg.AdminPassword), bcrypt.DefaultCost)
 		if err != nil {
-			// bcrypt only fails if password > 72 bytes; truncate silently or panic.
-			// For safety, we panic here as this is a configuration error.
-			panic(fmt.Sprintf("bcrypt admin password: %v", err))
+			// bcrypt only fails if password > 72 bytes (should be caught by config validation).
+			panic(fmt.Sprintf("bcrypt admin password failed (password exceeds 72-byte limit): %v", err))
 		}
 		svc.users = append(svc.users, userEntry{hash: hash, role: RoleAdmin})
 		// Derive the JWT-signing secret from the admin password using HMAC-SHA256
@@ -66,17 +80,31 @@ func NewServiceFromConfig(cfg config.AuthConfig) *Service {
 	}
 
 	// Additional per-role users defined in config.
-	for _, u := range cfg.Users {
+	for i, u := range cfg.Users {
 		r := Role(u.Role)
 		if !r.IsValid() {
 			// Skip entries with unrecognised roles; callers should validate the
 			// config before reaching here, but be defensive.
+			if svc.logger != nil {
+				svc.logger.Warnw("skipping user with invalid role",
+					"index", i,
+					"role", u.Role,
+				)
+			}
 			continue
 		}
 		// SEC-01: use bcrypt for password hashing.
 		hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 		if err != nil {
 			// Skip users with passwords that bcrypt cannot handle (> 72 bytes).
+			// This should be caught by config validation, but be defensive.
+			if svc.logger != nil {
+				svc.logger.Warnw("skipping user with password exceeding bcrypt's 72-byte limit",
+					"index", i,
+					"role", u.Role,
+					"password_bytes", len([]byte(u.Password)),
+				)
+			}
 			continue
 		}
 		svc.users = append(svc.users, userEntry{
@@ -99,7 +127,7 @@ func NewServiceFromConfig(cfg config.AuthConfig) *Service {
 // This uses HMAC-SHA256 with a fixed domain separator to ensure the secret
 // changes when the password changes, automatically invalidating existing tokens.
 func deriveJWTSecret(password string) []byte {
-	mac := hmac.New(sha256.New, []byte("alertlens-jwt-secret-v1"))
+	mac := hmac.New(sha256.New, []byte(jwtSecretDomain))
 	mac.Write([]byte(password))
 	return mac.Sum(nil)
 }
@@ -108,7 +136,7 @@ func deriveJWTSecret(password string) []byte {
 // Deprecated: prefer NewServiceFromConfig for new call sites.
 // Kept for backward-compatibility with unit tests.
 func NewService(password string) *Service {
-	return NewServiceFromConfig(config.AuthConfig{AdminPassword: password})
+	return NewServiceFromConfig(config.AuthConfig{AdminPassword: password}, nil)
 }
 
 // AdminEnabled returns true if at least one user / password has been configured.
@@ -270,7 +298,7 @@ func (s *Service) CSRFSecret() []byte {
 		return []byte("alertlens-csrf-noauth-dev")
 	}
 	mac := hmac.New(sha256.New, s.secret)
-	mac.Write([]byte("alertlens-csrf-v1")) //nolint:errcheck
+	mac.Write([]byte(csrfSecretDomain)) //nolint:errcheck
 	return mac.Sum(nil)
 }
 

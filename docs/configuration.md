@@ -62,6 +62,27 @@ gitops:
 |---|---|---|---|
 | `admin_password` | string | `""` | Password for the admin account. If empty, admin mode is completely disabled and the UI is read-only. |
 
+### Password Requirements
+
+- **Maximum length**: 72 bytes (bcrypt limitation)
+- **Important**: The limit is measured in UTF-8 bytes, not characters
+  - ASCII characters = 1 byte each (e.g., `password123` = 11 bytes)
+  - Accented characters = 2-3 bytes (e.g., `café` = 5 bytes: c, a, f, é=2 bytes)
+  - Emoji and special Unicode = 3-4 bytes (e.g., `pass🔒word` = 12 bytes)
+- **Validation**: The application will refuse to start with a clear error message if any password exceeds 72 bytes
+
+### Example
+
+```yaml
+auth:
+  admin_password: "my-secure-password"  # 18 bytes - OK
+  users:
+    - password: "viewer-pass"            # 11 bytes - OK
+      role: viewer
+    - password: "silencer-pass"          # 13 bytes - OK
+      role: silencer
+```
+
 !!! warning "Secure your password"
     Set this via the `ALERTLENS_AUTH_ADMIN_PASSWORD` environment variable rather than storing it in a file committed to version control.
 

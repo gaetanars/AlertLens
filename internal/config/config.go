@@ -183,6 +183,26 @@ func validate(cfg *Config) error {
 	if cfg.Server.Port <= 0 || cfg.Server.Port > 65535 {
 		return fmt.Errorf("server.port must be between 1 and 65535, got %d", cfg.Server.Port)
 	}
+
+	// Validate admin password constraints (bcrypt limit + non-empty).
+	if cfg.Auth.AdminPassword != "" {
+		if len([]byte(cfg.Auth.AdminPassword)) > 72 {
+			return fmt.Errorf("auth.admin_password exceeds bcrypt's 72-byte limit (%d bytes); please use a shorter password",
+				len([]byte(cfg.Auth.AdminPassword)))
+		}
+	}
+
+	// Validate additional users' passwords.
+	for i, u := range cfg.Auth.Users {
+		if u.Password == "" {
+			return fmt.Errorf("auth.users[%d].password cannot be empty", i)
+		}
+		if len([]byte(u.Password)) > 72 {
+			return fmt.Errorf("auth.users[%d].password exceeds bcrypt's 72-byte limit (%d bytes); please use a shorter password",
+				i, len([]byte(u.Password)))
+		}
+	}
+
 	for i, am := range cfg.Alertmanagers {
 		if strings.TrimSpace(am.URL) == "" {
 			return fmt.Errorf("alertmanagers[%d].url is required", i)

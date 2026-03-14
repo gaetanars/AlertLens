@@ -183,5 +183,5 @@ func serviceWithTOTP(t *testing.T, password, totpSecret string) *Service {
 		Users: []config.UserConfig{
 			{Password: password, Role: "admin", TOTPSecret: totpSecret},
 		},
-	})
+	}, nil)
 }
