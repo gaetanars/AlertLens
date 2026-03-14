@@ -75,3 +75,38 @@ jobs:
         run: cd e2e && npx playwright test
         env:
           ALERTLENS_BIN: ${{ github.workspace }}/alertlens
+
+  docker-dev:
+    name: Publish dev image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build-and-e2e
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push dev Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/gaetanars/alertlens:dev
+          build-args: VERSION=dev+${{ github.sha }}
+          cache-from: type=gha,scope=docker-dev
+          cache-to: type=gha,mode=max,scope=docker-dev
