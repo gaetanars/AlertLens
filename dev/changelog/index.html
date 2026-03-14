@@ -854,6 +854,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="[Unreleased]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -977,6 +1005,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="[Unreleased]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1088,6 +1144,23 @@
 AlertLens uses <a href="https://semver.org/">Semantic Versioning</a>.</p>
 <hr />
 <h2 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h3 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Password hashing migrated to bcrypt</strong> — All user passwords are now hashed using bcrypt (cost 10) instead of plain SHA-256. This significantly improves resistance to brute-force attacks.</li>
+</ul>
+<h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>JWT token invalidation</strong> — All existing JWT authentication tokens will be invalidated upon deployment. Users will need to log in again after upgrading.</li>
+<li>
+<p><strong>Reason</strong>: The JWT signing secret is now derived from the admin password using HMAC-SHA256. This change ensures that tokens are automatically invalidated when the password changes, improving security posture.</p>
+</li>
+<li>
+<p><strong>Password length limit</strong> — Passwords are now limited to <strong>72 bytes</strong> (bcrypt's maximum). This applies to both <code>admin_password</code> and all entries in <code>auth.users</code>.</p>
+</li>
+<li><strong>Important</strong>: The limit is measured in UTF-8 bytes, not characters. Non-ASCII characters may consume multiple bytes (e.g., emoji, accented characters).</li>
+<li><strong>Migration</strong>: If you currently use a password exceeding 72 bytes, you must update it to a shorter password before upgrading. The application will refuse to start with an error message if the password is too long.</li>
+<li><strong>Validation</strong>: Config validation now rejects passwords exceeding this limit with a clear error message showing the actual byte count.</li>
+</ul>
 <hr />
 <h2 id="v020-2026-03-07">[v0.2.0] — 2026-03-07<a class="headerlink" href="#v020-2026-03-07" title="Permanent link">&para;</a></h2>
 <h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
