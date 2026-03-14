@@ -10,6 +10,8 @@ import {
 	alertsGrouped,
 	alertsLoading,
 	alertsError,
+	alertsTotal,
+	alertsPartialFailures,
 	filterQuery,
 	instanceFilter,
 	severityFilter,
@@ -22,7 +24,14 @@ import {
 	groupedAlerts,
 	loadAlerts
 } from './alerts';
+import { fetchAlerts } from '$lib/api/alerts';
 import type { Alert, AlertGroup } from '$lib/api/types';
+
+// Hoist the mock so Vitest intercepts the import inside alerts.ts.
+vi.mock('$lib/api/alerts', () => ({
+	fetchAlerts: vi.fn(),
+	fetchAlertmanagers: vi.fn().mockResolvedValue([])
+}));
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -189,29 +198,68 @@ describe('groupedAlerts — client-side grouping', () => {
 	});
 });
 
-// ─── loadAlerts error handling ────────────────────────────────────────────────
+// ─── loadAlerts — API interaction ────────────────────────────────────────────
 
-describe('loadAlerts — error handling', () => {
-	it('sets error state on API failure', async () => {
-		// Mock the fetchAlerts import to throw.
-		vi.mock('$lib/api/alerts', () => ({
-			fetchAlerts: vi.fn().mockRejectedValue(new Error('Network error')),
-			fetchAlertmanagers: vi.fn().mockResolvedValue([])
-		}));
-
+describe('loadAlerts — API interaction', () => {
+	beforeEach(() => {
+		alerts.set([]);
+		alertsGrouped.set([]);
+		alertsLoading.set(false);
 		alertsError.set(null);
-		alertsLoading.set(false);
+		alertsTotal.set(0);
+		alertsPartialFailures.set([]);
+		vi.mocked(fetchAlerts).mockReset();
+	});
 
-		// We can't call loadAlerts directly without the full module mock setup,
-		// but we can test that the store handles errors by simulating manually.
-		alertsLoading.set(true);
-		alertsError.set('Network error');
-		alertsLoading.set(false);
+	it('populates stores on success', async () => {
+		const group = makeGroup('critical', 'severity', [makeAlert({ fingerprint: 'fp1' })]);
+		vi.mocked(fetchAlerts).mockResolvedValue({ groups: [group], total: 1, limit: 500, offset: 0 });
+		await loadAlerts();
+		expect(get(alerts)).toHaveLength(1);
+		expect(get(alertsGrouped)).toHaveLength(1);
+		expect(get(alertsTotal)).toBe(1);
+		expect(get(alertsError)).toBeNull();
+		expect(get(alertsLoading)).toBe(false);
+	});
 
+	it('sets error state on API failure', async () => {
+		vi.mocked(fetchAlerts).mockRejectedValue(new Error('Network error'));
+		await loadAlerts();
 		expect(get(alertsError)).toBe('Network error');
 		expect(get(alertsLoading)).toBe(false);
+	});
 
-		vi.restoreAllMocks();
+	it('sets generic error for non-Error rejection', async () => {
+		vi.mocked(fetchAlerts).mockRejectedValue('unexpected string');
+		await loadAlerts();
+		expect(get(alertsError)).toBe('Failed to load alerts');
+		expect(get(alertsLoading)).toBe(false);
+	});
+
+	it('clears previous error on successful fetch', async () => {
+		alertsError.set('Previous error');
+		vi.mocked(fetchAlerts).mockResolvedValue({ groups: [], total: 0, limit: 500, offset: 0 });
+		await loadAlerts();
+		expect(get(alertsError)).toBeNull();
+	});
+
+	it('resets alertsLoading to false after error', async () => {
+		vi.mocked(fetchAlerts).mockRejectedValue(new Error('fail'));
+		await loadAlerts();
+		expect(get(alertsLoading)).toBe(false);
+	});
+
+	it('populates partial_failures when present', async () => {
+		vi.mocked(fetchAlerts).mockResolvedValue({
+			groups: [],
+			total: 0,
+			limit: 500,
+			offset: 0,
+			partial_failures: [{ instance: 'prod-eu', error: 'timeout' }]
+		});
+		await loadAlerts();
+		expect(get(alertsPartialFailures)).toHaveLength(1);
+		expect(get(alertsPartialFailures)[0].instance).toBe('prod-eu');
 	});
 });
 
@@ -274,10 +322,10 @@ describe('viewMode — toggle between kanban and list', () => {
 	it('setting same value does not emit a new event', () => {
 		const observed: Array<'kanban' | 'list'> = [];
 		const unsub = viewMode.subscribe((v) => observed.push(v));
-		viewMode.set('kanban'); // same value — Svelte writable only notifies when value changes
+		viewMode.set('kanban'); // same value — Svelte writable guards with safe_not_equal
 		unsub();
-		// Svelte writable always notifies, but value stays the same.
-		expect(observed[observed.length - 1]).toBe('kanban');
+		// Only the initial subscription emission fires; the redundant set is a no-op.
+		expect(observed).toHaveLength(1);
 	});
 
 	it('accepts both valid modes without throwing', () => {
@@ -362,11 +410,18 @@ describe('filteredGrouped — server groups with client-side filter', () => {
 		expect(result[0].count).toBe(1);
 	});
 
-	it('passes through groups unchanged when filters are empty strings', () => {
+	it('passes through all groups structurally unchanged when filters are empty', () => {
 		filterQuery.set('');
 		instanceFilter.set('');
 		const result = get(filteredGrouped);
-		expect(result).toBe(get(alertsGrouped)); // same reference — no re-mapping
+		expect(result).toEqual([criticalGroup, warningGroup]);
+		expect(result).toHaveLength(2);
+	});
+
+	it('returns empty array when alertsGrouped is empty', () => {
+		alertsGrouped.set([]);
+		const result = get(filteredGrouped);
+		expect(result).toHaveLength(0);
 	});
 
 	it('filters by matcher syntax within groups', () => {

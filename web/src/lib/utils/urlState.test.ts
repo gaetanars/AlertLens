@@ -209,6 +209,11 @@ describe('buildAlertURLParams — omits defaults', () => {
 		expect(p.get('status')).toBe('active,suppressed');
 	});
 
+	it('omits status when empty array', () => {
+		const p = buildAlertURLParams({ ...defaults, status: [] });
+		expect(p.has('status')).toBe(false);
+	});
+
 	it('includes groupBy when not default', () => {
 		const p = buildAlertURLParams({ ...defaults, groupBy: 'alertname' });
 		expect(p.get('groupBy')).toBe('alertname');
@@ -308,7 +313,8 @@ describe('syncURLState — browser history', () => {
 		// Simulate a browser environment with history API.
 		Object.defineProperty(window, 'location', {
 			value: { pathname: '/alerts', search: '' },
-			writable: true
+			writable: true,
+			configurable: true
 		});
 		vi.spyOn(window.history, 'replaceState').mockImplementation(() => undefined);
 		vi.spyOn(window.history, 'pushState').mockImplementation(() => undefined);
