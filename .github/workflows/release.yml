@@ -2,6 +2,10 @@ name: Release & Test
 on:
   push:
     branches: [ main ]
+
+permissions:
+  contents: write
+
 jobs:
   test:
     runs-on: ubuntu-latest

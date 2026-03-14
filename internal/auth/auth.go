@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/alertlens/alertlens/internal/config"
 )
@@ -48,11 +49,19 @@ func NewServiceFromConfig(cfg config.AuthConfig) *Service {
 
 	// Admin password entry (highest privilege).
 	if cfg.AdminPassword != "" {
-		h := sha256.Sum256([]byte(cfg.AdminPassword))
-		svc.users = append(svc.users, userEntry{hash: h[:], role: RoleAdmin})
-		// Derive the JWT-signing secret from the admin password so that
-		// changing the password automatically invalidates all existing tokens.
-		svc.secret = h[:]
+		// SEC-01: use bcrypt for password hashing (resistant to brute-force).
+		hash, err := bcrypt.GenerateFromPassword([]byte(cfg.AdminPassword), bcrypt.DefaultCost)
+		if err != nil {
+			// bcrypt only fails if password > 72 bytes; truncate silently or panic.
+			// For safety, we panic here as this is a configuration error.
+			panic(fmt.Sprintf("bcrypt admin password: %v", err))
+		}
+		svc.users = append(svc.users, userEntry{hash: hash, role: RoleAdmin})
+		// Derive the JWT-signing secret from the admin password using HMAC-SHA256
+		// so that changing the password automatically invalidates all existing tokens.
+		// We use the plaintext password for derivation (not the bcrypt hash) to maintain
+		// deterministic secret generation across restarts.
+		svc.secret = deriveJWTSecret(cfg.AdminPassword)
 		svc.enabled = true
 	}
 
@@ -64,21 +73,35 @@ func NewServiceFromConfig(cfg config.AuthConfig) *Service {
 			// config before reaching here, but be defensive.
 			continue
 		}
-		h := sha256.Sum256([]byte(u.Password))
+		// SEC-01: use bcrypt for password hashing.
+		hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+		if err != nil {
+			// Skip users with passwords that bcrypt cannot handle (> 72 bytes).
+			continue
+		}
 		svc.users = append(svc.users, userEntry{
-			hash:       h[:],
+			hash:       hash,
 			role:       r,
 			totpSecret: u.TOTPSecret, // empty = MFA disabled for this user
 		})
 		if !svc.enabled {
 			// If no admin password is configured, derive the signing secret
 			// from the first user password found.
-			svc.secret = h[:]
+			svc.secret = deriveJWTSecret(u.Password)
 			svc.enabled = true
 		}
 	}
 
 	return svc
+}
+
+// deriveJWTSecret derives a deterministic JWT signing secret from a password.
+// This uses HMAC-SHA256 with a fixed domain separator to ensure the secret
+// changes when the password changes, automatically invalidating existing tokens.
+func deriveJWTSecret(password string) []byte {
+	mac := hmac.New(sha256.New, []byte("alertlens-jwt-secret-v1"))
+	mac.Write([]byte(password))
+	return mac.Sum(nil)
 }
 
 // NewService creates an auth Service with a single admin password.
@@ -91,13 +114,13 @@ func NewService(password string) *Service {
 // AdminEnabled returns true if at least one user / password has been configured.
 func (s *Service) AdminEnabled() bool { return s.enabled }
 
-// matchUser performs a constant-time scan of all user entries and returns the
-// first entry whose password hash matches.  Returns nil if no match.
+// matchUser performs a scan of all user entries and returns the first entry
+// whose password matches using bcrypt verification.  Returns nil if no match.
+// SEC-01: bcrypt.CompareHashAndPassword is inherently constant-time and resistant
+// to timing attacks.
 func (s *Service) matchUser(password string) *userEntry {
-	h := sha256.Sum256([]byte(password))
 	for i := range s.users {
-		// SEC-01: constant-time comparison to prevent timing attacks.
-		if hmac.Equal(h[:], s.users[i].hash) {
+		if err := bcrypt.CompareHashAndPassword(s.users[i].hash, []byte(password)); err == nil {
 			return &s.users[i]
 		}
 	}
