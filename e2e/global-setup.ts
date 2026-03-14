@@ -1,7 +1,7 @@
 /**
  * global-setup.ts — start AlertLens backend before all E2E tests.
  *
- * The test binary is built (or assumed built) at /tmp/alertlens-e2e-bin.
+ * The test binary path is read from ALERTLENS_BIN (default: /tmp/alertlens-bin).
  * A minimal config is written to /tmp/alertlens-e2e-config.yaml:
  *   - Port 19099 (avoids conflict with any real instance on 9000)
  *   - Single admin user password "e2e-admin-pass"
@@ -13,7 +13,7 @@ import { execSync, spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-const BINARY   = '/tmp/alertlens-bin';
+const BINARY   = process.env.ALERTLENS_BIN ?? '/tmp/alertlens-bin';
 const CONFIG   = '/tmp/alertlens-e2e-config.yaml';
 const PID_FILE = '/tmp/alertlens-e2e.pid';
 const PORT     = 19099;
@@ -60,6 +60,9 @@ export default async function globalSetup() {
   });
 
   // Write PID so globalTeardown can kill it.
+  if (proc.pid === undefined) {
+    throw new Error('[e2e] Failed to spawn AlertLens — is ALERTLENS_BIN set correctly? (' + BINARY + ')');
+  }
   fs.writeFileSync(PID_FILE, String(proc.pid), 'utf8');
 
   proc.stderr?.on('data', (d: Buffer) => {
