@@ -38,7 +38,7 @@
 		"clsx": "^2.1.1",
 		"d3": "^7.9.0",
 		"js-yaml": "^4.1.1",
-		"lucide-svelte": "^0.575.0",
+		"lucide-svelte": "^0.577.0",
 		"mode-watcher": "^1.1.0",
 		"svelte-sonner": "^1.0.7",
 		"tailwind-merge": "^3.5.0",
