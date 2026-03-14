@@ -13,7 +13,7 @@ import { execSync, spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-const BINARY   = '/tmp/alertlens-bin';
+const BINARY   = process.env.ALERTLENS_BIN ?? '/tmp/alertlens-bin';
 const CONFIG   = '/tmp/alertlens-e2e-config.yaml';
 const PID_FILE = '/tmp/alertlens-e2e.pid';
 const PORT     = 19099;

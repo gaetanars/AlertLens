@@ -61,6 +61,8 @@ jobs:
           CGO_ENABLED=0 go build \
             -ldflags="-s -w -X main.version=ci-check" \
             -o alertlens .
+        env:
+          ALERTLENS_BIN: ${{ github.workspace }}/alertlens
 
       - name: Install Playwright
         run: |
@@ -68,11 +70,7 @@ jobs:
           npm ci
           npx playwright install --with-deps
 
-      - name: Start AlertLens
-        run: |
-          ./alertlens -config config.example.yaml &
-
       - name: Run E2E
-        run: |
-          cd e2e
-          npx playwright test
+        run: cd e2e && npx playwright test
+        env:
+          ALERTLENS_BIN: ${{ github.workspace }}/alertlens
