@@ -20,23 +20,34 @@ import (
 // trivial OOM attacks while leaving plenty of headroom.
 const maxRequestBodyBytes = 10 << 20 // 10 MiB
 
-// cspPolicy is the Content-Security-Policy header value applied to every
-// response.  It prevents XSS exploitation even if an attacker finds a
-// reflection point, by:
-//   - Restricting scripts to same-origin only (no inline, no CDN).
-//   - Allowing inline styles (required by SvelteKit / Tailwind).
-//   - Blocking <object>, <embed> and <frame*> entirely.
-//   - Pinning base-uri and form-action to 'self'.
-const cspPolicy = "default-src 'self'; " +
-	"script-src 'self'; " +
-	"style-src 'self' 'unsafe-inline'; " +
-	"img-src 'self' data: blob:; " +
-	"font-src 'self'; " +
-	"connect-src 'self'; " +
-	"object-src 'none'; " +
-	"base-uri 'self'; " +
-	"form-action 'self'; " +
-	"frame-ancestors 'none';"
+// buildCSPPolicy constructs the Content-Security-Policy header value.
+//
+// scriptHashes is a space-separated list of 'sha256-<base64>' tokens for any
+// inline scripts that must be allowed (e.g. SvelteKit's bootstrapper).  When
+// empty, script-src falls back to 'self' only — which is correct for API-only
+// responses but will block the SPA in a browser.
+//
+// The policy:
+//   - Restricts scripts to same-origin plus the supplied hashes (no unsafe-inline).
+//   - Allows inline styles (required by SvelteKit / Tailwind).
+//   - Blocks <object>, <embed> and <frame*> entirely.
+//   - Pins base-uri and form-action to 'self'.
+func buildCSPPolicy(scriptHashes string) string {
+	scriptSrc := "'self'"
+	if scriptHashes != "" {
+		scriptSrc += " " + scriptHashes
+	}
+	return "default-src 'self'; " +
+		"script-src " + scriptSrc + "; " +
+		"style-src 'self' 'unsafe-inline'; " +
+		"img-src 'self' data: blob:; " +
+		"font-src 'self'; " +
+		"connect-src 'self'; " +
+		"object-src 'none'; " +
+		"base-uri 'self'; " +
+		"form-action 'self'; " +
+		"frame-ancestors 'none';"
+}
 
 // NewRouter wires all API routes and returns the root http.Handler.
 // The frontendFS is served for all non-API routes (SPA fallback).
@@ -44,6 +55,9 @@ const cspPolicy = "default-src 'self'; " +
 // corresponding forge is not configured, so interface nil-checks in handlers work.
 // secureCookies controls the Secure attribute on the CSRF cookie; set to true
 // when the application is served behind HTTPS.
+// scriptHashes is the space-separated list of 'sha256-<base64>' tokens for the
+// inline scripts present in dist/index.html (produced by the Vite csp-hash
+// plugin).  Pass an empty string when no inline scripts are present.
 func NewRouter(
 	pool *alertmanager.Pool,
 	authSvc *auth.Service,
@@ -55,6 +69,7 @@ func NewRouter(
 	version string,
 	logger *zap.Logger,
 	incidentStore *incident.Store,
+	scriptHashes string,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -82,7 +97,13 @@ func NewRouter(
 		})
 	})
 	// SEC-CSP: Content-Security-Policy to prevent XSS exploitation.
-	r.Use(cspMiddleware)
+	// The policy is built at router-construction time so the inline-script
+	// hash from dist/csp-hash.txt is captured in the closure without any
+	// per-request overhead.
+	cspPolicy := buildCSPPolicy(scriptHashes)
+	r.Use(func(next http.Handler) http.Handler {
+		return cspMiddlewareWithPolicy(cspPolicy, next)
+	})
 	// SEC-CSRF: Double-submit cookie CSRF protection.
 	r.Use(auth.CSRFMiddleware(csrfSecret, secureCookies))
 	r.Use(cors.Handler(cors.Options{
@@ -200,11 +221,11 @@ func NewRouter(
 	return r
 }
 
-// cspMiddleware sets the Content-Security-Policy and related security headers
-// on every HTTP response.
-func cspMiddleware(next http.Handler) http.Handler {
+// cspMiddlewareWithPolicy sets the Content-Security-Policy and related security
+// headers on every HTTP response using the supplied policy string.
+func cspMiddlewareWithPolicy(policy string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Security-Policy", cspPolicy)
+		w.Header().Set("Content-Security-Policy", policy)
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")

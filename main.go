@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -101,11 +102,19 @@ func main() {
 	}
 	frontendFS := http.FS(subFS)
 
+	// SEC-CSP: read the inline-script hash(es) produced by the Vite csp-hash
+	// plugin at build time.  The file contains space-separated 'sha256-<base64>'
+	// tokens that are injected into the script-src CSP directive so the browser
+	// can verify and execute SvelteKit's bootstrapper without 'unsafe-inline'.
+	// If the file is absent (e.g. a dev build without the plugin) we fall back
+	// to 'self'-only — the SPA may not render but the server stays secure.
+	scriptHashes := readCSPHashes(subFS, logger)
+
 	// ─── Incident store (in-memory immutable ledger) ─────────────────────────
 	incidentStore := incident.NewStore()
 
 	// ─── HTTP router ─────────────────────────────────────────────────────────
-	router := api.NewRouter(pool, authSvc, ghPusher, glPusher, frontendFS, cfg.Server.CORSAllowedOrigins, cfg.Server.SecureCookies, version, logger, incidentStore)
+	router := api.NewRouter(pool, authSvc, ghPusher, glPusher, frontendFS, cfg.Server.CORSAllowedOrigins, cfg.Server.SecureCookies, version, logger, incidentStore, scriptHashes)
 
 	// ─── HTTP server ─────────────────────────────────────────────────────────
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
@@ -138,4 +147,29 @@ func main() {
 		os.Exit(1)
 	}
 	logger.Info("server stopped")
+}
+
+// readCSPHashes reads dist/csp-hash.txt from the embedded sub-filesystem and
+// returns its trimmed content — a space-separated list of 'sha256-<base64>'
+// tokens written by the Vite csp-hash plugin after each frontend build.
+//
+// If the file does not exist (e.g. a CI placeholder build without the frontend)
+// an empty string is returned and a warning is logged; the router will then
+// emit a script-src 'self'-only CSP, which keeps the server secure but will
+// prevent the SPA bootstrapper from executing in a real browser.
+func readCSPHashes(subFS fs.FS, logger *zap.Logger) string {
+	data, err := fs.ReadFile(subFS, "csp-hash.txt")
+	if err != nil {
+		logger.Warn("csp-hash.txt not found in embedded dist — SPA inline script will be blocked by CSP",
+			zap.String("hint", "run 'make web-build' or 'npm run build' in the web/ directory"),
+		)
+		return ""
+	}
+	hashes := strings.TrimSpace(string(data))
+	if hashes == "" {
+		logger.Warn("csp-hash.txt is empty — SPA inline script will be blocked by CSP")
+	} else {
+		logger.Info("loaded CSP inline-script hashes", zap.String("hashes", hashes))
+	}
+	return hashes
 }
