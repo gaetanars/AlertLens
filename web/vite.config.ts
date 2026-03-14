@@ -1,5 +1,5 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, type Plugin } from 'vitest/config';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath, URL } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -80,6 +80,7 @@ export default defineConfig({
 	},
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}'],
+		passWithNoTests: false,
 		globals: true,
 		environment: 'jsdom',
 		setupFiles: ['./src/test-setup.ts'],
