@@ -60,6 +60,8 @@ jobs:
           files: alertlens-${{ github.ref_name }}-*
 
   docker:
+    name: Publish release image
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -84,8 +86,8 @@ jobs:
         with:
           images: ghcr.io/gaetanars/alertlens
           tags: |
-            type=semver,pattern={{version}}
-            type=raw,value=latest
+            type=semver,pattern=v{{version}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -96,5 +98,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: VERSION=${{ github.ref_name }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=docker-release
+          cache-to: type=gha,mode=max,scope=docker-release
