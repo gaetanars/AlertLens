@@ -16,7 +16,7 @@ Browser ──► AlertLens (Go binary + embedded SvelteKit frontend)
 ```
 
 - **Backend:** Go 1.25, chi router, zap logger
-- **Frontend:** SvelteKit + Tailwind CSS + shadcn/svelte (compiled to `dist/`, embedded via `all:dist`)
+- **Frontend:** SvelteKit + Tailwind CSS + bits-ui (compiled to `dist/`, embedded via `all:dist`)
 - **No runtime dependencies:** no database, no Node.js at runtime — all state lives in Alertmanager
 
 The embed directive in `main.go`:
@@ -137,10 +137,11 @@ logger.Error(fmt.Sprintf("failed to fetch alerts for %s: %v", name, err))
 
 ### HTTP handlers
 
-Every handler receives a `*alertmanager.Pool` (or similar dependency) injected through its constructor. Use the shared helpers in `internal/api/handlers/helpers.go`:
+Every handler receives a `*alertmanager.Pool` (or similar dependency) injected through its constructor. The `handlers` package exposes the following helpers (defined in `internal/api/handlers/auth.go`):
 
-- `resolveClient(pool, w, instance)` — resolves the target AM client; writes a JSON error and returns nil on failure
-- `writeJSON(w, status, v)` — encodes `v` as JSON with the given status code
+- `resolveClient(pool, w, instance)` — resolves the target AM client; writes a JSON error and returns nil on failure (defined in `internal/api/handlers/helpers.go`)
+- `writeJSON(w, v)` — encodes `v` as JSON with a `200 OK` status code
+- `writeJSONStatus(w, status, v)` — encodes `v` as JSON with an explicit status code
 - `writeError(w, msg, status)` — writes a structured `{"error": "..."}` JSON response
 
 ### Tests
@@ -162,7 +163,6 @@ func TestFoo(t *testing.T) {
         {name: "error case", /* ... */},
     }
     for _, tc := range cases {
-        tc := tc // capture range variable
         t.Run(tc.name, func(t *testing.T) {
             t.Parallel()
             // assertions using t.Errorf / t.Fatalf
@@ -204,4 +204,4 @@ Most fields can be overridden with environment variables (e.g. `ALERTLENS_ALERTM
 
 The SvelteKit app lives in `web/`. During development, run it separately with `make dev-frontend`. The Vite dev server proxies `/api` calls to the Go backend (started with `make dev-backend`).
 
-Production builds are written to `web/build/`, then copied to `dist/` by the build pipeline, where `go:embed` picks them up. The Vite `csp-hash` plugin writes `dist/csp-hash.txt` with the `sha256-` hash of any inline scripts so the Go server can inject it into the `Content-Security-Policy` header without `unsafe-inline`.
+Production builds are written directly to `dist/` at the repo root (configured via `svelte.config.js` with `adapter-static`), where `go:embed` picks them up. The Vite `csp-hash` plugin writes `dist/csp-hash.txt` with the `sha256-` hash of any inline scripts so the Go server can inject it into the `Content-Security-Policy` header without `unsafe-inline`.
