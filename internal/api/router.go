@@ -28,7 +28,7 @@ const maxRequestBodyBytes = 10 << 20 // 10 MiB
 //   - Blocking <object>, <embed> and <frame*> entirely.
 //   - Pinning base-uri and form-action to 'self'.
 const cspPolicy = "default-src 'self'; " +
-	"script-src 'self' 'unsafe-inline'; " +
+	"script-src 'self'; " +
 	"style-src 'self' 'unsafe-inline'; " +
 	"img-src 'self' data: blob:; " +
 	"font-src 'self'; " +
