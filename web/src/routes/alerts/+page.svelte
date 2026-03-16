@@ -41,6 +41,23 @@
 
 	let pollingInterval: ReturnType<typeof setInterval>;
 
+	/** When true, the degraded-mode banner is hidden until new failures arrive. */
+	let bannerDismissed = $state(false);
+
+	/**
+	 * Track the "signature" of the current partial failures so we can re-show
+	 * the banner if the set of failing instances changes after the user dismissed it.
+	 */
+	let lastFailureKey = $state('');
+
+	$effect(() => {
+		const key = $alertsPartialFailures.map((f) => `${f.instance}:${f.error}`).sort().join('|');
+		if (key !== lastFailureKey) {
+			lastFailureKey = key;
+			bannerDismissed = false;
+		}
+	});
+
 	/** True while we're applying URL params on initial mount (suppress re-entrant URL writes). */
 	let initialising = true;
 
@@ -186,16 +203,34 @@
 {/if}
 
 <!-- Degraded-mode banner: partial failures, some instances still serving data -->
-{#if $alertsPartialFailures.length > 0}
+{#if $alertsPartialFailures.length > 0 && !bannerDismissed}
 	<div
 		class="mb-4 p-3 rounded-md bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 text-sm"
 		role="alert"
 		aria-label="Degraded mode: some instances are unavailable"
 	>
-		<strong>⚠ Degraded mode</strong> — {$alertsPartialFailures.length}
-		{$alertsPartialFailures.length === 1 ? 'instance' : 'instances'} failed to respond:
-		{$alertsPartialFailures.map((f) => f.instance).join(', ')}.
-		Showing alerts from available instances only.
+		<div class="flex items-start justify-between gap-2">
+			<div>
+				<strong>⚠ Degraded mode</strong> —
+				{$alertsPartialFailures.length}
+				{$alertsPartialFailures.length === 1 ? 'instance' : 'instances'} failed to respond.
+				Showing alerts from available instances only.
+				<ul class="mt-1 list-disc list-inside space-y-0.5">
+					{#each $alertsPartialFailures as failure (failure.instance)}
+						<li><strong>{failure.instance}</strong>: {failure.error}</li>
+					{/each}
+				</ul>
+			</div>
+			<button
+				onclick={() => (bannerDismissed = true)}
+				aria-label="Dismiss degraded mode warning"
+				class="flex-shrink-0 p-0.5 rounded hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+					<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+				</svg>
+			</button>
+		</div>
 	</div>
 {/if}
 
