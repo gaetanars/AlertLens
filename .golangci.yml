@@ -14,5 +14,13 @@ linters-settings:
 linters:
   enable:
     - errcheck
+    - govet
     - staticcheck
     - unused
+    - gosimple
+    - ineffassign
+
+issues:
+  exclude-rules:
+    - path: "_test\\.go"
+      linters: [errcheck]
