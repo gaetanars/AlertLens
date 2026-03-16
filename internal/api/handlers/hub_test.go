@@ -56,7 +56,7 @@ func buildHubPool(t *testing.T, instances []struct{ name, url string }) *alertma
 		cfgs[i] = config.AlertmanagerConfig{Name: inst.name, URL: inst.url}
 	}
 	logger, _ := zap.NewDevelopment()
-	return alertmanager.NewPool(cfgs, logger)
+	return alertmanager.NewPool(cfgs, logger, "test")
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────

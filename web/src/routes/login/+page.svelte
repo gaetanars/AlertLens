@@ -34,8 +34,8 @@
 					<Bell class="h-8 w-8 text-primary" />
 				</div>
 			</div>
-			<h1 class="text-2xl font-bold">AlertLens Admin</h1>
-			<p class="text-sm text-muted-foreground mt-1">Sign in to access admin mode</p>
+			<h1 class="text-2xl font-bold">AlertLens</h1>
+			<p class="text-sm text-muted-foreground mt-1">Enter your password to sign in</p>
 		</div>
 
 		<form onsubmit={submit} class="space-y-4">

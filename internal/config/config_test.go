@@ -174,6 +174,64 @@ func TestValidate_UserPassword_Empty(t *testing.T) {
 	}
 }
 
+// ─── TenantID validation tests ───────────────────────────────────────────────
+
+func TestValidateTenantID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		tenantID  string
+		wantError bool
+	}{
+		// Valid tenant IDs
+		{name: "alphanumeric lowercase", tenantID: "payments", wantError: false},
+		{name: "hyphen separator", tenantID: "infra-team", wantError: false},
+		{name: "underscore separator", tenantID: "tenant_1", wantError: false},
+		{name: "uppercase letters", tenantID: "ABC123", wantError: false},
+		// Invalid tenant IDs
+		{name: "space in id", tenantID: "tenant id", wantError: true},
+		{name: "at-sign", tenantID: "tenant@1", wantError: true},
+		{name: "path traversal", tenantID: "../evil", wantError: true},
+		{name: "exclamation mark", tenantID: "tenant!1", wantError: true},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			// Build a minimal valid config YAML with the tenant_id under test.
+			content := "alertmanagers:\n  - name: test\n    url: http://am:9093\n    tenant_id: " + tc.tenantID + "\n"
+
+			f, err := os.CreateTemp("", "alertlens-tenantid-*.yaml")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer os.Remove(f.Name())
+			if _, err := f.WriteString(content); err != nil {
+				t.Fatal(err)
+			}
+			f.Close()
+
+			_, _, loadErr := Load(f.Name())
+			if tc.wantError {
+				if loadErr == nil {
+					t.Errorf("expected validation error for tenant_id=%q, got nil", tc.tenantID)
+					return
+				}
+				if !strings.Contains(loadErr.Error(), "tenant_id") {
+					t.Errorf("error should mention tenant_id, got: %v", loadErr)
+				}
+			} else {
+				if loadErr != nil {
+					t.Errorf("expected no error for tenant_id=%q, got: %v", tc.tenantID, loadErr)
+				}
+			}
+		})
+	}
+}
+
 func TestValidate_UserPassword_UTF8Counting(t *testing.T) {
 	// Verify that byte counting is UTF-8 aware.
 	// "café" = 5 bytes (c, a, f, é=2 bytes in UTF-8).

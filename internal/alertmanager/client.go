@@ -17,6 +17,33 @@ import (
 	"github.com/alertlens/alertlens/internal/config"
 )
 
+// upstreamError is returned when Alertmanager responds with a non-success
+// status code. It sanitizes the upstream error by hiding the raw response body
+// from callers (to prevent internal AM details from leaking to browser clients)
+// while preserving enough context for server-side logging.
+type upstreamError struct {
+	instance string
+	method   string
+	path     string
+	status   int
+	// detail holds the AM response body for internal logging only.
+	detail string
+}
+
+func (e *upstreamError) Error() string {
+	return fmt.Sprintf("upstream alertmanager error on %s %s (status %d)", e.method, e.path, e.status)
+}
+
+// IsUpstreamError returns true if the error originated from an Alertmanager
+// non-success HTTP response. Handlers use this to emit a generic 502 without
+// leaking internal AM details.
+func IsUpstreamError(err error) (instance string, ok bool) {
+	if ue, ok2 := err.(*upstreamError); ok2 {
+		return ue.instance, true
+	}
+	return "", false
+}
+
 // silencePath returns the Alertmanager API v2 path for a specific silence.
 // url.PathEscape is used to prevent path injection when the caller-supplied
 // id contains characters such as '/', '?', or '#' (CWE-73).
@@ -36,6 +63,7 @@ type Client struct {
 	name      string
 	baseURL   string
 	tenantID  string
+	userAgent string
 	basicAuth *basicAuthCreds
 	http      *http.Client
 }
@@ -45,7 +73,8 @@ type basicAuthCreds struct {
 }
 
 // NewClient creates a new Client from an AlertmanagerConfig.
-func NewClient(cfg config.AlertmanagerConfig) *Client {
+// version is embedded in the User-Agent header sent to Alertmanager.
+func NewClient(cfg config.AlertmanagerConfig, version string) *Client {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	if cfg.TLSSkipVerify {
 		// Only allow InsecureSkipVerify if explicitly configured via an environment variable or flag,
@@ -57,9 +86,10 @@ func NewClient(cfg config.AlertmanagerConfig) *Client {
 	}
 
 	c := &Client{
-		name:    cfg.Name,
-		baseURL: strings.TrimRight(cfg.URL, "/"),
-		tenantID: cfg.TenantID,
+		name:      cfg.Name,
+		baseURL:   strings.TrimRight(cfg.URL, "/"),
+		tenantID:  cfg.TenantID,
+		userAgent: "alertlens/" + version,
 		http: &http.Client{
 			Timeout:   15 * time.Second,
 			Transport: transport,
@@ -227,7 +257,18 @@ func (c *Client) get(ctx context.Context, path string, dest any) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("GET %s: unexpected status %d", path, resp.StatusCode)
+		// Read and discard the body to allow connection reuse, capturing it for
+		// internal logging only — never forwarded to API clients.
+		bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		ue := &upstreamError{
+			instance: c.name,
+			method:   http.MethodGet,
+			path:     path,
+			status:   resp.StatusCode,
+			detail:   string(bodyBytes),
+		}
+		log.Printf("alertmanager[%s] GET %s returned %d: %s", c.name, path, resp.StatusCode, ue.detail)
+		return ue
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(dest); err != nil {
@@ -257,7 +298,18 @@ func (c *Client) postJSON(ctx context.Context, path string, body, dest any) erro
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("POST %s: unexpected status %d", path, resp.StatusCode)
+		// Read and discard the body to allow connection reuse, capturing it for
+		// internal logging only — never forwarded to API clients.
+		bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		ue := &upstreamError{
+			instance: c.name,
+			method:   http.MethodPost,
+			path:     path,
+			status:   resp.StatusCode,
+			detail:   string(bodyBytes),
+		}
+		log.Printf("alertmanager[%s] POST %s returned %d: %s", c.name, path, resp.StatusCode, ue.detail)
+		return ue
 	}
 
 	if dest != nil {
@@ -270,6 +322,7 @@ func (c *Client) postJSON(ctx context.Context, path string, body, dest any) erro
 
 func (c *Client) setHeaders(req *http.Request) {
 	req.Header.Set("Accept", "application/json")
+	req.Header.Set("User-Agent", c.userAgent)
 	if c.basicAuth != nil {
 		req.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
 	}

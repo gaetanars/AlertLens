@@ -145,6 +145,7 @@ export async function loadInstances() {
 	}
 }
 
+<<<<<<< issue-46-multi-alertmanager-aggregation
 // ─── Derived: available label keys for group-by dropdown ─────────────────────
 
 /**
@@ -156,11 +157,25 @@ export const availableGroupByLabels = derived(alerts, ($alerts) => {
 	for (const alert of $alerts) {
 		for (const key of Object.keys(alert.labels)) {
 			keys.add(key);
+=======
+// ─── Derived: available label keys across current alerts ─────────────────────
+
+/**
+ * All unique label keys present in the current (unfiltered) alert set.
+ * Used to populate the group-by dropdown dynamically.
+ */
+export const availableLabels = derived(alerts, ($alerts) => {
+	const keys = new Set<string>();
+	for (const a of $alerts) {
+		for (const k of Object.keys(a.labels)) {
+			keys.add(k);
+>>>>>>> main
 		}
 	}
 	return Array.from(keys).sort();
 });
 
+<<<<<<< issue-46-multi-alertmanager-aggregation
 // ─── Matcher-syntax helpers ──────────────────────────────────────────────────
 
 // Operator order matters: longer tokens (=~, !=, !~) must come before = to avoid
@@ -178,6 +193,31 @@ export function validateMatcherSyntax(query: string): string | null {
 	const re = new RegExp(MATCHER_RE.source, 'g');
 	let match;
 	while ((match = re.exec(query)) !== null) {
+=======
+// ─── Matcher-syntax parser/validator ─────────────────────────────────────────
+
+/**
+ * Regex matching all four Alertmanager matcher operators in precedence order.
+ * `!~` and `=~` must be checked before `!=` and `=` to avoid partial matching.
+ */
+const MATCHER_RE = /(\w+)(=~|!~|!=|=)["']?([^"',\s}]*)["']?/g;
+
+/**
+ * Validate a filter query string.
+ * Returns an error message if the query contains invalid syntax (e.g. a
+ * bad regex inside `=~` / `!~` matchers), or `null` when the query is valid.
+ */
+export function validateFilterQuery(query: string): string | null {
+	const trimmed = query.trim();
+	if (!trimmed) return null;
+
+	MATCHER_RE.lastIndex = 0;
+	let match;
+	let anyMatcher = false;
+
+	while ((match = MATCHER_RE.exec(trimmed)) !== null) {
+		anyMatcher = true;
+>>>>>>> main
 		const [, , op, val] = match;
 		if (op === '=~' || op === '!~') {
 			try {
@@ -187,6 +227,7 @@ export function validateMatcherSyntax(query: string): string | null {
 			}
 		}
 	}
+<<<<<<< issue-46-multi-alertmanager-aggregation
 	return null;
 }
 
@@ -197,6 +238,24 @@ function matchesFilterQuery(alert: Alert, query: string): boolean {
 	let found = false;
 	let parsed = false;
 	while ((match = re.exec(query)) !== null) {
+=======
+
+	// If no matcher was parsed but the query is non-empty it's a plain-text
+	// substring search — that's always valid.
+	void anyMatcher;
+	return null;
+}
+
+// ─── Simple matcher-syntax filter (subset of AM syntax) ─────────────────────
+
+function matchesFilterQuery(alert: Alert, query: string): boolean {
+	// Parse matchers: key=val, key!=val, key=~regex, key!~regex (Alertmanager native)
+	MATCHER_RE.lastIndex = 0;
+	let match;
+	let found = false;
+	let parsed = false;
+	while ((match = MATCHER_RE.exec(query)) !== null) {
+>>>>>>> main
 		parsed = true;
 		const [, key, op, val] = match;
 		const labelVal = alert.labels[key] ?? '';
@@ -213,14 +272,22 @@ function matchesFilterQuery(alert: Alert, query: string): boolean {
 			try {
 				ok = !new RegExp(val).test(labelVal);
 			} catch {
+<<<<<<< issue-46-multi-alertmanager-aggregation
 				ok = false;
+=======
+				ok = true; // bad regex → treat as no match constraint
+>>>>>>> main
 			}
 		}
 		if (!ok) return false;
 		found = true;
 	}
 	if (parsed) return found;
+<<<<<<< issue-46-multi-alertmanager-aggregation
 	// Fallback: substring search across all labels and annotations
+=======
+	// Fallback: substring search across all labels + annotations
+>>>>>>> main
 	const lower = query.toLowerCase();
 	return (
 		Object.values(alert.labels).some((v) => v.toLowerCase().includes(lower)) ||

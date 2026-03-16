@@ -78,7 +78,7 @@ func (h *AlertsHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.pool.GetAlertsView(r.Context(), params)
 	if err != nil {
-		writeError(w, err.Error(), http.StatusBadGateway)
+		writeAMError(w, err)
 		return
 	}
 	writeJSON(w, resp)
