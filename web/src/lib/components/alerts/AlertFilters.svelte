@@ -33,16 +33,14 @@
 	const SEVERITIES = ['critical', 'warning', 'info'] as const;
 	const STATUSES = ['active', 'suppressed', 'unprocessed'] as const;
 
-	// Fallback static options shown when no alerts are loaded yet.
-	const DEFAULT_GROUP_BY_OPTIONS = [
-		'severity', 'status', 'alertmanager', 'alertname', 'team', 'environment', 'cluster'
-	] as const;
+	// Static well-known group-by options always shown first.
+	const STATIC_GROUP_BY = ['severity', 'status', 'alertmanager'];
 
-	/** Deduplicated group-by options: dynamic labels merged with static defaults. */
+	/** Deduplicated group-by options: static options first, then dynamic label keys. */
 	const groupByOptions = $derived(() => {
-		const dynamic = $availableLabels;
-		const combined = new Set([...DEFAULT_GROUP_BY_OPTIONS, ...dynamic]);
-		return Array.from(combined).sort();
+		const staticSet = new Set(STATIC_GROUP_BY);
+		const dynamic = $availableLabels.filter((k) => !staticSet.has(k));
+		return [...STATIC_GROUP_BY, ...dynamic];
 	});
 
 	/** Inline validation error for the matcher query input. */
@@ -92,10 +90,12 @@
 	}
 
 	function clearAllFilters() {
+		if (debounceTimer !== null) { clearTimeout(debounceTimer); debounceTimer = null; }
 		filterQuery.set('');
 		instanceFilter.set('');
 		severityFilter.set([]);
 		statusFilter.set([]);
+		queryError = null;
 		// Force sync URL after clearing.
 		syncURLState({
 			view:      $viewMode,
@@ -206,8 +206,8 @@
 					onchange={onGroupByChange}
 					class="px-3 py-1.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 				>
-					{#each groupByOptions() as label}
-						<option value={label}>{label}</option>
+					{#each groupByOptions() as key}
+						<option value={key}>{key}</option>
 					{/each}
 				</select>
 			</div>

@@ -180,10 +180,8 @@ export function validateFilterQuery(query: string): string | null {
 
 	MATCHER_RE.lastIndex = 0;
 	let match;
-	let anyMatcher = false;
 
 	while ((match = MATCHER_RE.exec(trimmed)) !== null) {
-		anyMatcher = true;
 		const [, , op, val] = match;
 		if (op === '=~' || op === '!~') {
 			try {
@@ -193,10 +191,6 @@ export function validateFilterQuery(query: string): string | null {
 			}
 		}
 	}
-
-	// If no matcher was parsed but the query is non-empty it's a plain-text
-	// substring search — that's always valid.
-	void anyMatcher;
 	return null;
 }
 
@@ -225,7 +219,7 @@ function matchesFilterQuery(alert: Alert, query: string): boolean {
 			try {
 				ok = !new RegExp(val).test(labelVal);
 			} catch {
-				ok = true; // bad regex → treat as no match constraint
+				ok = true; // bad regex → treat as no match constraint, keep alert visible
 			}
 		}
 		if (!ok) return false;

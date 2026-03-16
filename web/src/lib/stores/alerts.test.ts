@@ -577,6 +577,27 @@ describe('filteredAlerts — negated regex operator !~', () => {
 		expect(result).toHaveLength(1);
 		expect(result[0].fingerprint).toBe('fp1');
 	});
+
+	it('includes all alerts when !~ contains an invalid regex (no match constraint)', () => {
+		// Bad regex in !~ should not hide alerts — treat as no constraint (ok = true).
+		filterQuery.set('env!~[invalid');
+		const result = get(filteredAlerts);
+		expect(result).toHaveLength(3);
+	});
+
+	it('includes alert missing the filtered label under !~ (absent label treated as empty string)', () => {
+		// An alert without the label has labelVal = ''. '' does not match 'prod.*',
+		// so !~ passes and the alert remains visible.
+		const noEnv = makeAlert({ fingerprint: 'fp4', labels: { alertname: 'NoEnv', severity: 'info' } });
+		alerts.set([a1, a2, a3, noEnv]);
+		filterQuery.set('env!~prod.*');
+		const result = get(filteredAlerts);
+		// a1 (env=prod) and a3 (env=prod-us) are excluded; a2 (env=staging) and noEnv pass.
+		expect(result.map((a) => a.fingerprint)).toContain('fp2');
+		expect(result.map((a) => a.fingerprint)).toContain('fp4');
+		expect(result.map((a) => a.fingerprint)).not.toContain('fp1');
+		expect(result.map((a) => a.fingerprint)).not.toContain('fp3');
+	});
 });
 
 // ─── availableLabels derived store ───────────────────────────────────────────
