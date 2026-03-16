@@ -19,13 +19,8 @@
 		groupByLabel,
 		viewMode,
 		instances,
-<<<<<<< issue-46-multi-alertmanager-aggregation
-		availableGroupByLabels,
-		validateMatcherSyntax,
-=======
 		availableLabels,
 		validateFilterQuery,
->>>>>>> main
 		loadAlerts
 	} from '$lib/stores/alerts';
 	import { Search, LayoutGrid, List, RefreshCw, X } from 'lucide-svelte';
@@ -38,34 +33,14 @@
 	const SEVERITIES = ['critical', 'warning', 'info'] as const;
 	const STATUSES = ['active', 'suppressed', 'unprocessed'] as const;
 
-<<<<<<< issue-46-multi-alertmanager-aggregation
-	/** Inline validation error for the matcher query input. */
-	let matcherError = $state<string | null>(null);
-
-	/** Debounce timer handle for the query input. */
-	let queryDebounce: ReturnType<typeof setTimeout> | null = null;
-
 	// Static well-known group-by options always shown first.
 	const STATIC_GROUP_BY = ['severity', 'status', 'alertmanager'];
 
-	// Merge static options with dynamic label keys from the current alert set.
+	/** Deduplicated group-by options: static options first, then dynamic label keys. */
 	const groupByOptions = $derived(() => {
 		const staticSet = new Set(STATIC_GROUP_BY);
-		const dynamic = $availableGroupByLabels.filter((k) => !staticSet.has(k));
+		const dynamic = $availableLabels.filter((k) => !staticSet.has(k));
 		return [...STATIC_GROUP_BY, ...dynamic];
-	});
-=======
-	// Fallback static options shown when no alerts are loaded yet.
-	const DEFAULT_GROUP_BY_OPTIONS = [
-		'severity', 'status', 'alertmanager', 'alertname', 'team', 'environment', 'cluster'
-	] as const;
->>>>>>> main
-
-	/** Deduplicated group-by options: dynamic labels merged with static defaults. */
-	const groupByOptions = $derived(() => {
-		const dynamic = $availableLabels;
-		const combined = new Set([...DEFAULT_GROUP_BY_OPTIONS, ...dynamic]);
-		return Array.from(combined).sort();
 	});
 
 	/** Inline validation error for the matcher query input. */
@@ -115,11 +90,12 @@
 	}
 
 	function clearAllFilters() {
+		if (debounceTimer !== null) { clearTimeout(debounceTimer); debounceTimer = null; }
 		filterQuery.set('');
 		instanceFilter.set('');
 		severityFilter.set([]);
 		statusFilter.set([]);
-		matcherError = null;
+		queryError = null;
 		// Force sync URL after clearing.
 		syncURLState({
 			view:      $viewMode,
@@ -158,20 +134,6 @@
 
 	// Bindings for direct input changes (q, instance, groupBy).
 	function onQueryChange(e: Event) {
-<<<<<<< issue-46-multi-alertmanager-aggregation
-		const val = (e.target as HTMLInputElement).value;
-		filterQuery.set(val);
-		syncURLState({ ...currentURLState(), q: val }, false);
-
-		// Validate matcher syntax immediately for inline error feedback.
-		matcherError = validateMatcherSyntax(val);
-
-		// Debounce the API fetch by 200 ms.
-		if (queryDebounce !== null) clearTimeout(queryDebounce);
-		queryDebounce = setTimeout(() => {
-			queryDebounce = null;
-			loadAlerts();
-=======
 		const value = (e.target as HTMLInputElement).value;
 		filterQuery.set(value);
 
@@ -184,7 +146,6 @@
 			syncURLState({ ...currentURLState(), q: value }, false);
 			// Only trigger a server-side fetch when there is no validation error.
 			if (!queryError) loadAlerts();
->>>>>>> main
 		}, 200);
 	}
 
@@ -217,15 +178,6 @@
 				placeholder='e.g. severity="critical", env=~"prod.*"'
 				value={$filterQuery}
 				oninput={onQueryChange}
-<<<<<<< issue-46-multi-alertmanager-aggregation
-				aria-invalid={matcherError !== null}
-				aria-describedby={matcherError ? 'matcher-error' : undefined}
-				class="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring {matcherError ? 'border-destructive focus:ring-destructive' : ''}"
-			/>
-			{#if matcherError}
-				<p id="matcher-error" class="absolute left-0 top-full mt-1 text-xs text-destructive" role="alert">
-					{matcherError}
-=======
 				aria-invalid={queryError !== null}
 				aria-describedby={queryError ? 'query-error' : undefined}
 				class="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring {queryError ? 'border-destructive focus:ring-destructive' : ''}"
@@ -233,7 +185,6 @@
 			{#if queryError}
 				<p id="query-error" class="absolute left-0 top-full mt-1 text-xs text-destructive z-10 bg-background border border-destructive rounded px-2 py-1 shadow-sm" role="alert">
 					{queryError}
->>>>>>> main
 				</p>
 			{/if}
 		</div>
@@ -255,13 +206,8 @@
 					onchange={onGroupByChange}
 					class="px-3 py-1.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 				>
-<<<<<<< issue-46-multi-alertmanager-aggregation
 					{#each groupByOptions() as key}
 						<option value={key}>{key}</option>
-=======
-					{#each groupByOptions() as label}
-						<option value={label}>{label}</option>
->>>>>>> main
 					{/each}
 				</select>
 			</div>
