@@ -72,6 +72,25 @@ jobs:
         run: npm test
         working-directory: web
 
+  lint:
+    name: Go lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Create dist placeholder
+        run: mkdir -p dist && touch dist/.keep
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64
+
   build-and-e2e:
     name: Build & E2E
     needs: [test, lint, frontend-test]
