@@ -63,7 +63,7 @@ func main() {
 	}
 
 	// ─── Alertmanager pool ───────────────────────────────────────────────────
-	pool := alertmanager.NewPool(cfg.Alertmanagers, logger)
+	pool := alertmanager.NewPool(cfg.Alertmanagers, logger, version)
 
 	// ─── Auth service ────────────────────────────────────────────────────────
 	authSvc := auth.NewServiceFromConfig(cfg.Auth, logger.Sugar())

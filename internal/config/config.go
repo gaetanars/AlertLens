@@ -6,11 +6,15 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 )
+
+// tenantIDRe matches valid tenant IDs: alphanumeric, hyphens, and underscores only.
+var tenantIDRe = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 
 // Config is the root configuration structure for AlertLens.
 type Config struct {
@@ -213,6 +217,9 @@ func validate(cfg *Config) error {
 		u, err := url.ParseRequestURI(am.URL)
 		if err != nil || (u.Scheme != "http" && u.Scheme != "https") {
 			return fmt.Errorf("alertmanagers[%d].url %q is not a valid http/https URL", i, am.URL)
+		}
+		if am.TenantID != "" && !tenantIDRe.MatchString(am.TenantID) {
+			return fmt.Errorf("alertmanagers[%d].tenant_id %q is invalid: must contain only alphanumeric characters, hyphens, and underscores", i, am.TenantID)
 		}
 	}
 	return nil

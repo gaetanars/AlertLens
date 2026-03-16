@@ -364,7 +364,7 @@ func (h *BuilderHandler) ExportConfig(w http.ResponseWriter, r *http.Request) {
 		}
 		status, err := client.GetStatus(r.Context())
 		if err != nil {
-			writeError(w, err.Error(), http.StatusBadGateway)
+			writeAMError(w, err)
 			return
 		}
 		seedYAML = []byte(status.Config.Original)
@@ -417,7 +417,7 @@ func (h *BuilderHandler) builderFromRequest(w http.ResponseWriter, r *http.Reque
 	}
 	status, err := client.GetStatus(r.Context())
 	if err != nil {
-		writeError(w, err.Error(), http.StatusBadGateway)
+		writeAMError(w, err)
 		return nil
 	}
 	b, err := configbuilder.NewConfigBuilder([]byte(status.Config.Original))

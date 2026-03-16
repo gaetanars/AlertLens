@@ -50,7 +50,7 @@ func (h *SilencesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 	silence, err := client.GetSilence(r.Context(), id)
 	if err != nil {
-		writeError(w, err.Error(), http.StatusBadGateway)
+		writeAMError(w, err)
 		return
 	}
 	writeJSON(w, silence)
@@ -99,7 +99,7 @@ func (h *SilencesHandler) Create(w http.ResponseWriter, r *http.Request) {
 		silenceID, err = client.CreateSilence(r.Context(), input)
 	}
 	if err != nil {
-		writeError(w, err.Error(), http.StatusBadGateway)
+		writeAMError(w, err)
 		return
 	}
 
@@ -131,7 +131,7 @@ func (h *SilencesHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	silenceID, err := client.UpdateSilence(r.Context(), id, input)
 	if err != nil {
-		writeError(w, err.Error(), http.StatusBadGateway)
+		writeAMError(w, err)
 		return
 	}
 	writeJSON(w, map[string]string{"silence_id": silenceID})
@@ -148,7 +148,7 @@ func (h *SilencesHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := client.ExpireSilence(r.Context(), id); err != nil {
-		writeError(w, err.Error(), http.StatusBadGateway)
+		writeAMError(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

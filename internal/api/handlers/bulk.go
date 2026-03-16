@@ -125,7 +125,7 @@ func (h *BulkHandler) Create(w http.ResponseWriter, r *http.Request) {
 				Comment:   comment,
 			}, createdBy, comment)
 			if err != nil {
-				writeError(w, err.Error(), http.StatusBadGateway)
+				writeAMError(w, err)
 				return
 			}
 			allSilenceIDs = append(allSilenceIDs, id)
@@ -140,7 +140,7 @@ func (h *BulkHandler) Create(w http.ResponseWriter, r *http.Request) {
 					Comment:   comment,
 				}, createdBy, comment)
 				if err != nil {
-					writeError(w, err.Error(), http.StatusBadGateway)
+					writeAMError(w, err)
 					return
 				}
 				allSilenceIDs = append(allSilenceIDs, id)

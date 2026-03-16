@@ -36,7 +36,7 @@ func (h *RoutingHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	status, err := client.GetStatus(r.Context())
 	if err != nil {
-		writeError(w, err.Error(), http.StatusBadGateway)
+		writeAMError(w, err)
 		return
 	}
 
@@ -81,7 +81,7 @@ func (h *RoutingHandler) Match(w http.ResponseWriter, r *http.Request) {
 
 	status, err := client.GetStatus(r.Context())
 	if err != nil {
-		writeError(w, err.Error(), http.StatusBadGateway)
+		writeAMError(w, err)
 		return
 	}
 
