@@ -80,4 +80,47 @@ describe('InstanceSelector', () => {
 		const dot = container.querySelector('span.bg-red-500');
 		expect(dot).toBeTruthy();
 	});
+
+	it('health dot title shows error message for selected unhealthy instance', () => {
+		const { container } = render(InstanceSelector, { instances: degradedInstances, value: 'prod-us' });
+		const dot = container.querySelector('span.bg-red-500');
+		expect(dot?.getAttribute('title')).toBe('connection refused');
+	});
+
+	it('health dot title shows "Healthy" for selected healthy instance', () => {
+		const { container } = render(InstanceSelector, { instances: healthyInstances, value: 'prod-eu' });
+		const dot = container.querySelector('span.bg-green-500');
+		expect(dot?.getAttribute('title')).toBe('Healthy');
+	});
+
+	it('health dot title shows "Unhealthy" for selected unhealthy instance with no error field', () => {
+		const noErrorInstances: InstanceStatus[] = [
+			{ name: 'prod-eu', url: 'http://eu.example.com', healthy: false, version: '', has_tenant: false }
+		];
+		const { container } = render(InstanceSelector, { instances: noErrorInstances, value: 'prod-eu' });
+		const dot = container.querySelector('span.bg-red-500');
+		expect(dot?.getAttribute('title')).toBe('Unhealthy');
+	});
+
+	it('unhealthy instance option title shows error message', () => {
+		render(InstanceSelector, { instances: degradedInstances, value: '' });
+		const select = screen.getByRole('combobox');
+		const options = select.querySelectorAll('option');
+		const usOption = Array.from(options).find((o) => o.value === 'prod-us');
+		expect(usOption?.getAttribute('title')).toBe('connection refused');
+	});
+
+	it('healthy instance option title shows URL', () => {
+		render(InstanceSelector, { instances: healthyInstances, value: '' });
+		const select = screen.getByRole('combobox');
+		const options = select.querySelectorAll('option');
+		const euOption = Array.from(options).find((o) => o.value === 'prod-eu');
+		expect(euOption?.getAttribute('title')).toBe('http://eu.example.com');
+	});
+
+	it('degraded badge has descriptive aria-label', () => {
+		render(InstanceSelector, { instances: degradedInstances, value: '' });
+		const badge = screen.getByLabelText(/degraded mode/i);
+		expect(badge).toBeTruthy();
+	});
 });
