@@ -22,6 +22,8 @@ import {
 	filteredAlerts,
 	filteredGrouped,
 	groupedAlerts,
+	availableLabels,
+	validateFilterQuery,
 	loadAlerts
 } from './alerts';
 import { fetchAlerts } from '$lib/api/alerts';
@@ -491,5 +493,130 @@ describe('groupedAlerts — client-side derived grouping (extended)', () => {
 		filterQuery.set('NoMatch');
 		const groups = get(groupedAlerts);
 		expect(groups.size).toBe(0);
+	});
+});
+
+// ─── validateFilterQuery — matcher syntax validation ─────────────────────────
+
+describe('validateFilterQuery — syntax validation', () => {
+	it('returns null for empty query', () => {
+		expect(validateFilterQuery('')).toBeNull();
+	});
+
+	it('returns null for whitespace-only query', () => {
+		expect(validateFilterQuery('   ')).toBeNull();
+	});
+
+	it('returns null for plain text (substring search)', () => {
+		expect(validateFilterQuery('CPUHigh')).toBeNull();
+	});
+
+	it('returns null for valid equality matcher', () => {
+		expect(validateFilterQuery('severity=critical')).toBeNull();
+	});
+
+	it('returns null for valid not-equal matcher', () => {
+		expect(validateFilterQuery('env!=staging')).toBeNull();
+	});
+
+	it('returns null for valid regex matcher =~', () => {
+		expect(validateFilterQuery('env=~prod.*')).toBeNull();
+	});
+
+	it('returns null for valid negated regex matcher !~', () => {
+		expect(validateFilterQuery('env!~staging.*')).toBeNull();
+	});
+
+	it('returns null for multiple valid matchers', () => {
+		expect(validateFilterQuery('severity=critical env=~prod.*')).toBeNull();
+	});
+
+	it('returns error string for invalid regex in =~ matcher', () => {
+		const result = validateFilterQuery('env=~[invalid');
+		expect(result).not.toBeNull();
+		expect(result).toContain('Invalid regex');
+	});
+
+	it('returns error string for invalid regex in !~ matcher', () => {
+		const result = validateFilterQuery('env!~[invalid');
+		expect(result).not.toBeNull();
+		expect(result).toContain('Invalid regex');
+	});
+});
+
+// ─── filteredAlerts — !~ operator (negated regex) ─────────────────────────────
+
+describe('filteredAlerts — negated regex operator !~', () => {
+	const a1 = makeAlert({ fingerprint: 'fp1', labels: { alertname: 'CPUHigh', severity: 'critical', env: 'prod' } });
+	const a2 = makeAlert({ fingerprint: 'fp2', labels: { alertname: 'MemHigh', severity: 'warning', env: 'staging' } });
+	const a3 = makeAlert({ fingerprint: 'fp3', labels: { alertname: 'DiskFull', severity: 'critical', env: 'prod-us' } });
+
+	beforeEach(() => {
+		alerts.set([a1, a2, a3]);
+		filterQuery.set('');
+		instanceFilter.set('');
+	});
+
+	it('filters out alerts matching the negated regex', () => {
+		filterQuery.set('env!~prod.*');
+		const result = get(filteredAlerts);
+		expect(result).toHaveLength(1);
+		expect(result[0].fingerprint).toBe('fp2');
+	});
+
+	it('returns all alerts when no alerts match the negated regex', () => {
+		filterQuery.set('env!~staging.*');
+		const result = get(filteredAlerts);
+		expect(result).toHaveLength(2);
+		expect(result.map((a) => a.fingerprint)).not.toContain('fp2');
+	});
+
+	it('combines !~ with = matcher', () => {
+		filterQuery.set('severity=critical env!~prod-us');
+		const result = get(filteredAlerts);
+		expect(result).toHaveLength(1);
+		expect(result[0].fingerprint).toBe('fp1');
+	});
+});
+
+// ─── availableLabels derived store ───────────────────────────────────────────
+
+describe('availableLabels — dynamic label keys', () => {
+	beforeEach(() => {
+		alerts.set([]);
+		filterQuery.set('');
+	});
+
+	it('returns empty array when no alerts loaded', () => {
+		expect(get(availableLabels)).toEqual([]);
+	});
+
+	it('returns sorted unique label keys from all alerts', () => {
+		const a1 = makeAlert({ fingerprint: 'fp1', labels: { alertname: 'A', severity: 'critical', env: 'prod' } });
+		const a2 = makeAlert({ fingerprint: 'fp2', labels: { alertname: 'B', team: 'infra' } });
+		alerts.set([a1, a2]);
+		const keys = get(availableLabels);
+		expect(keys).toContain('alertname');
+		expect(keys).toContain('severity');
+		expect(keys).toContain('env');
+		expect(keys).toContain('team');
+		// Should be sorted
+		expect(keys).toEqual([...keys].sort());
+	});
+
+	it('deduplicates label keys across alerts', () => {
+		const a1 = makeAlert({ fingerprint: 'fp1', labels: { severity: 'critical' } });
+		const a2 = makeAlert({ fingerprint: 'fp2', labels: { severity: 'warning' } });
+		alerts.set([a1, a2]);
+		const keys = get(availableLabels);
+		const severityCount = keys.filter((k) => k === 'severity').length;
+		expect(severityCount).toBe(1);
+	});
+
+	it('updates reactively when alerts change', () => {
+		alerts.set([makeAlert({ fingerprint: 'fp1', labels: { cluster: 'eu-west-1' } })]);
+		expect(get(availableLabels)).toContain('cluster');
+		alerts.set([]);
+		expect(get(availableLabels)).toHaveLength(0);
 	});
 });

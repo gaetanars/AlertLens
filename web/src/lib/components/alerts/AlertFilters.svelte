@@ -19,6 +19,8 @@
 		groupByLabel,
 		viewMode,
 		instances,
+		availableLabels,
+		validateFilterQuery,
 		loadAlerts
 	} from '$lib/stores/alerts';
 	import { Search, LayoutGrid, List, RefreshCw, X } from 'lucide-svelte';
@@ -31,15 +33,23 @@
 	const SEVERITIES = ['critical', 'warning', 'info'] as const;
 	const STATUSES = ['active', 'suppressed', 'unprocessed'] as const;
 
-	const GROUP_BY_OPTIONS = [
-		{ value: 'severity',     label: 'Severity' },
-		{ value: 'status',       label: 'Status' },
-		{ value: 'alertmanager', label: 'Alertmanager' },
-		{ value: 'team',         label: 'team' },
-		{ value: 'environment',  label: 'environment' },
-		{ value: 'cluster',      label: 'cluster' },
-		{ value: 'alertname',    label: 'alertname' }
+	// Fallback static options shown when no alerts are loaded yet.
+	const DEFAULT_GROUP_BY_OPTIONS = [
+		'severity', 'status', 'alertmanager', 'alertname', 'team', 'environment', 'cluster'
 	] as const;
+
+	/** Deduplicated group-by options: dynamic labels merged with static defaults. */
+	const groupByOptions = $derived(() => {
+		const dynamic = $availableLabels;
+		const combined = new Set([...DEFAULT_GROUP_BY_OPTIONS, ...dynamic]);
+		return Array.from(combined).sort();
+	});
+
+	/** Inline validation error for the matcher query input. */
+	let queryError = $state<string | null>(null);
+
+	/** Debounce timer for the query input. */
+	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// Initialize stores from URL on mount. This ensures URL params are applied
 	// even if the component remounts within the same page session.
@@ -124,9 +134,19 @@
 
 	// Bindings for direct input changes (q, instance, groupBy).
 	function onQueryChange(e: Event) {
-		filterQuery.set((e.target as HTMLInputElement).value);
-		syncURLState({ ...currentURLState(), q: $filterQuery }, false);
-		loadAlerts();
+		const value = (e.target as HTMLInputElement).value;
+		filterQuery.set(value);
+
+		// Validate immediately to show inline errors without waiting for debounce.
+		queryError = validateFilterQuery(value);
+
+		// Clear any pending debounce and schedule a new one (200 ms).
+		if (debounceTimer !== null) clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(() => {
+			syncURLState({ ...currentURLState(), q: value }, false);
+			// Only trigger a server-side fetch when there is no validation error.
+			if (!queryError) loadAlerts();
+		}, 200);
 	}
 
 	function onInstanceChange(instance: string) {
@@ -158,8 +178,15 @@
 				placeholder='e.g. severity="critical", env=~"prod.*"'
 				value={$filterQuery}
 				oninput={onQueryChange}
-				class="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+				aria-invalid={queryError !== null}
+				aria-describedby={queryError ? 'query-error' : undefined}
+				class="w-full pl-9 pr-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring {queryError ? 'border-destructive focus:ring-destructive' : ''}"
 			/>
+			{#if queryError}
+				<p id="query-error" class="absolute left-0 top-full mt-1 text-xs text-destructive z-10 bg-background border border-destructive rounded px-2 py-1 shadow-sm" role="alert">
+					{queryError}
+				</p>
+			{/if}
 		</div>
 
 		<!-- Instance filter -->
@@ -179,8 +206,8 @@
 					onchange={onGroupByChange}
 					class="px-3 py-1.5 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 				>
-					{#each GROUP_BY_OPTIONS as opt}
-						<option value={opt.value}>{opt.label}</option>
+					{#each groupByOptions() as label}
+						<option value={label}>{label}</option>
 					{/each}
 				</select>
 			</div>
