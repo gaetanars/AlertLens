@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
-	gitlab "github.com/xanzy/go-gitlab"
+	gitlab "github.com/xanzy/go-gitlab" //nolint:staticcheck // SA1019: Deprecated client, but no viable replacement available yet
 )
 
 // GitLabPusher pushes files to GitLab using the GitLab API.
 type GitLabPusher struct {
-	client *gitlab.Client
+	client *gitlab.Client //nolint:staticcheck // SA1019: Deprecated client, but no viable replacement available yet
 }
 
 // NewGitLabPusher creates a GitLabPusher with the given personal access token and base URL.
@@ -19,7 +19,7 @@ func NewGitLabPusher(token, baseURL string) (*GitLabPusher, error) {
 	if baseURL != "" && baseURL != "https://gitlab.com" {
 		opts = append(opts, gitlab.WithBaseURL(baseURL))
 	}
-	client, err := gitlab.NewClient(token, opts...)
+	client, err := gitlab.NewClient(token, opts...) //nolint:staticcheck // SA1019: Deprecated client, but no viable replacement available yet
 	if err != nil {
 		return nil, fmt.Errorf("creating GitLab client: %w", err)
 	}

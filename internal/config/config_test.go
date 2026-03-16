@@ -74,7 +74,9 @@ alertmanagers:
 		t.Fatal(err)
 	}
 	defer os.Remove(f.Name())
-	f.WriteString(content)
+	if _, err := f.WriteString(content); err != nil {
+		t.Fatal(err)
+	}
 	f.Close()
 
 	cfg, _, err := Load(f.Name())

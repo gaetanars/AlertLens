@@ -1,0 +1,18 @@
+run:
+  timeout: 5m
+
+linters-settings:
+  errcheck:
+    checks:
+      - blank-assignments
+      - no-implicit-errcheck
+  staticcheck:
+    checks: ["all"]
+  unused:
+    check-exported: false
+
+linters:
+  enable:
+    - errcheck
+    - staticcheck
+    - unused
