@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/alertlens/alertlens/internal/alertmanager"
 	"github.com/alertlens/alertlens/internal/auth"
 )
 
@@ -115,5 +116,28 @@ func writeError(w http.ResponseWriter, msg string, status int) {
 	if err := json.NewEncoder(w).Encode(map[string]string{"error": msg}); err != nil {
 		log.Printf("failed to encode error response: %v", err)
 	}
+}
+
+// writeAMError writes a sanitized gateway-error response for errors that may
+// originate from an upstream Alertmanager instance.  If err is an upstream AM
+// error, a generic structured body is returned (instance name is included so
+// the UI can surface which instance failed, but raw AM error details are never
+// forwarded to avoid leaking internal information).  For all other errors the
+// message is forwarded as-is under http.StatusBadGateway.
+func writeAMError(w http.ResponseWriter, err error) {
+	if instance, ok := alertmanager.IsUpstreamError(err); ok {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadGateway)
+		body := map[string]any{
+			"error":    "upstream alertmanager error",
+			"instance": instance,
+			"status":   http.StatusBadGateway,
+		}
+		if encErr := json.NewEncoder(w).Encode(body); encErr != nil {
+			log.Printf("failed to encode AM error response: %v", encErr)
+		}
+		return
+	}
+	writeError(w, err.Error(), http.StatusBadGateway)
 }
 

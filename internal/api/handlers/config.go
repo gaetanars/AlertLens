@@ -38,7 +38,7 @@ func (h *ConfigHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	status, err := client.GetStatus(r.Context())
 	if err != nil {
-		writeError(w, err.Error(), http.StatusBadGateway)
+		writeAMError(w, err)
 		return
 	}
 	writeJSON(w, map[string]any{
@@ -82,7 +82,7 @@ func (h *ConfigHandler) Diff(w http.ResponseWriter, r *http.Request) {
 
 	status, err := client.GetStatus(r.Context())
 	if err != nil {
-		writeError(w, err.Error(), http.StatusBadGateway)
+		writeAMError(w, err)
 		return
 	}
 

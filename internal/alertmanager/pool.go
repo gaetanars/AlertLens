@@ -18,10 +18,11 @@ type Pool struct {
 }
 
 // NewPool creates a Pool from a list of AlertmanagerConfig entries.
-func NewPool(cfgs []config.AlertmanagerConfig, logger *zap.Logger) *Pool {
+// version is passed to each client for use in the User-Agent header.
+func NewPool(cfgs []config.AlertmanagerConfig, logger *zap.Logger, version string) *Pool {
 	clients := make([]*Client, 0, len(cfgs))
 	for _, cfg := range cfgs {
-		clients = append(clients, NewClient(cfg))
+		clients = append(clients, NewClient(cfg, version))
 	}
 	return &Pool{clients: clients, logger: logger}
 }
