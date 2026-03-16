@@ -22,6 +22,8 @@ import {
 	filteredAlerts,
 	filteredGrouped,
 	groupedAlerts,
+	availableGroupByLabels,
+	validateMatcherSyntax,
 	loadAlerts
 } from './alerts';
 import { fetchAlerts } from '$lib/api/alerts';
@@ -491,5 +493,144 @@ describe('groupedAlerts — client-side derived grouping (extended)', () => {
 		filterQuery.set('NoMatch');
 		const groups = get(groupedAlerts);
 		expect(groups.size).toBe(0);
+	});
+});
+
+// ─── validateMatcherSyntax ────────────────────────────────────────────────────
+
+describe('validateMatcherSyntax — matcher syntax validation', () => {
+	it('returns null for empty query', () => {
+		expect(validateMatcherSyntax('')).toBeNull();
+	});
+
+	it('returns null for whitespace-only query', () => {
+		expect(validateMatcherSyntax('   ')).toBeNull();
+	});
+
+	it('returns null for valid equality matcher', () => {
+		expect(validateMatcherSyntax('severity="critical"')).toBeNull();
+	});
+
+	it('returns null for valid inequality matcher', () => {
+		expect(validateMatcherSyntax('env!="staging"')).toBeNull();
+	});
+
+	it('returns null for valid regex matcher (=~)', () => {
+		expect(validateMatcherSyntax('env=~"prod.*"')).toBeNull();
+	});
+
+	it('returns null for valid negative regex matcher (!~)', () => {
+		expect(validateMatcherSyntax('env!~"staging.*"')).toBeNull();
+	});
+
+	it('returns null for valid plain text (fallback — no matcher ops)', () => {
+		expect(validateMatcherSyntax('CPUHigh')).toBeNull();
+	});
+
+	it('returns error for invalid regex in =~ matcher', () => {
+		const result = validateMatcherSyntax('env=~"[invalid"');
+		expect(result).not.toBeNull();
+		expect(result).toContain('[invalid');
+	});
+
+	it('returns error for invalid regex in !~ matcher', () => {
+		const result = validateMatcherSyntax('env!~"[bad"');
+		expect(result).not.toBeNull();
+		expect(result).toContain('[bad');
+	});
+
+	it('returns null for multiple valid matchers', () => {
+		expect(validateMatcherSyntax('severity="critical" env=~"prod.*"')).toBeNull();
+	});
+
+	it('returns error when any one of multiple matchers has invalid regex', () => {
+		const result = validateMatcherSyntax('severity="critical" env=~"[bad"');
+		expect(result).not.toBeNull();
+	});
+});
+
+// ─── filteredAlerts — !~ operator ─────────────────────────────────────────────
+
+describe('filteredAlerts — !~ (negative regex) matcher', () => {
+	const a1 = makeAlert({ fingerprint: 'fp1', labels: { alertname: 'CPUHigh', env: 'prod-eu' } });
+	const a2 = makeAlert({ fingerprint: 'fp2', labels: { alertname: 'MemHigh', env: 'staging' } });
+	const a3 = makeAlert({ fingerprint: 'fp3', labels: { alertname: 'DiskFull', env: 'prod-us' } });
+
+	beforeEach(() => {
+		alerts.set([a1, a2, a3]);
+		filterQuery.set('');
+		instanceFilter.set('');
+	});
+
+	it('!~ excludes alerts matching the regex', () => {
+		filterQuery.set('env!~"prod"');
+		const result = get(filteredAlerts);
+		expect(result).toHaveLength(1);
+		expect(result[0].fingerprint).toBe('fp2');
+	});
+
+	it('!~ keeps all alerts when regex does not match any', () => {
+		filterQuery.set('env!~"canary"');
+		const result = get(filteredAlerts);
+		expect(result).toHaveLength(3);
+	});
+
+	it('!~ excludes all alerts when regex matches all', () => {
+		filterQuery.set('env!~"prod|staging"');
+		const result = get(filteredAlerts);
+		expect(result).toHaveLength(0);
+	});
+
+	it('!~ combined with = matcher (AND semantics)', () => {
+		// env not matching "prod.*" AND alertname = "MemHigh"
+		filterQuery.set('env!~"prod" alertname="MemHigh"');
+		const result = get(filteredAlerts);
+		expect(result).toHaveLength(1);
+		expect(result[0].fingerprint).toBe('fp2');
+	});
+});
+
+// ─── availableGroupByLabels derived store ─────────────────────────────────────
+
+describe('availableGroupByLabels — dynamic label keys from current alerts', () => {
+	beforeEach(() => {
+		alerts.set([]);
+		filterQuery.set('');
+	});
+
+	it('returns empty array when no alerts', () => {
+		expect(get(availableGroupByLabels)).toEqual([]);
+	});
+
+	it('returns sorted unique label keys from all alerts', () => {
+		alerts.set([
+			makeAlert({ labels: { alertname: 'A', severity: 'critical', team: 'infra' } }),
+			makeAlert({ labels: { alertname: 'B', severity: 'warning', env: 'prod' } })
+		]);
+		const keys = get(availableGroupByLabels);
+		expect(keys).toEqual(['alertname', 'env', 'severity', 'team']);
+	});
+
+	it('deduplicates label keys across alerts', () => {
+		alerts.set([
+			makeAlert({ labels: { severity: 'critical' } }),
+			makeAlert({ labels: { severity: 'warning' } })
+		]);
+		const keys = get(availableGroupByLabels);
+		expect(keys).toEqual(['severity']);
+	});
+
+	it('updates reactively when alerts change', () => {
+		alerts.set([makeAlert({ labels: { severity: 'critical' } })]);
+		expect(get(availableGroupByLabels)).toEqual(['severity']);
+
+		alerts.set([makeAlert({ labels: { severity: 'warning', env: 'prod' } })]);
+		expect(get(availableGroupByLabels)).toEqual(['env', 'severity']);
+	});
+
+	it('returns empty array when alerts are cleared', () => {
+		alerts.set([makeAlert({ labels: { severity: 'critical' } })]);
+		alerts.set([]);
+		expect(get(availableGroupByLabels)).toEqual([]);
 	});
 });

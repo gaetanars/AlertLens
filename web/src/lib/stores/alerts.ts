@@ -145,15 +145,58 @@ export async function loadInstances() {
 	}
 }
 
-// ─── Simple matcher-syntax filter (subset of AM syntax) ─────────────────────
+// ─── Derived: available label keys for group-by dropdown ─────────────────────
+
+/**
+ * All unique label keys present in the current alert set, sorted alphabetically.
+ * Used to populate the dynamic group-by dropdown.
+ */
+export const availableGroupByLabels = derived(alerts, ($alerts) => {
+	const keys = new Set<string>();
+	for (const alert of $alerts) {
+		for (const key of Object.keys(alert.labels)) {
+			keys.add(key);
+		}
+	}
+	return Array.from(keys).sort();
+});
+
+// ─── Matcher-syntax helpers ──────────────────────────────────────────────────
+
+// Operator order matters: longer tokens (=~, !=, !~) must come before = to avoid
+// partial matches. The regex also handles optional surrounding quotes on the value.
+const MATCHER_RE = /(\w+)(=~|!~|!=|=)["']?([^"',\s}]*)["']?/g;
+
+/**
+ * Validates a matcher query string.
+ * Returns an error message if any matcher contains an invalid regex, or null if valid.
+ *
+ * Exported for use in Vitest tests.
+ */
+export function validateMatcherSyntax(query: string): string | null {
+	if (!query.trim()) return null;
+	const re = new RegExp(MATCHER_RE.source, 'g');
+	let match;
+	while ((match = re.exec(query)) !== null) {
+		const [, , op, val] = match;
+		if (op === '=~' || op === '!~') {
+			try {
+				new RegExp(val);
+			} catch {
+				return `Invalid regex in matcher: ${val}`;
+			}
+		}
+	}
+	return null;
+}
 
 function matchesFilterQuery(alert: Alert, query: string): boolean {
-	// Parse simple matchers like: key="val", key=~"regex", key!="val"
-	const matcherRe = /(\w+)(=~|!=|=)["']?([^"',\s}]*)["']?/g;
+	// Parse matchers: key=val, key!=val, key=~regex, key!~regex
+	const re = new RegExp(MATCHER_RE.source, 'g');
 	let match;
 	let found = false;
 	let parsed = false;
-	while ((match = matcherRe.exec(query)) !== null) {
+	while ((match = re.exec(query)) !== null) {
 		parsed = true;
 		const [, key, op, val] = match;
 		const labelVal = alert.labels[key] ?? '';
@@ -166,12 +209,18 @@ function matchesFilterQuery(alert: Alert, query: string): boolean {
 			} catch {
 				ok = false;
 			}
+		} else if (op === '!~') {
+			try {
+				ok = !new RegExp(val).test(labelVal);
+			} catch {
+				ok = false;
+			}
 		}
 		if (!ok) return false;
 		found = true;
 	}
 	if (parsed) return found;
-	// Fallback: substring search across all labels
+	// Fallback: substring search across all labels and annotations
 	const lower = query.toLowerCase();
 	return (
 		Object.values(alert.labels).some((v) => v.toLowerCase().includes(lower)) ||
