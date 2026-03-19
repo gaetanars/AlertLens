@@ -1,24 +1,18 @@
 run:
   timeout: 5m
 
-linters-settings:
-  errcheck:
-    checks:
-      - blank-assignments
-      - no-implicit-errcheck
-  staticcheck:
-    checks: ["all"]
-  unused:
-    check-exported: false
-
 linters:
   enable:
     - errcheck
     - govet
     - staticcheck
     - unused
-    - gosimple
     - ineffassign
+  settings:
+    errcheck:
+      check-blank: true
+    staticcheck:
+      checks: ["all"]
 
 issues:
   exclude-rules:
