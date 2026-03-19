@@ -36,8 +36,12 @@ type ServerConfig struct {
 }
 
 type AuthConfig struct {
-	AdminPassword string       `yaml:"admin_password" env:"ALERTLENS_AUTH_ADMIN_PASSWORD"`
-	Users         []UserConfig `yaml:"users"`
+	AdminPassword       string       `yaml:"admin_password" env:"ALERTLENS_AUTH_ADMIN_PASSWORD"`
+	Users               []UserConfig `yaml:"users"`
+	// LoginRateLimitBurst overrides the per-IP login burst window (default 5).
+	// Raise this in test environments to avoid hitting the limiter across
+	// multiple E2E specs. Production deployments should leave it unset.
+	LoginRateLimitBurst int `yaml:"login_rate_limit_burst"`
 }
 
 // UserConfig defines an additional role-bound user credential.

@@ -36,6 +36,7 @@ server:
   port: ${PORT}
 auth:
   admin_password: "${E2E_ADMIN_PASS}"
+  login_rate_limit_burst: 20
   users:
     - password: "${E2E_VIEWER_PASS}"
       role: "viewer"

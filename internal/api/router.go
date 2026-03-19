@@ -72,6 +72,7 @@ func NewRouter(
 	logger *zap.Logger,
 	incidentStore *incident.Store,
 	scriptHashes string,
+	loginRateLimitBurst int,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -84,7 +85,7 @@ func NewRouter(
 	// CSRF purposes and rotates whenever the admin password changes.
 	csrfSecret := authSvc.CSRFSecret()
 
-	loginRL := auth.NewLoginRateLimiter()
+	loginRL := auth.NewLoginRateLimiter(loginRateLimitBurst)
 
 	// ─── Global middleware ───────────────────────────────────────────────────
 	r.Use(middleware.RequestID)

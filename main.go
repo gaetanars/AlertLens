@@ -117,7 +117,7 @@ func main() {
 	incidentStore := incident.NewStore()
 
 	// ─── HTTP router ─────────────────────────────────────────────────────────
-	router := api.NewRouter(pool, authSvc, ghPusher, glPusher, frontendFS, cfg.Server.CORSAllowedOrigins, cfg.Server.SecureCookies, version, logger, incidentStore, scriptHashes)
+	router := api.NewRouter(pool, authSvc, ghPusher, glPusher, frontendFS, cfg.Server.CORSAllowedOrigins, cfg.Server.SecureCookies, version, logger, incidentStore, scriptHashes, cfg.Auth.LoginRateLimitBurst)
 
 	// ─── HTTP server ─────────────────────────────────────────────────────────
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)

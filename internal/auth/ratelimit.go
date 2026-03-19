@@ -29,12 +29,17 @@ type ipEntry struct {
 type LoginRateLimiter struct {
 	mu      sync.Mutex
 	entries map[string]*ipEntry
+	burst   int
 }
 
 // NewLoginRateLimiter creates a LoginRateLimiter and starts the background
 // cleanup goroutine. The goroutine exits when the process does.
-func NewLoginRateLimiter() *LoginRateLimiter {
-	rl := &LoginRateLimiter{entries: make(map[string]*ipEntry)}
+// burst overrides the default burst window (0 → use default of 5).
+func NewLoginRateLimiter(burst int) *LoginRateLimiter {
+	if burst <= 0 {
+		burst = loginBurst
+	}
+	rl := &LoginRateLimiter{entries: make(map[string]*ipEntry), burst: burst}
 	go rl.cleanupLoop()
 	return rl
 }
@@ -44,7 +49,7 @@ func (rl *LoginRateLimiter) getLimiter(ip string) *rate.Limiter {
 	defer rl.mu.Unlock()
 	e, ok := rl.entries[ip]
 	if !ok {
-		e = &ipEntry{limiter: rate.NewLimiter(loginRate, loginBurst)}
+		e = &ipEntry{limiter: rate.NewLimiter(loginRate, rl.burst)}
 		rl.entries[ip] = e
 	}
 	e.lastSeen = time.Now()
