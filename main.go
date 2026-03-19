@@ -34,7 +34,10 @@ func main() {
 	flag.Parse()
 
 	// ─── Logger ──────────────────────────────────────────────────────────────
-	logger, _ := zap.NewProduction()
+	logger, err := zap.NewProduction()
+	if err != nil {
+		panic("failed to initialize logger: " + err.Error())
+	}
 	defer logger.Sync() //nolint:errcheck
 
 	// ─── Config ──────────────────────────────────────────────────────────────

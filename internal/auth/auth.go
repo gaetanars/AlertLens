@@ -1,3 +1,5 @@
+// Package auth provides JWT issuance and validation, CSRF protection,
+// MFA (TOTP), RBAC roles, and rate limiting for AlertLens.
 package auth
 
 import (

@@ -1,3 +1,5 @@
+// Package configbuilder provides structured CRUD operations for Alertmanager
+// routing rules, receivers, and time intervals, producing raw YAML output.
 package configbuilder
 
 import (

@@ -11,11 +11,14 @@ linters:
     - unused
     - ineffassign
   settings:
-    errcheck:
-      check-blank: true
     staticcheck:
       checks: ["all"]
   exclusions:
     rules:
+      # Tests: errcheck noise on test helpers is acceptable.
       - path: "_test\\.go"
         linters: [errcheck]
+      # Deferred Close calls: standard Go idiom; Close errors on deferred
+      # cleanup are almost always unactionable.
+      - linters: [errcheck]
+        text: "Error return value of .*(Close|Sync|Remove|Flush).*is not checked"

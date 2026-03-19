@@ -64,8 +64,8 @@ func (p *GitHubPusher) Push(ctx context.Context, opts PushOptions, content []byt
 	}
 
 	result := &PushResult{
-		CommitSHA: resp.Commit.GetSHA(),
-		HTMLURL:   resp.Commit.GetHTMLURL(),
+		CommitSHA: resp.GetSHA(),
+		HTMLURL:   resp.GetHTMLURL(),
 	}
 	return result, nil
 }

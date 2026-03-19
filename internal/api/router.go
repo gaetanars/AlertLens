@@ -1,3 +1,5 @@
+// Package api wires the chi router, middleware stack, and SPA fallback handler
+// for the AlertLens HTTP server.
 package api
 
 import (

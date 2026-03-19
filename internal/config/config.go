@@ -1,3 +1,4 @@
+// Package config handles YAML configuration loading and validation for AlertLens.
 package config
 
 import (
