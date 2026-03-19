@@ -4,6 +4,41 @@ This file provides architecture, development conventions, and coding guidelines 
 
 ---
 
+## Spec-driven development workspace
+
+This project uses a spec-driven workflow. Before writing any code for a new feature:
+
+1. `/specify [feature]` — write `specs/NNN-feature/spec.md` and get it approved
+2. `/plan [feature]` — write `specs/NNN-feature/plan.md` and get it approved
+3. `/tasks [feature]` — break into atomic tasks in `specs/NNN-feature/tasks.md`
+4. `/implement [feature]` — implement one task at a time
+5. `/review [feature]` — audit against acceptance criteria
+6. `/ship` — branch, commit, open PR
+7. `/merge` — squash-merge, archive spec, update roadmap
+
+Use `/status` at any time for a full picture of what's in progress and what's next.
+
+Key files:
+- `specs/constitution.md` — project identity and non-negotiable principles
+- `specs/roadmap.md` — 28 features across 4 milestones
+
+### Quality skills (AlertLens-specific)
+
+Three skills complement the workflow with project-specific checks:
+
+| Skill | When to use |
+|-------|-------------|
+| `alertlens-conventions` | After `/implement`, before `/review` — catches zap, `%w`, RBAC, test patterns |
+| `quality-gate` | Before `/review` or `/ship` — runs full suite: build, tests, lint, tsc, npm test |
+| `write-adr` | When a significant design decision is made — writes `docs/adr/ADR-NNN_*.md` |
+
+Recommended sequence per feature:
+```
+/implement → alertlens-conventions → /quality-gate → /review → /ship
+```
+
+---
+
 ## Architecture Overview
 
 AlertLens is a **single, stateless Go binary** that embeds a SvelteKit SPA at build time via `go:embed`.
