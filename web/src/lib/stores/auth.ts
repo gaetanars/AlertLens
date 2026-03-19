@@ -35,7 +35,7 @@ function createAuthStore() {
 
 	return {
 		subscribe,
-		setToken(token: string, expiresAt: string, role: UserRole = 'admin') {
+		setToken(token: string, expiresAt: string, role: UserRole) {
 			update((s) => ({ ...s, token, expiresAt, role }));
 		},
 		setAdminEnabled(enabled: boolean) {

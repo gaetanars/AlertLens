@@ -58,7 +58,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, exp, err := h.svc.Login(body.Password, body.TOTPCode)
+	token, role, exp, err := h.svc.Login(body.Password, body.TOTPCode)
 	if err != nil {
 		if errors.Is(err, auth.ErrMFARequired) {
 			w.Header().Set("Content-Type", "application/json")
@@ -77,6 +77,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, map[string]any{
 		"token":      token,
+		"role":       string(role),
 		"expires_at": exp.Format(time.RFC3339),
 	})
 }

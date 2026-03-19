@@ -127,6 +127,8 @@ func Load(path string) (*Config, []string, error) {
 		return nil, nil, fmt.Errorf("invalid config: %w", err)
 	}
 
+	warnings = append(warnings, checkDuplicatePasswords(&cfg)...)
+
 	return &cfg, warnings, nil
 }
 
@@ -183,6 +185,31 @@ func applyEnvToStruct(v reflect.Value, warnings *[]string) {
 	}
 }
 
+// checkDuplicatePasswords returns a warning for each plaintext password that
+// appears more than once across admin_password and users[].password.
+// Duplicate passwords are a configuration mistake — two roles sharing the same
+// credential means the intended role separation is not enforced.
+func checkDuplicatePasswords(cfg *Config) []string {
+	seen := make(map[string]bool)
+	var warnings []string
+
+	add := func(password, label string) {
+		if password == "" {
+			return
+		}
+		if seen[password] {
+			warnings = append(warnings, fmt.Sprintf("duplicate password detected for %s: two or more users share the same password, role separation is not enforced", label))
+		}
+		seen[password] = true
+	}
+
+	add(cfg.Auth.AdminPassword, "auth.admin_password")
+	for i, u := range cfg.Auth.Users {
+		add(u.Password, fmt.Sprintf("auth.users[%d]", i))
+	}
+	return warnings
+}
+
 func validate(cfg *Config) error {
 	if cfg.Server.Port <= 0 || cfg.Server.Port > 65535 {
 		return fmt.Errorf("server.port must be between 1 and 65535, got %d", cfg.Server.Port)
@@ -196,7 +223,16 @@ func validate(cfg *Config) error {
 		}
 	}
 
-	// Validate additional users' passwords.
+	// validRoles mirrors the role constants in internal/auth/roles.go.
+	// Keep in sync when adding new roles.
+	validRoles := map[string]bool{
+		"viewer":        true,
+		"silencer":      true,
+		"config-editor": true,
+		"admin":         true,
+	}
+
+	// Validate additional users' passwords and roles.
 	for i, u := range cfg.Auth.Users {
 		if u.Password == "" {
 			return fmt.Errorf("auth.users[%d].password cannot be empty", i)
@@ -204,6 +240,9 @@ func validate(cfg *Config) error {
 		if len([]byte(u.Password)) > 72 {
 			return fmt.Errorf("auth.users[%d].password exceeds bcrypt's 72-byte limit (%d bytes); please use a shorter password",
 				i, len([]byte(u.Password)))
+		}
+		if !validRoles[u.Role] {
+			return fmt.Errorf("auth.users[%d].role: unknown role %q (valid: viewer, silencer, config-editor, admin)", i, u.Role)
 		}
 	}
 
