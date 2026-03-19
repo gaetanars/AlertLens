@@ -1,3 +1,5 @@
+// Package incident implements an in-memory immutable ledger for incident
+// tracking, as described in ADR-008.
 package incident
 
 import (

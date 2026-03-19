@@ -234,6 +234,112 @@ func TestValidateTenantID(t *testing.T) {
 	}
 }
 
+// ─── Role validation tests ────────────────────────────────────────────────────
+
+func TestValidate_UserRole(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name      string
+		role      string
+		wantError bool
+	}{
+		// Valid roles — all four must be accepted.
+		{name: "viewer", role: "viewer", wantError: false},
+		{name: "silencer", role: "silencer", wantError: false},
+		{name: "config-editor", role: "config-editor", wantError: false},
+		{name: "admin", role: "admin", wantError: false},
+		// Invalid roles — must be rejected with a descriptive error.
+		{name: "empty string", role: "", wantError: true},
+		{name: "read-only", role: "read-only", wantError: true},
+		{name: "superuser", role: "superuser", wantError: true},
+		{name: "ADMIN uppercase", role: "ADMIN", wantError: true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := defaults()
+			// Use a non-empty password so the password checks pass before role is reached.
+			// Empty-role test still triggers a role error, not a password error.
+			pass := "validpassword"
+			if tc.role == "" {
+				// Empty role: password check passes, role check must fail.
+				pass = "validpassword"
+			}
+			cfg.Auth.Users = []UserConfig{{Password: pass, Role: tc.role}}
+
+			err := validate(&cfg)
+			if tc.wantError {
+				if err == nil {
+					t.Errorf("expected validation error for role %q, got nil", tc.role)
+					return
+				}
+				if !strings.Contains(err.Error(), "role") {
+					t.Errorf("error should mention role, got: %v", err)
+				}
+				if !strings.Contains(err.Error(), "users[0]") {
+					t.Errorf("error should identify which user failed, got: %v", err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("expected no error for valid role %q, got: %v", tc.role, err)
+				}
+			}
+		})
+	}
+}
+
+// ─── Duplicate password warning tests ────────────────────────────────────────
+
+func TestLoad_DuplicatePasswordWarning(t *testing.T) {
+	t.Parallel()
+
+	t.Run("two users with same password", func(t *testing.T) {
+		t.Parallel()
+
+		cfg := defaults()
+		cfg.Auth.Users = []UserConfig{
+			{Password: "shared-pass", Role: "viewer"},
+			{Password: "shared-pass", Role: "silencer"},
+		}
+		warnings := checkDuplicatePasswords(&cfg)
+		if len(warnings) == 0 {
+			t.Error("expected a duplicate password warning, got none")
+		}
+	})
+
+	t.Run("admin password duplicated by a user", func(t *testing.T) {
+		t.Parallel()
+
+		cfg := defaults()
+		cfg.Auth.AdminPassword = "same-pass"
+		cfg.Auth.Users = []UserConfig{
+			{Password: "same-pass", Role: "viewer"},
+		}
+		warnings := checkDuplicatePasswords(&cfg)
+		if len(warnings) == 0 {
+			t.Error("expected a warning when admin_password equals a user password, got none")
+		}
+	})
+
+	t.Run("all distinct passwords produces no warning", func(t *testing.T) {
+		t.Parallel()
+
+		cfg := defaults()
+		cfg.Auth.AdminPassword = "admin-pass"
+		cfg.Auth.Users = []UserConfig{
+			{Password: "viewer-pass", Role: "viewer"},
+			{Password: "silencer-pass", Role: "silencer"},
+		}
+		warnings := checkDuplicatePasswords(&cfg)
+		if len(warnings) != 0 {
+			t.Errorf("expected no warnings for distinct passwords, got: %v", warnings)
+		}
+	})
+}
+
 func TestValidate_UserPassword_UTF8Counting(t *testing.T) {
 	// Verify that byte counting is UTF-8 aware.
 	// "café" = 5 bytes (c, a, f, é=2 bytes in UTF-8).

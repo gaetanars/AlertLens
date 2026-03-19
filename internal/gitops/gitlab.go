@@ -19,9 +19,6 @@ func NewGitLabPusher(token, baseURL string) (*GitLabPusher, error) {
 	if baseURL != "" && baseURL != "https://gitlab.com" {
 		opts = append(opts, gitlab.WithBaseURL(baseURL))
 	}
-<<<<<<< HEAD
-	client, err := gitlab.NewClient(token, opts...) //nolint:staticcheck // SA1019: Deprecated client, but no viable replacement available yet
-=======
 	client, err := gitlab.NewClient(token, opts...) //nolint:staticcheck // SA1019: Deprecated client, but no viable replacement available yet
 	if err != nil {
 		return nil, fmt.Errorf("creating GitLab client: %w", err)

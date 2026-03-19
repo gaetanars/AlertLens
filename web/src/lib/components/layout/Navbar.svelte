@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { isAdmin, canEditConfig, canSilence, authStore } from '$lib/stores/auth';
+	import { isAuthenticated, canEditConfig, authStore } from '$lib/stores/auth';
 	import { logout } from '$lib/api/auth';
 	import { instances } from '$lib/stores/alerts';
 	import { GitBranch, Volume2, Settings, LogOut, LogIn, Sun, Moon, Bell, AlertTriangle } from 'lucide-svelte';
@@ -97,7 +97,8 @@
 			{/if}
 		</button>
 
-		{#if $isAdmin}
+		{#if $isAuthenticated}
+			<span class="text-xs text-muted-foreground">{$authStore.role}</span>
 			<button
 				onclick={handleLogout}
 				class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
@@ -111,7 +112,7 @@
 				class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
 			>
 				<LogIn class="h-4 w-4" />
-				Admin
+				Sign in
 			</a>
 		{/if}
 	</div>

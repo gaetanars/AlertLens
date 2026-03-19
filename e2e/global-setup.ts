@@ -4,9 +4,11 @@
  * The test binary path is read from ALERTLENS_BIN (default: /tmp/alertlens-bin).
  * A minimal config is written to /tmp/alertlens-e2e-config.yaml:
  *   - Port 19099 (avoids conflict with any real instance on 9000)
- *   - Single admin user password "e2e-admin-pass"
- *   - A viewer user "e2e-viewer-pass"
- *   - A MFA user with a known TOTP secret (for MFA tests)
+ *   - admin: "e2e-admin-pass"
+ *   - viewer: "e2e-viewer-pass"
+ *   - silencer: "e2e-silencer-pass"
+ *   - config-editor: "e2e-config-editor-pass"
+ *   - A MFA user (role admin) with a known TOTP secret (for MFA tests)
  *   - A fake alertmanager URL (we test auth/security layers, not AM proxy)
  */
 import { execSync, spawn } from 'child_process';
@@ -22,15 +24,26 @@ const PORT     = 19099;
 // Corresponding TOTP codes are generated in the tests using the same secret.
 export const MFA_TOTP_SECRET = 'JBSWY3DPEHPK3PXP'; // "Hello!" in base32
 
+// Named password constants for multi-role login UX tests (T-5.2).
+export const E2E_VIEWER_PASS        = 'e2e-viewer-pass';
+export const E2E_SILENCER_PASS      = 'e2e-silencer-pass';
+export const E2E_CONFIG_EDITOR_PASS = 'e2e-config-editor-pass';
+export const E2E_ADMIN_PASS         = 'e2e-admin-pass';
+
 const CONFIG_YAML = `
 server:
   host: "127.0.0.1"
   port: ${PORT}
 auth:
-  admin_password: "e2e-admin-pass"
+  admin_password: "${E2E_ADMIN_PASS}"
+  login_rate_limit_burst: 20
   users:
-    - password: "e2e-viewer-pass"
+    - password: "${E2E_VIEWER_PASS}"
       role: "viewer"
+    - password: "${E2E_SILENCER_PASS}"
+      role: "silencer"
+    - password: "${E2E_CONFIG_EDITOR_PASS}"
+      role: "config-editor"
     - password: "e2e-mfa-pass"
       role: "admin"
       totp_secret: "${MFA_TOTP_SECRET}"

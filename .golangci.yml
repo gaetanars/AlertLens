@@ -1,15 +1,7 @@
+version: "2"
+
 run:
   timeout: 5m
-
-linters-settings:
-  errcheck:
-    checks:
-      - blank-assignments
-      - no-implicit-errcheck
-  staticcheck:
-    checks: ["all"]
-  unused:
-    check-exported: false
 
 linters:
   enable:
@@ -17,10 +9,16 @@ linters:
     - govet
     - staticcheck
     - unused
-    - gosimple
     - ineffassign
-
-issues:
-  exclude-rules:
-    - path: "_test\\.go"
-      linters: [errcheck]
+  settings:
+    staticcheck:
+      checks: ["all"]
+  exclusions:
+    rules:
+      # Tests: errcheck noise on test helpers is acceptable.
+      - path: "_test\\.go"
+        linters: [errcheck]
+      # Deferred Close calls: standard Go idiom; Close errors on deferred
+      # cleanup are almost always unactionable.
+      - linters: [errcheck]
+        text: "Error return value of .*(Close|Sync|Remove|Flush).*is not checked"

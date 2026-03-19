@@ -1,3 +1,5 @@
+// Package handlers contains the HTTP handler functions for each AlertLens API
+// resource, wired into the chi router by the api package.
 package handlers
 
 import (

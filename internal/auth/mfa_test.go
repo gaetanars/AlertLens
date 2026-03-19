@@ -103,7 +103,7 @@ func TestLogin_MFAEnabled_NoTOTPCode_ReturnsErrMFARequired(t *testing.T) {
 	secret, _, _ := generateSecret(t)
 	svc := serviceWithTOTP(t, "password", secret)
 
-	_, _, err := svc.Login("password", "")
+	_, _, _, err := svc.Login("password", "")
 	if err == nil {
 		t.Fatal("expected error when TOTP code is missing")
 	}
@@ -121,7 +121,7 @@ func TestLogin_MFAEnabled_ValidTOTPCode_Succeeds(t *testing.T) {
 		t.Fatalf("generating TOTP code: %v", err)
 	}
 
-	token, exp, err := svc.Login("password", code)
+	token, _, exp, err := svc.Login("password", code)
 	if err != nil {
 		t.Fatalf("Login with valid TOTP failed: %v", err)
 	}
@@ -137,7 +137,7 @@ func TestLogin_MFAEnabled_InvalidTOTPCode_ReturnsErrInvalidTOTP(t *testing.T) {
 	secret, _, _ := generateSecret(t)
 	svc := serviceWithTOTP(t, "password", secret)
 
-	_, _, err := svc.Login("password", "000000")
+	_, _, _, err := svc.Login("password", "000000")
 	// 000000 is almost certainly wrong (1-in-1M chance of being valid).
 	if err == nil {
 		t.Log("000000 happened to be valid — flaky test, skipping assertion")
@@ -148,7 +148,7 @@ func TestLogin_MFAEnabled_InvalidTOTPCode_ReturnsErrInvalidTOTP(t *testing.T) {
 func TestLogin_MFADisabled_TOTPCodeIgnored(t *testing.T) {
 	svc := NewService("password")
 	// Should succeed even with a garbage TOTP code when MFA is not configured.
-	token, _, err := svc.Login("password", "999999")
+	token, _, _, err := svc.Login("password", "999999")
 	if err != nil {
 		t.Errorf("Login should ignore TOTP code when MFA is not configured: %v", err)
 	}

@@ -1,3 +1,5 @@
+// Package auth provides JWT issuance and validation, CSRF protection,
+// MFA (TOTP), RBAC roles, and rate limiting for AlertLens.
 package auth
 
 import (
@@ -165,24 +167,26 @@ func (s *Service) matchUser(password string) *userEntry {
 //   - If the user has no TOTP secret, totpCode is ignored.
 //
 // The issued JWT carries a "role" claim reflecting the privilege level.
-func (s *Service) Login(password, totpCode string) (string, time.Time, error) {
+// The authenticated role is returned as the second value so callers can
+// include it in API responses without re-parsing the JWT.
+func (s *Service) Login(password, totpCode string) (string, Role, time.Time, error) {
 	if !s.enabled {
-		return "", time.Time{}, errors.New("admin mode is not enabled")
+		return "", "", time.Time{}, errors.New("admin mode is not enabled")
 	}
 
 	u := s.matchUser(password)
 	if u == nil {
-		return "", time.Time{}, errors.New("invalid password")
+		return "", "", time.Time{}, errors.New("invalid password")
 	}
 	role := u.role
 
 	// MFA validation — only enforced when a TOTP secret is configured.
 	if u.totpSecret != "" {
 		if totpCode == "" {
-			return "", time.Time{}, ErrMFARequired
+			return "", "", time.Time{}, ErrMFARequired
 		}
 		if err := ValidateTOTP(u.totpSecret, totpCode); err != nil {
-			return "", time.Time{}, err // ErrInvalidTOTP or wrapped error
+			return "", "", time.Time{}, err // ErrInvalidTOTP or wrapped error
 		}
 	}
 
@@ -192,7 +196,7 @@ func (s *Service) Login(password, totpCode string) (string, time.Time, error) {
 	// SEC-05: cryptographically random JTI prevents collisions and guessing.
 	jtiBytes := make([]byte, 16)
 	if _, err := rand.Read(jtiBytes); err != nil {
-		return "", time.Time{}, fmt.Errorf("generating JTI: %w", err)
+		return "", "", time.Time{}, fmt.Errorf("generating JTI: %w", err)
 	}
 	jti := fmt.Sprintf("%x", jtiBytes)
 
@@ -206,9 +210,9 @@ func (s *Service) Login(password, totpCode string) (string, time.Time, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, err := token.SignedString(s.secret)
 	if err != nil {
-		return "", time.Time{}, fmt.Errorf("signing token: %w", err)
+		return "", "", time.Time{}, fmt.Errorf("signing token: %w", err)
 	}
-	return signed, exp, nil
+	return signed, role, exp, nil
 }
 
 // Validate parses and validates a JWT.

@@ -9,7 +9,7 @@ import (
 // ─── LoginRateLimiter.Middleware ──────────────────────────────────────────────
 
 func TestRateLimiter_AllowsBurst(t *testing.T) {
-	rl := NewLoginRateLimiter()
+	rl := NewLoginRateLimiter(0)
 	handler := rl.Middleware(okHandler())
 
 	// loginBurst = 5; all requests from the same IP should pass.
@@ -25,7 +25,7 @@ func TestRateLimiter_AllowsBurst(t *testing.T) {
 }
 
 func TestRateLimiter_BlocksAfterBurst(t *testing.T) {
-	rl := NewLoginRateLimiter()
+	rl := NewLoginRateLimiter(0)
 	handler := rl.Middleware(okHandler())
 
 	ip := "5.6.7.8:1234"
@@ -50,7 +50,7 @@ func TestRateLimiter_BlocksAfterBurst(t *testing.T) {
 }
 
 func TestRateLimiter_RetryAfterHeader(t *testing.T) {
-	rl := NewLoginRateLimiter()
+	rl := NewLoginRateLimiter(0)
 	handler := rl.Middleware(okHandler())
 
 	ip := "10.0.0.1:80"
@@ -71,7 +71,7 @@ func TestRateLimiter_RetryAfterHeader(t *testing.T) {
 }
 
 func TestRateLimiter_PerIP_IndependentLimits(t *testing.T) {
-	rl := NewLoginRateLimiter()
+	rl := NewLoginRateLimiter(0)
 	handler := rl.Middleware(okHandler())
 
 	// Exhaust burst for IP A.

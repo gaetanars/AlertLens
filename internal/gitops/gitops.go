@@ -1,3 +1,5 @@
+// Package gitops provides GitHub and GitLab pusher implementations for
+// syncing Alertmanager configuration to a remote Git repository.
 package gitops
 
 import "context"

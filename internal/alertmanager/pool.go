@@ -476,11 +476,12 @@ func buildGroupKey(a EnrichedAlert, groupBy []string) (string, map[string]string
 	key := ""
 	for i, k := range groupBy {
 		var v string
-		if k == "alertmanager" {
+		switch k {
+		case "alertmanager":
 			v = a.Alertmanager
-		} else if k == "status" {
+		case "status":
 			v = a.Status.State
-		} else {
+		default:
 			v = a.Labels[k]
 		}
 		labels[k] = v

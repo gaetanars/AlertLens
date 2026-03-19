@@ -3,8 +3,30 @@ server:
   port: 9000         # ALERTLENS_SERVER_PORT
 
 auth:
-  # If empty, admin mode is disabled (read-only only)
+  # If empty, admin mode is disabled (read-only access for everyone)
   admin_password: "" # ALERTLENS_AUTH_ADMIN_PASSWORD
+
+  # Multi-role users: each entry grants access at the specified role level.
+  # Roles form an ascending hierarchy — each role implies all capabilities of lower roles:
+  #
+  #   viewer        — read alerts, silences, routing tree
+  #   silencer      — viewer + create / update / expire silences and visual acks
+  #   config-editor — silencer + read and write Alertmanager configuration
+  #   admin         — config-editor + full control (highest privilege)
+  #
+  # Note: this is a shared-credential model — one password per role, no per-person identity.
+  # Actions cannot be attributed to individual users within the same role.
+  #
+  # users:
+  #   - role: viewer
+  #     password: "changeme-viewer"
+  #     # totp_secret: "BASE32SECRET"  # optional: enable TOTP MFA for this user
+  #   - role: silencer
+  #     password: "changeme-silencer"
+  #   - role: config-editor
+  #     password: "changeme-config-editor"
+  #   - role: admin
+  #     password: "changeme-admin"
 
 alertmanagers:
   - name: "default"

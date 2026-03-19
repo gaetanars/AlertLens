@@ -35,14 +35,16 @@ function createAuthStore() {
 
 	return {
 		subscribe,
-		setToken(token: string, expiresAt: string, role: UserRole = 'admin') {
+		setToken(token: string, expiresAt: string, role: UserRole) {
 			update((s) => ({ ...s, token, expiresAt, role }));
 		},
 		setAdminEnabled(enabled: boolean) {
 			update((s) => ({ ...s, adminEnabled: enabled }));
 		},
 		clear() {
-			set({ token: null, expiresAt: null, adminEnabled: false, role: '' });
+			// Preserve adminEnabled: it reflects server configuration, not user
+			// session state. Resetting it to false would hide the "Sign in" link.
+			update((s) => ({ token: null, expiresAt: null, adminEnabled: s.adminEnabled, role: '' }));
 		}
 	};
 }

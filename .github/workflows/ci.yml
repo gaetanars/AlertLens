@@ -30,24 +30,6 @@ jobs:
       - name: Run tests
         run: go test ./... -race -count=1 -cover
 
-  lint:
-    name: Go linters
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-          cache: true
-
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          working-directory: alertlens
-          args: --timeout=5m
-
   frontend-test:
     name: Frontend tests
     runs-on: ubuntu-latest
@@ -87,9 +69,9 @@ jobs:
         run: mkdir -p dist && touch dist/.keep
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.64
+          version: v2.11.3
 
   build-and-e2e:
     name: Build & E2E

@@ -1,3 +1,5 @@
+// Package alertmanager provides HTTP clients and a pool for interacting with
+// one or more Alertmanager (or Grafana Mimir) instances via the Alertmanager API v2.
 package alertmanager
 
 import (
