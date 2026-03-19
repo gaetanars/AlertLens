@@ -83,7 +83,10 @@ test.describe('Multi-role login UX', () => {
     await expect(page.getByRole('link', { name: 'Config' })).not.toBeVisible();
 
     // Silence creation UI is visible for silencer.
-    await page.goto(`${BASE}/silences`);
+    // Use client-side nav (click the Silences link) to preserve the in-memory
+    // auth token — page.goto() would cause a full reload and clear the store.
+    await page.getByRole('link', { name: 'Silences' }).click();
+    await page.waitForURL(`${BASE}/silences`);
     await expect(page.getByRole('button', { name: /new silence/i })).toBeVisible();
   });
 
