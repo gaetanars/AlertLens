@@ -84,7 +84,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/gaetanars/alertlens
+          images: ghcr.io/alertlens/alertlens
           tags: |
             type=semver,pattern=v{{version}}
             type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
