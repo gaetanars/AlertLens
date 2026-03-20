@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { canEditConfig } from '$lib/stores/auth';
+	import { isAuthenticated } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
@@ -7,8 +7,9 @@
 
 	let { children } = $props();
 
+	// Allow any authenticated user to reach /config/* — individual pages enforce role-based UI.
 	onMount(() => {
-		if (!$canEditConfig) goto('/login');
+		if (!$isAuthenticated) goto('/login');
 	});
 
 	const tabs = [

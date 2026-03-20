@@ -36,15 +36,19 @@
 </script>
 
 <script lang="ts">
-	import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-svelte';
+	import { Plus, Trash2, ChevronDown, ChevronRight, ArrowUp, ArrowDown } from 'lucide-svelte';
 	import RouteNodeEditor from './RouteNodeEditor.svelte';
 
-	let { route, onUpdate, depth = 0, isRoot = false, availableTimeIntervals = [] }: {
+	let { route, onUpdate, depth = 0, isRoot = false, index = 0, total = 1, onMove = () => {}, availableTimeIntervals = [], availableReceivers = [] }: {
 		route: RouteFormNode;
 		onUpdate: (r: RouteFormNode) => void;
 		depth?: number;
 		isRoot?: boolean;
+		index?: number;
+		total?: number;
+		onMove?: (dir: 'up' | 'down') => void;
 		availableTimeIntervals?: string[];
+		availableReceivers?: string[];
 	} = $props();
 
 	let collapsed = $state(false);
@@ -79,6 +83,13 @@
 		update({ routes });
 	}
 
+	function moveChild(i: number, dir: 'up' | 'down') {
+		const routes = [...route.routes];
+		const target = dir === 'up' ? i - 1 : i + 1;
+		[routes[i], routes[target]] = [routes[target], routes[i]];
+		update({ routes });
+	}
+
 	function toggleGroupBy(label: string) {
 		const cur = route.group_by;
 		const next = cur.includes(label) ? cur.filter(l => l !== label) : [...cur, label];
@@ -106,14 +117,45 @@
 		</button>
 		<span class="text-xs font-medium text-muted-foreground">{isRoot ? 'Root route' : `Route (depth ${depth})`}</span>
 		<div class="flex-1">
-			<input
-				value={route.receiver}
-				oninput={(e) => update({ receiver: (e.target as HTMLInputElement).value })}
-				placeholder="receiver"
-				class="w-full px-2 py-0.5 rounded border bg-background text-sm font-medium"
-			/>
+			{#if availableReceivers.length > 0}
+				<select
+					value={route.receiver}
+					onchange={(e) => update({ receiver: (e.target as HTMLSelectElement).value })}
+					class="w-full px-2 py-0.5 rounded border bg-background text-sm font-medium"
+				>
+					<option value="">— select receiver —</option>
+					{#each availableReceivers as name}
+						<option value={name}>{name}</option>
+					{/each}
+				</select>
+			{:else}
+				<input
+					value={route.receiver}
+					oninput={(e) => update({ receiver: (e.target as HTMLInputElement).value })}
+					placeholder="receiver"
+					class="w-full px-2 py-0.5 rounded border bg-background text-sm font-medium"
+				/>
+			{/if}
 		</div>
 		{#if !isRoot}
+			<div class="flex items-center gap-0.5">
+				<button
+					onclick={() => onMove('up')}
+					disabled={index === 0}
+					class="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+					title="Move up"
+				>
+					<ArrowUp class="h-3 w-3" />
+				</button>
+				<button
+					onclick={() => onMove('down')}
+					disabled={index === total - 1}
+					class="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+					title="Move down"
+				>
+					<ArrowDown class="h-3 w-3" />
+				</button>
+			</div>
 			<label class="flex items-center gap-1 text-xs cursor-pointer">
 				<input
 					type="checkbox"
@@ -278,10 +320,14 @@
 								route={child}
 								onUpdate={(updated) => patchChild(i, updated)}
 								depth={depth + 1}
+								index={i}
+								total={route.routes.length}
+								onMove={(dir) => moveChild(i, dir)}
 								availableTimeIntervals={availableTimeIntervals}
+								availableReceivers={availableReceivers}
 							/>
 							<button
-								onclick={() => removeChild(i)}
+								onclick={() => { if (window.confirm('Remove this route and all its children?')) removeChild(i); }}
 								class="absolute top-2 right-2 p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors z-10"
 								title="Remove this route"
 							>

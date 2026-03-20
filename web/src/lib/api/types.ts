@@ -271,6 +271,27 @@ export interface ConfigResponse {
 	raw_yaml: string;
 }
 
+// ─── Config Builder types ─────────────────────────────────────────────────────
+
+/** Mirrors configbuilder.RouteSpec in the Go backend. */
+export interface RouteSpec {
+	receiver?: string;
+	group_by?: string[];
+	matchers?: string[];
+	continue?: boolean;
+	group_wait?: string;
+	group_interval?: string;
+	repeat_interval?: string;
+	mute_time_intervals?: string[];
+	active_time_intervals?: string[];
+	routes: RouteSpec[];
+}
+
+/** Stub type for a receiver entry from GET /api/builder/receivers. Extended by feature 008. */
+export interface BuilderReceiverDef {
+	name: string;
+}
+
 export interface SaveConfigRequest {
 	alertmanager: string;
 	raw_yaml: string;
