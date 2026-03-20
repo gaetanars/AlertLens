@@ -2,13 +2,16 @@
 	import { onMount } from 'svelte';
 	import { fetchConfig, validateConfig, diffConfig, saveConfig } from '$lib/api/config';
 	import { fetchRouting } from '$lib/api/routing';
+	import { getRoute, listBuilderReceivers } from '$lib/api/builder';
+	import type { RouteSpec } from '$lib/api/types';
 	import RoutingTree from '$lib/components/routing/RoutingTree.svelte';
 	import YamlDiffViewer from '$lib/components/config/YamlDiffViewer.svelte';
 	import RouteNodeEditor, { type RouteFormNode, emptyNode } from '$lib/components/config/RouteNodeEditor.svelte';
 	import { instances } from '$lib/stores/alerts';
+	import { canEditConfig } from '$lib/stores/auth';
 	import { toast } from 'svelte-sonner';
 	import type { RouteNode } from '$lib/api/types';
-	import { Save, Eye, AlertTriangle, FormInput, Code } from 'lucide-svelte';
+	import { Save, Eye, AlertTriangle, FormInput, Code, Lock } from 'lucide-svelte';
 	import * as yaml from 'js-yaml';
 
 	let selectedInstance = $state($instances[0]?.name ?? '');
@@ -21,10 +24,26 @@
 	let validationErrors = $state<string[]>([]);
 	let routeData = $state<{ alertmanager: string; route: RouteNode } | null>(null);
 	let availableTimeIntervals = $state<string[]>([]);
+	let availableReceivers = $state<string[]>([]);
 
 	// SPEC-01: toggle between YAML and visual form editor.
 	let editorTab = $state<'yaml' | 'form'>('yaml');
 	let formRoute = $state<RouteFormNode>(emptyNode());
+
+	// Live YAML derived from form state — updates on every form change without tab switching.
+	// Uses rawYaml as the base so non-route config sections (global, receivers, …) are preserved.
+	const formYaml = $derived.by(() => {
+		try {
+			const base = (yaml.load(rawYaml) as any) ?? {};
+			base.route = formRouteToYaml(formRoute);
+			return yaml.dump(base, { lineWidth: 120 });
+		} catch {
+			return rawYaml;
+		}
+	});
+
+	// Stores the YAML that was sent to previewDiff so save() uses the exact same content.
+	let pendingYaml = $state('');
 
 	// Save options
 	let saveMode = $state<'disk' | 'github' | 'gitlab'>('disk');
@@ -34,18 +53,60 @@
 	let gitFilePath = $state('alertmanager.yml');
 	let webhookUrl = $state('');
 
+	// Convert a RouteSpec (builder API, string matchers) to a RouteFormNode.
+	function routeSpecToForm(r: RouteSpec): RouteFormNode {
+		return {
+			receiver: r.receiver ?? '',
+			continue: r.continue ?? false,
+			group_by: r.group_by ?? [],
+			group_wait: r.group_wait ?? '',
+			group_interval: r.group_interval ?? '',
+			repeat_interval: r.repeat_interval ?? '',
+			matchers: (r.matchers ?? []).map((m) => {
+				const match = m.match(/^(\w+)(=~|!=|!~|=)"?(.*?)"?$/);
+				if (match) {
+					const [, name, op, value] = match;
+					return { name, value, isRegex: op === '=~' || op === '!~', isEqual: op === '=' || op === '=~' };
+				}
+				return { name: m, value: '', isRegex: false, isEqual: true };
+			}),
+			mute_time_intervals: r.mute_time_intervals ?? [],
+			active_time_intervals: r.active_time_intervals ?? [],
+			routes: (r.routes ?? []).map(routeSpecToForm)
+		};
+	}
+
+	// Collect all unique time interval names referenced anywhere in the route tree.
+	function collectTimeIntervals(r: RouteSpec): string[] {
+		const names = new Set<string>();
+		function walk(node: RouteSpec) {
+			(node.mute_time_intervals ?? []).forEach(n => names.add(n));
+			(node.active_time_intervals ?? []).forEach(n => names.add(n));
+			(node.routes ?? []).forEach(walk);
+		}
+		walk(r);
+		return [...names];
+	}
+
 	async function load() {
 		loading = true;
 		try {
-			const [cfg, routing] = await Promise.all([
-				fetchConfig(selectedInstance || undefined),
-				fetchRouting(selectedInstance || undefined).catch(() => null)
+			const instance = selectedInstance || undefined;
+			const [routeResp, receiversResp, cfg, routing] = await Promise.all([
+				getRoute(instance),
+				listBuilderReceivers(instance),
+				fetchConfig(instance),
+				fetchRouting(instance).catch(() => null)
 			]);
+			// Form tab: structured data from the builder API.
+			formRoute = routeSpecToForm(routeResp.route);
+			availableReceivers = receiversResp.receivers.map(r => r.name);
+			availableTimeIntervals = collectTimeIntervals(routeResp.route);
+			// YAML tab: raw config text.
 			rawYaml = cfg.raw_yaml;
 			originalYaml = cfg.raw_yaml;
+			// Right panel: read-only routing tree preview.
 			routeData = routing;
-			const parsed = yaml.load(cfg.raw_yaml) as any;
-			availableTimeIntervals = (parsed?.time_intervals ?? []).map((ti: any) => ti.name).filter(Boolean);
 		} catch (e) {
 			toast.error('Load error: ' + (e instanceof Error ? e.message : ''));
 		} finally {
@@ -53,9 +114,9 @@
 		}
 	}
 
-	async function validate() {
+	async function validate(yamlContent: string) {
 		try {
-			const r = await validateConfig(rawYaml);
+			const r = await validateConfig(yamlContent);
 			if (!r.valid) { validationErrors = r.errors ?? []; return false; }
 			validationErrors = [];
 			return true;
@@ -63,12 +124,12 @@
 	}
 
 	async function previewDiff() {
-		if (editorTab === 'form') {
-			syncFormToYaml();
-		}
-		if (!(await validate())) return;
+		// In form tab use the live derived YAML; in YAML tab use the editor content.
+		const yamlToUse = editorTab === 'form' ? formYaml : rawYaml;
+		if (!(await validate(yamlToUse))) return;
 		try {
-			diffResult = await diffConfig(selectedInstance || '', rawYaml);
+			pendingYaml = yamlToUse;
+			diffResult = await diffConfig(selectedInstance || '', yamlToUse);
 			step = 'diff';
 		} catch (e) {
 			toast.error('Diff error: ' + (e instanceof Error ? e.message : ''));
@@ -80,7 +141,7 @@
 		try {
 			await saveConfig({
 				alertmanager: selectedInstance || '',
-				raw_yaml: rawYaml,
+				raw_yaml: pendingYaml || rawYaml,
 				save_mode: saveMode,
 				disk_options: saveMode === 'disk' ? { file_path: diskPath } : undefined,
 				git_options: saveMode !== 'disk' ? {
@@ -89,9 +150,14 @@
 				webhook_url: webhookUrl || undefined
 			});
 			toast.success('Configuration saved successfully');
+			// Refresh form state from server so it reflects the persisted config.
+			const routeResp = await getRoute(selectedInstance || undefined);
+			formRoute = routeSpecToForm(routeResp.route);
+			rawYaml = pendingYaml || rawYaml;
 			originalYaml = rawYaml;
 			step = 'edit';
 			diffResult = null;
+			pendingYaml = '';
 		} catch (e) {
 			toast.error('Save error: ' + (e instanceof Error ? e.message : ''));
 		} finally {
@@ -166,28 +232,37 @@
 		}
 	}
 
-	function syncFormToYaml() {
-		try {
-			const parsed = (yaml.load(rawYaml) as any) ?? {};
-			parsed.route = formRouteToYaml(formRoute);
-			rawYaml = yaml.dump(parsed, { lineWidth: 120 });
-		} catch (e) {
-			toast.error('Conversion error: ' + (e instanceof Error ? e.message : ''));
-		}
-	}
-
 	function switchTab(tab: 'yaml' | 'form') {
 		if (tab === 'form' && editorTab === 'yaml') {
 			syncYamlToForm();
 		} else if (tab === 'yaml' && editorTab === 'form') {
-			syncFormToYaml();
+			// Copy the derived YAML into the editor so the user sees the current form state.
+			rawYaml = formYaml;
 		}
 		editorTab = tab;
 	}
 
-	onMount(load);
+	// For viewers: load the read-only routing tree without hitting the builder API.
+	let readOnlyRoute = $state<RouteNode | null>(null);
+
+	onMount(async () => {
+		if ($canEditConfig) {
+			load();
+		} else {
+			loading = true;
+			try {
+				const routing = await fetchRouting(selectedInstance || undefined);
+				readOnlyRoute = routing?.route ?? null;
+			} catch {
+				// silently ignore — RoutingTree handles null
+			} finally {
+				loading = false;
+			}
+		}
+	});
 </script>
 
+{#if $canEditConfig}
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-4">
 	<!-- Left: YAML editor or Form editor -->
 	<div class="space-y-3">
@@ -242,6 +317,7 @@
 					onUpdate={(r) => { formRoute = r; }}
 					isRoot={true}
 					availableTimeIntervals={availableTimeIntervals}
+					availableReceivers={availableReceivers}
 				/>
 			</div>
 		{/if}
@@ -297,6 +373,10 @@
 					</div>
 				{/if}
 			</div>
+		{:else if editorTab === 'form'}
+			<!-- Live YAML preview (AC-6): derived from form state, always up-to-date. -->
+			<h2 class="font-semibold text-sm text-muted-foreground">Live YAML preview</h2>
+			<pre class="h-96 overflow-y-auto rounded-lg border bg-card px-3 py-2 font-mono text-xs leading-relaxed whitespace-pre-wrap">{formYaml}</pre>
 		{:else if routeData}
 			<h2 class="font-semibold">Routing tree preview</h2>
 			<RoutingTree route={routeData.route} />
@@ -305,3 +385,17 @@
 		{/if}
 	</div>
 </div>
+{:else}
+<!-- Read-only view for viewers and silencers (AC-7) -->
+<div class="mt-4 space-y-4">
+	<div class="flex items-center gap-2 p-3 rounded-lg border bg-muted/30 text-sm text-muted-foreground">
+		<Lock class="h-4 w-4 flex-shrink-0" />
+		You need the <strong class="mx-1 text-foreground">config-editor</strong> role to edit routing rules.
+	</div>
+	{#if loading}
+		<div class="py-12 text-center text-muted-foreground animate-pulse">Loading…</div>
+	{:else if readOnlyRoute}
+		<RoutingTree route={readOnlyRoute} />
+	{/if}
+</div>
+{/if}
