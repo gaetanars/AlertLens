@@ -214,12 +214,14 @@ Document significant design decisions in `docs/adr/` following the existing form
 
 ## Key Architecture Decision Records
 
+ADRs live in `docs/adr/` and are maintained by the `write-adr` skill. Use `/write-adr` whenever a significant design decision is made.
+
 | ADR | Title | Issues |
-|-----|-------|--------|
-| [ADR-005](docs/adr/ADR-005_SECURITY_FOUNDATION.md) | Security Foundation — CSRF, JWT, MFA, RBAC, CSP | #30 #31 #32 #33 |
-| [ADR-006](docs/adr/ADR-006_ALERT_KANBAN_LIST_VIEWS.md) | Alert Kanban / List views with URL-synced state | — |
-| [ADR-007](docs/adr/ADR-007_SILENCES_BULK_ACTIONS.md) | Bulk silence actions | — |
-| [ADR-008](docs/adr/ADR-008_INCIDENT_TRACKING.md) | Incident tracking — in-memory immutable ledger | — |
+| --- | --- | --- |
+| [ADR-005](docs/adr/ADR-005_SECURITY_FOUNDATION.md) | Security Foundation (Phase 1) | — |
+| [ADR-006](docs/adr/ADR-006_ALERT_KANBAN_LIST_VIEWS.md) | Alert Kanban / List Views with URL-synced State | — |
+| [ADR-007](docs/adr/ADR-007_SILENCES_BULK_ACTIONS.md) | Silences + Bulk Actions | — |
+| [ADR-008](docs/adr/ADR-008_INCIDENT_TRACKING.md) | Incident Tracking — Immutable Ledger & State Machine | — |
 
 ---
 
