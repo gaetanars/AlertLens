@@ -1,6 +1,6 @@
 # /merge [pr-number] — Squash merge a PR
 
-Merge the PR, clean up the branch, archive the feature.
+Merge the PR and clean up the branch.
 
 ## What to do
 
@@ -27,15 +27,11 @@ Merge the PR, clean up the branch, archive the feature.
    - Switch to main and pull: `git checkout main && git pull`
    - Delete the local branch: `git branch -d feat/NNN-feature-slug`
 
-6. **Archive the feature**:
-   - Move `specs/NNN-feature-name/` to `specs/_archive/NNN-feature-name/`
-   - Update the status in `specs/roadmap.md`: `[~]` or `[ ]` → `[x]`
-
-7. **Display state**: summary of what was just merged and the recommended next feature.
+6. **Display state**: summary of what was just merged and the recommended next feature.
 
 ## Rules
 
 - Never merge without squash message approval — mandatory human checkpoint
 - Never force-push to main
-- Always archive and update the roadmap after merging
+- The spec archive and roadmap update are done at `/ship` time — no post-merge commits needed
 - If CI checks fail: report to the user before continuing
