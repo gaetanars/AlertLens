@@ -27,8 +27,9 @@ If no name is provided:
    - Wait for the user to implement before continuing
 
 4. Verify the implementation works (tests, build)
-5. Check the task in `tasks.md`: `- [x] **T-X.Y**: ...`
-6. Announce what's next
+5. **Update product docs**: check whether any file in `docs/features/` covers the area changed. If so, update it now — don't defer to `/ship`.
+6. Check the task in `tasks.md`: `- [x] **T-X.Y**: ...`
+7. Announce what's next
 
 ## After each task
 
