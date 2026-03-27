@@ -130,42 +130,103 @@ func (b *ConfigBuilder) ListReceivers() ([]ReceiverDef, error) {
 // UpsertReceiver adds or updates a receiver.
 // If a receiver with the same name already exists it is replaced in-place;
 // otherwise it is appended.
+//
+// When rec.RawYAML is set the call is delegated to SetReceiverRaw so that
+// unknown integration types are preserved verbatim.  Both paths operate on
+// the underlying raw-map slice so that sibling receivers with unknown types
+// are never inadvertently stripped.
 func (b *ConfigBuilder) UpsertReceiver(rec ReceiverDef) error {
 	if rec.Name == "" {
 		return fmt.Errorf("receiver name must not be empty")
 	}
-	receivers, err := b.parseReceivers()
+	if rec.RawYAML != "" {
+		return b.SetReceiverRaw(rec.Name, rec.RawYAML)
+	}
+
+	// Typed path: round-trip rec through YAML to produce a raw map so that
+	// unknown receivers elsewhere in the slice are not clobbered.
+	recYAML, err := yaml.Marshal(rec)
+	if err != nil {
+		return fmt.Errorf("serializing receiver: %w", err)
+	}
+	var recMap map[string]interface{}
+	if err := yaml.Unmarshal(recYAML, &recMap); err != nil {
+		return fmt.Errorf("parsing receiver as raw map: %w", err)
+	}
+
+	raw, err := b.rawReceiversSlice()
 	if err != nil {
 		return err
 	}
-
 	found := false
-	for i, r := range receivers {
-		if r.Name == rec.Name {
-			receivers[i] = rec
+	for i, r := range raw {
+		if n, _ := r["name"].(string); n == rec.Name {
+			raw[i] = recMap
 			found = true
 			break
 		}
 	}
 	if !found {
-		receivers = append(receivers, rec)
+		raw = append(raw, recMap)
 	}
-	b.raw["receivers"] = receivers
+	b.raw["receivers"] = raw
+	return nil
+}
+
+// SetReceiverRaw stores a receiver whose integration type is not natively
+// modelled by ReceiverDef.  rawYAML must be valid YAML describing a single
+// receiver block (with or without a "name" key — the name argument is always
+// injected to keep it consistent with the URL parameter).
+//
+// Like UpsertReceiver it replaces an existing entry with the same name or
+// appends if not found.
+func (b *ConfigBuilder) SetReceiverRaw(name, rawYAML string) error {
+	if name == "" {
+		return fmt.Errorf("receiver name must not be empty")
+	}
+	var entry map[string]interface{}
+	if err := yaml.Unmarshal([]byte(rawYAML), &entry); err != nil {
+		return fmt.Errorf("parsing raw receiver YAML: %w", err)
+	}
+	if entry == nil {
+		entry = make(map[string]interface{})
+	}
+	entry["name"] = name // URL param is always canonical
+
+	raw, err := b.rawReceiversSlice()
+	if err != nil {
+		return err
+	}
+	found := false
+	for i, r := range raw {
+		if n, _ := r["name"].(string); n == name {
+			raw[i] = entry
+			found = true
+			break
+		}
+	}
+	if !found {
+		raw = append(raw, entry)
+	}
+	b.raw["receivers"] = raw
 	return nil
 }
 
 // DeleteReceiver removes the named receiver.
 // Returns true if it was found and removed.
+//
+// Operates on the raw-map slice so that unknown integration types in sibling
+// receivers are not lost during the store-back.
 func (b *ConfigBuilder) DeleteReceiver(name string) (bool, error) {
-	receivers, err := b.parseReceivers()
+	raw, err := b.rawReceiversSlice()
 	if err != nil {
 		return false, err
 	}
 
-	filtered := make([]ReceiverDef, 0, len(receivers))
+	filtered := make([]map[string]interface{}, 0, len(raw))
 	found := false
-	for _, r := range receivers {
-		if r.Name == name {
+	for _, r := range raw {
+		if n, _ := r["name"].(string); n == name {
 			found = true
 			continue
 		}
@@ -223,10 +284,28 @@ func ValidateTimeInterval(entry TimeIntervalEntry) ValidationResult {
 
 // ValidateReceiver embeds a single ReceiverDef in a minimal valid config and
 // validates it with the official Alertmanager library.
+//
+// When rec.RawYAML is set the raw YAML fragment is embedded directly so that
+// unknown integration types are validated accurately rather than being silently
+// omitted by the typed marshaller.
 func ValidateReceiver(rec ReceiverDef) ValidationResult {
+	var receiverEntry interface{}
+	if rec.RawYAML != "" {
+		var raw map[string]interface{}
+		if err := yaml.Unmarshal([]byte(rec.RawYAML), &raw); err != nil {
+			return ValidationResult{Valid: false, Errors: []string{"invalid raw YAML: " + err.Error()}}
+		}
+		if raw == nil {
+			raw = make(map[string]interface{})
+		}
+		raw["name"] = rec.Name
+		receiverEntry = raw
+	} else {
+		receiverEntry = rec
+	}
 	tmp := map[string]interface{}{
 		"route":     map[string]interface{}{"receiver": rec.Name},
-		"receivers": []ReceiverDef{rec},
+		"receivers": []interface{}{receiverEntry},
 	}
 	out, err := yaml.Marshal(tmp)
 	if err != nil {
@@ -259,7 +338,19 @@ func (b *ConfigBuilder) parseTimeIntervals(key string) ([]TimeIntervalEntry, err
 	return entries, nil
 }
 
-// parseReceivers round-trips the receivers section through YAML.
+// knownReceiverKeys is the set of YAML keys that ReceiverDef models natively.
+// Any key outside this set signals an unknown integration type.
+var knownReceiverKeys = map[string]bool{
+	"name":              true,
+	"webhook_configs":   true,
+	"slack_configs":     true,
+	"email_configs":     true,
+	"pagerduty_configs": true,
+	"opsgenie_configs":  true,
+}
+
+// parseReceivers round-trips the receivers section through YAML and annotates
+// any receiver that contains unknown integration types with RawYAML.
 func (b *ConfigBuilder) parseReceivers() ([]ReceiverDef, error) {
 	v, ok := b.raw["receivers"]
 	if !ok || v == nil {
@@ -276,5 +367,53 @@ func (b *ConfigBuilder) parseReceivers() ([]ReceiverDef, error) {
 	if recs == nil {
 		return []ReceiverDef{}, nil
 	}
+
+	// Secondary pass: detect unknown integration types.
+	// Re-unmarshal the same YAML into raw maps to inspect every key.
+	var rawEntries []map[string]interface{}
+	if err := yaml.Unmarshal(sect, &rawEntries); err == nil && len(rawEntries) == len(recs) {
+		for i, raw := range rawEntries {
+			for key := range raw {
+				if !knownReceiverKeys[key] {
+					// At least one unknown key: store the whole receiver as raw YAML
+					// and clear the typed fields so callers use RawYAML exclusively.
+					entryYAML, merr := yaml.Marshal(raw)
+					if merr == nil {
+						recs[i].RawYAML = string(entryYAML)
+						recs[i].WebhookConfigs = nil
+						recs[i].SlackConfigs = nil
+						recs[i].EmailConfigs = nil
+						recs[i].PagerdutyConfigs = nil
+						recs[i].OpsgenieConfigs = nil
+					}
+					break
+				}
+			}
+		}
+	}
+
 	return recs, nil
+}
+
+// rawReceiversSlice returns the receivers section as []map[string]interface{},
+// preserving every key (including unknown integration types) by going through
+// YAML serialisation.  UpsertReceiver, SetReceiverRaw, and DeleteReceiver all
+// use this so that mutations on one receiver never corrupt another.
+func (b *ConfigBuilder) rawReceiversSlice() ([]map[string]interface{}, error) {
+	v, ok := b.raw["receivers"]
+	if !ok || v == nil {
+		return []map[string]interface{}{}, nil
+	}
+	sect, err := yaml.Marshal(v)
+	if err != nil {
+		return nil, fmt.Errorf("serializing receivers: %w", err)
+	}
+	var entries []map[string]interface{}
+	if err := yaml.Unmarshal(sect, &entries); err != nil {
+		return nil, fmt.Errorf("parsing receivers as raw maps: %w", err)
+	}
+	if entries == nil {
+		return []map[string]interface{}{}, nil
+	}
+	return entries, nil
 }

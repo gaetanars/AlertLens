@@ -514,3 +514,126 @@ func TestBuild_FullConfigFromScratch(t *testing.T) {
 		t.Error("expected webhook URL in output YAML")
 	}
 }
+
+// ─── Unknown receiver: RawYAML escape hatch ───────────────────────────────────
+
+// configWithVictorOps is a valid Alertmanager YAML that contains a receiver
+// using victorops_configs — an integration type not modelled by ReceiverDef.
+const configWithVictorOps = `
+route:
+  receiver: 'null'
+receivers:
+  - name: 'null'
+  - name: 'ops-victorops'
+    victorops_configs:
+      - api_key: 'secret-key'
+        routing_key: 'MyTeam'
+        message_type: 'CRITICAL'
+`
+
+func TestListReceivers_UnknownType_SetsRawYAML(t *testing.T) {
+	t.Parallel()
+	b := mustBuilder(t, configWithVictorOps)
+	recs, err := b.ListReceivers()
+	if err != nil {
+		t.Fatalf("ListReceivers: %v", err)
+	}
+
+	var vic *ReceiverDef
+	for i := range recs {
+		if recs[i].Name == "ops-victorops" {
+			vic = &recs[i]
+			break
+		}
+	}
+	if vic == nil {
+		t.Fatal("receiver 'ops-victorops' not found")
+	}
+	if vic.RawYAML == "" {
+		t.Error("expected RawYAML to be non-empty for unknown integration type")
+	}
+	// Typed config slices must be zero — caller must use RawYAML exclusively.
+	if len(vic.WebhookConfigs) != 0 || len(vic.SlackConfigs) != 0 ||
+		len(vic.EmailConfigs) != 0 || len(vic.PagerdutyConfigs) != 0 ||
+		len(vic.OpsgenieConfigs) != 0 {
+		t.Error("expected all typed config slices to be empty for unknown integration type")
+	}
+	if !strings.Contains(vic.RawYAML, "victorops_configs") {
+		t.Errorf("RawYAML does not contain 'victorops_configs': %s", vic.RawYAML)
+	}
+}
+
+func TestUpsertReceiver_RawYAML_RoundTrip(t *testing.T) {
+	t.Parallel()
+	b := mustBuilder(t, configWithVictorOps)
+
+	// Retrieve the unknown receiver.
+	recs, err := b.ListReceivers()
+	if err != nil {
+		t.Fatalf("ListReceivers: %v", err)
+	}
+	var vic ReceiverDef
+	for _, r := range recs {
+		if r.Name == "ops-victorops" {
+			vic = r
+			break
+		}
+	}
+	if vic.RawYAML == "" {
+		t.Fatal("pre-condition: RawYAML must be set")
+	}
+
+	// Upsert the receiver back via RawYAML path.
+	if err := b.UpsertReceiver(vic); err != nil {
+		t.Fatalf("UpsertReceiver (raw path): %v", err)
+	}
+
+	// The raw YAML output must still contain the original victorops_configs.
+	out, err := b.BuildRaw()
+	if err != nil {
+		t.Fatalf("BuildRaw: %v", err)
+	}
+	if !strings.Contains(string(out), "victorops_configs") {
+		t.Error("victorops_configs not preserved after round-trip upsert")
+	}
+	if !strings.Contains(string(out), "secret-key") {
+		t.Error("victorops api_key not preserved after round-trip upsert")
+	}
+}
+
+func TestUpsertReceiver_RawYAML_DoesNotCorruptSiblings(t *testing.T) {
+	t.Parallel()
+	b := mustBuilder(t, configWithVictorOps)
+	recs, _ := b.ListReceivers()
+
+	var vic ReceiverDef
+	for _, r := range recs {
+		if r.Name == "ops-victorops" {
+			vic = r
+		}
+	}
+	// Upsert the unknown receiver; the 'null' sibling must survive.
+	_ = b.UpsertReceiver(vic)
+	after, err := b.ListReceivers()
+	if err != nil {
+		t.Fatalf("ListReceivers after upsert: %v", err)
+	}
+	var foundNull bool
+	for _, r := range after {
+		if r.Name == "null" {
+			foundNull = true
+		}
+	}
+	if !foundNull {
+		t.Error("sibling receiver 'null' was lost after raw upsert")
+	}
+}
+
+func TestSetReceiverRaw_MalformedYAML_ReturnsError(t *testing.T) {
+	t.Parallel()
+	b := mustBuilder(t, baseConfig)
+	err := b.SetReceiverRaw("bad", "{{not valid yaml")
+	if err == nil {
+		t.Error("expected error for malformed YAML, got nil")
+	}
+}

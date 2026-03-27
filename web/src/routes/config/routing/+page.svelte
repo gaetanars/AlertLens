@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { fetchConfig, validateConfig, diffConfig, saveConfig } from '$lib/api/config';
 	import { fetchRouting } from '$lib/api/routing';
-	import { getRoute, listBuilderReceivers } from '$lib/api/builder';
+	import { getRoute, listReceivers } from '$lib/api/builder';
 	import type { RouteSpec } from '$lib/api/types';
 	import RoutingTree from '$lib/components/routing/RoutingTree.svelte';
 	import YamlDiffViewer from '$lib/components/config/YamlDiffViewer.svelte';
@@ -94,7 +94,7 @@
 			const instance = selectedInstance || undefined;
 			const [routeResp, receiversResp, cfg, routing] = await Promise.all([
 				getRoute(instance),
-				listBuilderReceivers(instance),
+				listReceivers(instance),
 				fetchConfig(instance),
 				fetchRouting(instance).catch(() => null)
 			]);

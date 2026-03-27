@@ -287,9 +287,81 @@ export interface RouteSpec {
 	routes: RouteSpec[];
 }
 
-/** Stub type for a receiver entry from GET /api/builder/receivers. Extended by feature 008. */
-export interface BuilderReceiverDef {
+export interface WebhookConfigDef {
+	url: string;
+	send_resolved?: boolean;
+	max_alerts?: number;
+}
+
+export interface SlackConfigDef {
+	channel: string;
+	api_url?: string;
+	username?: string;
+	text?: string;
+	title?: string;
+	send_resolved?: boolean;
+}
+
+export interface EmailConfigDef {
+	to: string;
+	from?: string;
+	smarthost?: string;
+	auth_username?: string;
+	auth_password?: string;
+	send_resolved?: boolean;
+}
+
+export interface PagerdutyConfigDef {
+	routing_key?: string;
+	service_key?: string;
+	description?: string;
+	send_resolved?: boolean;
+}
+
+export interface OpsgenieConfigDef {
+	api_key?: string;
+	message?: string;
+	priority?: string;
+	send_resolved?: boolean;
+}
+
+export interface ReceiverDef {
 	name: string;
+	webhook_configs?: WebhookConfigDef[];
+	slack_configs?: SlackConfigDef[];
+	email_configs?: EmailConfigDef[];
+	pagerduty_configs?: PagerdutyConfigDef[];
+	opsgenie_configs?: OpsgenieConfigDef[];
+	raw_yaml?: string;
+}
+
+export interface TimeRangeDef {
+	start_time: string;
+	end_time: string;
+}
+
+export interface TimeIntervalDef {
+	times?: TimeRangeDef[];
+	weekdays?: string[];
+	days_of_month?: string[];
+	months?: string[];
+	years?: string[];
+	location?: string;
+}
+
+export interface TimeIntervalEntry {
+	name: string;
+	time_intervals: TimeIntervalDef[];
+}
+
+export interface BuilderReceiverRouteRef {
+	matchers: string[];
+	depth: number;
+}
+
+export interface BuilderReceiverRoutesResponse {
+	receiver: string;
+	referenced_by: BuilderReceiverRouteRef[];
 }
 
 export interface SaveConfigRequest {

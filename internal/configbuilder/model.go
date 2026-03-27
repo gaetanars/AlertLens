@@ -44,6 +44,16 @@ type TimeRangeDef struct {
 
 // ReceiverDef is the API/JSON model for an Alertmanager receiver.
 // The receiver name must be unique within the configuration.
+//
+// When a receiver in the live config contains integration types that AlertLens
+// does not model natively (e.g. victorops_configs, msteams_configs), the
+// builder sets RawYAML to the verbatim YAML of that receiver block and clears
+// all typed config slices.  Callers should treat RawYAML != "" as a signal to
+// render a raw-YAML editor rather than a structured form.
+//
+// RawYAML has no yaml struct tag so it is never written into Alertmanager
+// config directly; UpsertReceiver routes receivers with RawYAML set through
+// SetReceiverRaw instead.
 type ReceiverDef struct {
 	Name             string               `json:"name"                        yaml:"name"`
 	WebhookConfigs   []WebhookConfigDef   `json:"webhook_configs,omitempty"   yaml:"webhook_configs,omitempty"`
@@ -51,6 +61,9 @@ type ReceiverDef struct {
 	EmailConfigs     []EmailConfigDef     `json:"email_configs,omitempty"     yaml:"email_configs,omitempty"`
 	PagerdutyConfigs []PagerdutyConfigDef `json:"pagerduty_configs,omitempty" yaml:"pagerduty_configs,omitempty"`
 	OpsgenieConfigs  []OpsgenieConfigDef  `json:"opsgenie_configs,omitempty"  yaml:"opsgenie_configs,omitempty"`
+	// RawYAML is populated by the builder when the receiver contains unknown
+	// integration types.  It is JSON-only and never serialised to YAML.
+	RawYAML string `json:"raw_yaml,omitempty" yaml:"-"`
 }
 
 // WebhookConfigDef configures a generic HTTP webhook receiver.
