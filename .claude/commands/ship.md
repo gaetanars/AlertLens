@@ -14,19 +14,21 @@ Check that a `review.md` exists with verdict **"Ready to merge"** for the curren
    ```
    If a branch already exists for this feature, use it.
 
-2. **Staging**: identify files related to the feature. Never `git add .` — list and add files explicitly. Show the list to the user before staging.
+2. **Archive the spec**: if the feature has a spec directory (`specs/NNN-feature-name/`), move it to `specs/_archive/NNN-feature-name/` and update `specs/roadmap.md` status to `[x]` now — before staging. This way the archive is part of the squash commit and `/merge` requires no extra commits on `main`.
 
-3. **Commit**: propose a message in Conventional Commits format:
+3. **Staging**: identify files related to the feature (including the archived spec and updated roadmap). Never `git add .` — list and add files explicitly. Show the list to the user before staging.
+
+4. **Commit**: propose a message in Conventional Commits format:
    ```
    feat(scope): short, precise description
    ```
    **Wait for explicit user approval before committing.**
 
-4. **Push**: `git push -u origin feat/NNN-feature-slug`
+5. **Push**: `git push -u origin feat/NNN-feature-slug`
 
-5. **Collect issue references**: read `specs/NNN-feature-name/spec.md` and extract the `GitHub issues:` field. For each `#NNN`, add a `Closes #NNN` line to the PR body. If the feature has no linked issues, omit this section.
+6. **Collect issue references**: read `specs/NNN-feature-name/spec.md` and extract the `GitHub issues:` field. For each `#NNN`, add a `Closes #NNN` line to the PR body. If the feature has no linked issues, omit this section.
 
-6. **Pull Request**: create the PR with `gh pr create`:
+7. **Pull Request**: create the PR with `gh pr create`:
 
 ```
 gh pr create \
@@ -71,13 +73,13 @@ EOF
 )"
 ```
 
-7. **Labels**: apply relevant labels with `gh pr edit NNN --add-label "..."` based on what was changed:
+8. **Labels**: apply relevant labels with `gh pr edit NNN --add-label "..."` based on what was changed:
    - `backend` if Go files were modified
    - `frontend` if Svelte/TS files were modified
    - `security` if auth or middleware was touched
    - `testing` if only tests were added
 
-8. Return the PR URL.
+9. Return the PR URL.
 
 ## Rules
 
