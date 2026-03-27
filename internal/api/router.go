@@ -191,6 +191,7 @@ func NewRouter(
 			r.Get("/receivers/{name}", bldrH.GetReceiver)
 			r.Put("/receivers/{name}", bldrH.UpsertReceiver)
 			r.Delete("/receivers/{name}", bldrH.DeleteReceiver)
+			r.Get("/receivers/{name}/routes", bldrH.ReceiverRoutes)
 
 			// Root route
 			r.Get("/route", bldrH.GetRoute)

@@ -283,6 +283,63 @@ func (h *BuilderHandler) ValidateReceiver(w http.ResponseWriter, r *http.Request
 	writeJSON(w, result)
 }
 
+// receiverRouteRef describes one routing-tree node that references a receiver.
+type receiverRouteRef struct {
+	Matchers []string `json:"matchers"`
+	Depth    int      `json:"depth"`
+}
+
+// ReceiverRoutes handles GET /api/builder/receivers/{name}/routes.
+//
+// It walks the live routing tree and returns every node (at any depth) whose
+// receiver field equals {name}.  The response always contains a non-null
+// referenced_by array so the frontend can use .length directly without a nil
+// guard.
+func (h *BuilderHandler) ReceiverRoutes(w http.ResponseWriter, r *http.Request) {
+	name := chi.URLParam(r, "name")
+
+	b := h.builderFromRequest(w, r)
+	if b == nil {
+		return
+	}
+
+	route, err := b.GetRoute()
+	if err != nil {
+		writeError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	refs := make([]receiverRouteRef, 0)
+	if route != nil {
+		// Use append so that refs stays a non-nil empty slice when
+		// collectReceiverRefs returns nil (no matches found).
+		refs = append(refs, collectReceiverRefs(route, name, 0)...)
+	}
+
+	writeJSON(w, map[string]any{
+		"receiver":      name,
+		"referenced_by": refs,
+	})
+}
+
+// collectReceiverRefs recursively walks a RouteSpec tree and returns every
+// node whose Receiver field equals target, annotated with its nesting depth.
+func collectReceiverRefs(route *configbuilder.RouteSpec, target string, depth int) []receiverRouteRef {
+	var refs []receiverRouteRef
+	if route.Receiver == target {
+		matchers := route.Matchers
+		if matchers == nil {
+			matchers = []string{}
+		}
+		refs = append(refs, receiverRouteRef{Matchers: matchers, Depth: depth})
+	}
+	for i := range route.Routes {
+		child := route.Routes[i]
+		refs = append(refs, collectReceiverRefs(&child, target, depth+1)...)
+	}
+	return refs
+}
+
 // ─── Route ───────────────────────────────────────────────────────────────────
 
 // GetRoute handles GET /api/builder/route?instance=<name>.
