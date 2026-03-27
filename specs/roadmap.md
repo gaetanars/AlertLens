@@ -20,7 +20,7 @@ _Last updated: 2026-03-19_
 | ID  | Feature | Description | Status | Depends on | Issues |
 |-----|---------|-------------|--------|------------|--------|
 | 007 | config-builder-routing | CRUD for routing tree via guided forms + YAML preview | [x] | 006 | #50 |
-| 008 | config-builder-receivers | CRUD for receivers and time intervals | [~] | 007 | #51 |
+| 008 | config-builder-receivers | CRUD for receivers and time intervals | [x] | 007 | #51 |
 | 009 | config-builder-save-history | Save to Alertmanager + change history / diff view | [~] | 007 008 | #52 |
 | 010 | auth-rbac-fixes | Fix default role bug, login UX, role validation at startup | [x] | 006 | #87 #88 #89 #90 #91 #92 |
 | 011 | activity-log | Requalify incident tracking as Session Activity Log (ADR-009) | [ ] | 006 | #97 |
