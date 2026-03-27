@@ -21,6 +21,8 @@ If no name is provided: pick the first feature whose tasks are all checked `[x]`
 
    **Architecture**: does the implementation follow the architecture decisions from `plan.md`? Do the created files match what was planned?
 
+   **Product docs**: check `docs/features/` for any page covering the feature area. Verify it reflects what was built (new fields, new behaviours, RBAC requirements, etc.). Stale or missing doc = "Needs fixes".
+
    **Constitution**: are the project's non-negotiable principles respected?
 
 3. Write `specs/NNN-feature-name/review.md`
