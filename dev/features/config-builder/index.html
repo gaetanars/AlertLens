@@ -736,22 +736,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#saving-changes" class="md-nav__link">
+  <a href="#save-deploy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Saving Changes
+        Save &amp; Deploy
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Saving Changes">
+    <nav class="md-nav" aria-label="Save &amp; Deploy">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#disk-write" class="md-nav__link">
+  <a href="#diff-preview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Disk Write
+        Diff preview
       
     </span>
   </a>
@@ -759,10 +759,49 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#gitops-push" class="md-nav__link">
+  <a href="#save-modes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GitOps Push
+        Save modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Save modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#disk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#github-gitlab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub / GitLab
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Save history
       
     </span>
   </a>
@@ -1059,22 +1098,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#saving-changes" class="md-nav__link">
+  <a href="#save-deploy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Saving Changes
+        Save &amp; Deploy
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Saving Changes">
+    <nav class="md-nav" aria-label="Save &amp; Deploy">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#disk-write" class="md-nav__link">
+  <a href="#diff-preview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Disk Write
+        Diff preview
       
     </span>
   </a>
@@ -1082,10 +1121,49 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#gitops-push" class="md-nav__link">
+  <a href="#save-modes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GitOps Push
+        Save modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Save modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#disk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#github-gitlab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub / GitLab
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Save history
       
     </span>
   </a>
@@ -1212,35 +1290,31 @@
 <p><strong>Raw YAML fallback</strong> — receivers using an integration type not listed above (e.g. VictorOps, Telegram, MSTeams) are shown as an editable YAML textarea. Their configuration is preserved verbatim on round-trip; AlertLens never silently drops unknown keys.</p>
 <p><strong>Delete guard</strong> — before deleting a receiver AlertLens checks which routes reference it. If any routes do, an inline confirmation lists each referencing route's matchers and depth. You can proceed ("Delete anyway") or cancel.</p>
 <hr />
-<h2 id="saving-changes">Saving Changes<a class="headerlink" href="#saving-changes" title="Permanent link">&para;</a></h2>
-<p>Before any write, AlertLens shows a <strong>unified diff</strong> of the current vs. proposed configuration. You must confirm before the change is applied.</p>
-<p>Two save strategies are available per instance:</p>
-<h3 id="disk-write">Disk Write<a class="headerlink" href="#disk-write" title="Permanent link">&para;</a></h3>
-<p>AlertLens writes <code>alertmanager.yml</code> directly to a file path configured in <code>config_file_path</code>.</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">alertmanagers</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://alertmanager:9093</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">config_file_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/alertmanager/alertmanager.yml</span>
-</span></code></pre></div>
-<p>An optional <strong>webhook</strong> is called after a successful write (e.g., to trigger a reload or CI pipeline).</p>
+<h2 id="save-deploy">Save &amp; Deploy<a class="headerlink" href="#save-deploy" title="Permanent link">&para;</a></h2>
+<p>The <strong>Save &amp; Deploy</strong> tab is the final step in the build → review → publish workflow. It is always accessible from the Config Builder tab bar, regardless of which editor tab is active.</p>
+<h3 id="diff-preview">Diff preview<a class="headerlink" href="#diff-preview" title="Permanent link">&para;</a></h3>
+<p>Before saving, AlertLens fetches a unified diff between the current live Alertmanager configuration and the proposed YAML assembled by the builder. The diff is rendered with green/red line highlighting using the existing <code>YamlDiffViewer</code> component. If there are no changes, the Save button is disabled and a "No changes" message is shown instead.</p>
+<h3 id="save-modes">Save modes<a class="headerlink" href="#save-modes" title="Permanent link">&para;</a></h3>
+<p>Three save modes are available. Modes whose backend pusher is not configured are shown as disabled with an explanatory tooltip.</p>
+<h4 id="disk">Disk<a class="headerlink" href="#disk" title="Permanent link">&para;</a></h4>
+<p>AlertLens writes <code>alertmanager.yml</code> directly to the file path you specify.</p>
 <div class="admonition info">
 <p class="admonition-title">Filesystem access</p>
 <p>AlertLens must have write access to the file path. In Docker, mount the directory as a volume.</p>
 </div>
-<h3 id="gitops-push">GitOps Push<a class="headerlink" href="#gitops-push" title="Permanent link">&para;</a></h3>
-<p>AlertLens commits and pushes the updated <code>alertmanager.yml</code> to a GitHub or GitLab repository via the API.</p>
-<p>Configurable parameters (set in the UI per instance):</p>
+<h4 id="github-gitlab">GitHub / GitLab<a class="headerlink" href="#github-gitlab" title="Permanent link">&para;</a></h4>
+<p>AlertLens commits and pushes the updated configuration to a Git repository via the forge API. Required fields:</p>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
+<th>Field</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Repository</td>
-<td><code>owner/repo</code></td>
+<td><code>owner/repo</code> (GitHub) or <code>namespace/project</code> (GitLab)</td>
 </tr>
 <tr>
 <td>Branch</td>
@@ -1252,18 +1326,34 @@
 </tr>
 <tr>
 <td>Commit message</td>
-<td>Template or free text</td>
+<td>Free text</td>
+</tr>
+<tr>
+<td>Author name / email</td>
+<td>Commit attribution</td>
 </tr>
 </tbody>
 </table>
-<p>An optional webhook is triggered after the push (e.g., to open a pull request or trigger Argo CD).</p>
+<p>On success, a confirmation banner is shown with a clickable link to the commit on the forge.</p>
 <p>Configure tokens in your <a href="../../configuration/#gitops">AlertLens config</a>:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">gitops</span><span class="p">:</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">github</span><span class="p">:</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">   </span><span class="c1"># ALERTLENS_GITOPS_GITHUB_TOKEN</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">gitlab</span><span class="p">:</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">   </span><span class="c1"># ALERTLENS_GITOPS_GITLAB_TOKEN</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">gitops</span><span class="p">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">github</span><span class="p">:</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">   </span><span class="c1"># ALERTLENS_GITOPS_GITHUB_TOKEN</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">gitlab</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">token</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">   </span><span class="c1"># ALERTLENS_GITOPS_GITLAB_TOKEN</span>
 </span></code></pre></div>
+<h3 id="save-history">Save history<a class="headerlink" href="#save-history" title="Permanent link">&para;</a></h3>
+<p>Below the save form, the <strong>Save History</strong> section lists all saves made since the last process restart, newest-first. Each row shows:</p>
+<ul>
+<li>Timestamp (RFC 3339)</li>
+<li>Save mode badge (disk / github / gitlab)</li>
+<li>Actor (the role of the user who triggered the save)</li>
+<li>An <strong>Expand diff</strong> button — clicking it fetches a diff between the saved YAML and the current live config and renders it inline</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Session-scoped history</p>
+<p>Save history is in-memory and resets on process restart. Up to 50 saves are retained per Alertmanager instance (oldest evicted on overflow). Persistent history is tracked in feature 024.</p>
+</div>
 <hr />
 <h2 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h2>
 <p>AlertLens validates configuration at two points:</p>
