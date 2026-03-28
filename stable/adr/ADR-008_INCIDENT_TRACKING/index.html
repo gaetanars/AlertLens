@@ -12,7 +12,7 @@
         <meta name="author" content="Gaetan ARS">
       
       
-        <link rel="canonical" href="https://alertlens.github.io/AlertLens/stable/SECURITY_ARCHITECTURE_PHASE_1/">
+        <link rel="canonical" href="https://alertlens.github.io/AlertLens/stable/adr/ADR-008_INCIDENT_TRACKING/">
       
       
       
@@ -20,19 +20,19 @@
         
       
       
-      <link rel="icon" href="../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <link rel="icon" href="../../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>SECURITY ARCHITECTURE PHASE 1 - AlertLens</title>
+        <title>ADR-008: Incident Tracking — Immutable Ledger & State Machine - AlertLens</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -51,7 +51,7 @@
       
     
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -75,6 +75,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#adr-008-incident-tracking-immutable-ledger-state-machine" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -89,9 +94,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="AlertLens" class="md-header__button md-logo" aria-label="AlertLens" data-md-component="logo">
+    <a href="../.." title="AlertLens" class="md-header__button md-logo" aria-label="AlertLens" data-md-component="logo">
       
-  <img src="../assets/logo.png" alt="logo">
+  <img src="../../assets/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -108,7 +113,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              SECURITY ARCHITECTURE PHASE 1
+              ADR-008: Incident Tracking — Immutable Ledger &amp; State Machine
             
           </span>
         </div>
@@ -221,7 +226,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -240,7 +245,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../getting-started/" class="md-tabs__link">
+      <a href="../../getting-started/" class="md-tabs__link">
         
   
   
@@ -259,7 +264,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../configuration/" class="md-tabs__link">
+      <a href="../../configuration/" class="md-tabs__link">
         
   
   
@@ -280,7 +285,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../features/visualization/" class="md-tabs__link">
+        <a href="../../features/visualization/" class="md-tabs__link">
           
   
   
@@ -300,7 +305,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../deployment/docker/" class="md-tabs__link">
+        <a href="../../deployment/docker/" class="md-tabs__link">
           
   
   
@@ -318,7 +323,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../changelog/" class="md-tabs__link">
+      <a href="../../changelog/" class="md-tabs__link">
         
   
   
@@ -353,9 +358,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="AlertLens" class="md-nav__button md-logo" aria-label="AlertLens" data-md-component="logo">
+    <a href="../.." title="AlertLens" class="md-nav__button md-logo" aria-label="AlertLens" data-md-component="logo">
       
-  <img src="../assets/logo.png" alt="logo">
+  <img src="../../assets/logo.png" alt="logo">
 
     </a>
     AlertLens
@@ -382,7 +387,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -409,7 +414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
+      <a href="../../getting-started/" class="md-nav__link">
         
   
   
@@ -436,7 +441,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
+      <a href="../../configuration/" class="md-nav__link">
         
   
   
@@ -515,7 +520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/visualization/" class="md-nav__link">
+      <a href="../../features/visualization/" class="md-nav__link">
         
   
   
@@ -543,7 +548,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/silences/" class="md-nav__link">
+      <a href="../../features/silences/" class="md-nav__link">
         
   
   
@@ -571,7 +576,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/visual-ack/" class="md-nav__link">
+      <a href="../../features/visual-ack/" class="md-nav__link">
         
   
   
@@ -599,7 +604,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features/config-builder/" class="md-nav__link">
+      <a href="../../features/config-builder/" class="md-nav__link">
         
   
   
@@ -686,7 +691,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deployment/docker/" class="md-nav__link">
+      <a href="../../deployment/docker/" class="md-nav__link">
         
   
   
@@ -714,7 +719,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deployment/binary/" class="md-nav__link">
+      <a href="../../deployment/binary/" class="md-nav__link">
         
   
   
@@ -742,7 +747,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deployment/kubernetes/" class="md-nav__link">
+      <a href="../../deployment/kubernetes/" class="md-nav__link">
         
   
   
@@ -777,7 +782,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../changelog/" class="md-nav__link">
+      <a href="../../changelog/" class="md-nav__link">
         
   
   
@@ -814,6 +819,121 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-immutable-event-ledger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Immutable Event Ledger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. State Machine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-api-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. API Design
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-in-memory-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. In-Memory Store
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-frontend-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Frontend Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequences
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternatives Considered
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -830,7 +950,7 @@
 
 
   
-    <a href="https://github.com/AlertLens/AlertLens/edit/main/docs/SECURITY_ARCHITECTURE_PHASE_1.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/AlertLens/AlertLens/edit/main/docs/adr/ADR-008_INCIDENT_TRACKING.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -838,15 +958,151 @@
   
 
 
-  <h1>SECURITY ARCHITECTURE PHASE 1</h1>
-
-<p>I have successfully designed the security architecture for Phase 1 of the AlertLens project, addressing the GitHub issues #30, #31, #32, and #33.</p>
-<p>I have created a detailed architecture document titled <code>SECURITY_ARCHITECTURE_PHASE_1.md</code> which includes:
-*   <strong>Prevention of YAML injection</strong> in Alertmanager configurations, recommending schema validation, secure parsers, containerization with minimal privileges, and static analysis.
-*   <strong>Prevention of authentication bypass</strong>, proposing MFA, OAuth2/OIDC, rate limiting, and secure JWTs with short lifespans.
-*   <strong>Protection against CSRF</strong>, detailing the use of synchronizer tokens, SameSite cookies, and Referer/Origin header validation.
-*   <strong>Protection against XSS</strong>, through strict output encoding, a restrictive Content Security Policy (CSP), and avoiding unsafe DOM manipulation.</p>
-<p>This document provides specific technical solutions for each identified security concern.</p>
+<h1 id="adr-008-incident-tracking-immutable-ledger-state-machine">ADR-008: Incident Tracking — Immutable Ledger &amp; State Machine<a class="headerlink" href="#adr-008-incident-tracking-immutable-ledger-state-machine" title="Permanent link">&para;</a></h1>
+<p><strong>Status:</strong> Accepted<br />
+<strong>Date:</strong> 2026-03-10<br />
+<strong>Implemented by:</strong> Developer Agent<br />
+<strong>Related issues:</strong> Phase 1 — Dashboard-Backbone track</p>
+<hr />
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>AlertLens aggregates alerts from Alertmanager but lacked a structured way to
+track the <em>operational response</em> to those alerts. When an alert fires, the
+on-call engineer needs to:</p>
+<ol>
+<li>Acknowledge they've seen it (ACK)</li>
+<li>Signal they're actively investigating (INVESTIGATING)</li>
+<li>Record when it's resolved (RESOLVED)</li>
+<li>Leave an audit trail of who did what and when</li>
+</ol>
+<p>A naive mutable-record approach (single row per incident, updated in-place)
+loses history and makes audit trails impossible without a separate changelog
+table.</p>
+<p><strong>SPECS constraint:</strong> AlertLens must remain stateless (no database). An
+in-process in-memory store satisfies the Phase 1 requirement while providing
+the right abstractions for a future persistent backend.</p>
+<hr />
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<h3 id="1-immutable-event-ledger">1. Immutable Event Ledger<a class="headerlink" href="#1-immutable-event-ledger" title="Permanent link">&para;</a></h3>
+<p>Each incident maintains an <strong>append-only</strong> list of <code>IncidentEvent</code> records.
+Events are never mutated or deleted after creation. The current status is
+always derived from the most recent status-carrying event.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Incident
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a> └── Events (append-only ledger)
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>      ├── [1] CREATED   → status: OPEN
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>      ├── [2] ACK        → status: ACK
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>      ├── [3] COMMENT    → status: (unchanged)
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>      ├── [4] INVESTIGATING → status: INVESTIGATING
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>      └── [5] RESOLVED   → status: RESOLVED
+</span></code></pre></div>
+<p><strong>Benefits:</strong>
+- Complete audit trail with actor and message per event
+- Timestamps are monotonically non-decreasing
+- No UPDATE operations needed — only appends
+- Duration metrics derivable from event timestamps (e.g. MTTD, MTTR)</p>
+<h3 id="2-state-machine">2. State Machine<a class="headerlink" href="#2-state-machine" title="Permanent link">&para;</a></h3>
+<p>Valid transitions enforced at the store layer:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>       ┌─────────────────────────────┐
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>       │                             ▼
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>OPEN ──→ ACK ──→ INVESTIGATING ──→ RESOLVED
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  │       │            │              │
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  │       └────────────┘              │
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  │                                   │
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  └──────────────── (reopen) ─────────┘
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>Allowed targets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OPEN</td>
+<td>ACK, INVESTIGATING, RESOLVED</td>
+</tr>
+<tr>
+<td>ACK</td>
+<td>INVESTIGATING, RESOLVED, OPEN (reopen)</td>
+</tr>
+<tr>
+<td>INVESTIGATING</td>
+<td>RESOLVED, OPEN (reopen)</td>
+</tr>
+<tr>
+<td>RESOLVED</td>
+<td>OPEN (reopen)</td>
+</tr>
+</tbody>
+</table>
+<p>Invalid transitions return HTTP 409 Conflict.</p>
+<h3 id="3-api-design">3. API Design<a class="headerlink" href="#3-api-design" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>GET  /api/incidents              → list (paginated, filterable by status/fingerprint)
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>POST /api/incidents              → create (requires silencer role)
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>GET  /api/incidents/{id}         → full incident including timeline
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>GET  /api/incidents/{id}/timeline → event log only (lightweight polling)
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>POST /api/incidents/{id}/events  → add ACK / INVESTIGATING / RESOLVED / REOPENED / COMMENT
+</span></code></pre></div>
+<p>Authentication follows the existing RBAC model:
+- <strong>Read</strong> → <code>viewer</code> role minimum
+- <strong>Write</strong> → <code>silencer</code> role minimum (accountability requires identity)</p>
+<h3 id="4-in-memory-store">4. In-Memory Store<a class="headerlink" href="#4-in-memory-store" title="Permanent link">&para;</a></h3>
+<p><code>internal/incident.Store</code> uses a <code>sync.RWMutex</code>-protected map.
+All mutations return deep copies so callers cannot race on the stored data.</p>
+<p><strong>Trade-offs:</strong>
+- ✅ Zero external dependencies, fits stateless constraint
+- ✅ Fast (all operations O(1) or O(n) at most)
+- ❌ Lost on process restart — acceptable for Phase 1 MVP
+- Future: swap <code>Store</code> implementation for a BoltDB / SQLite backend</p>
+<h3 id="5-frontend-architecture">5. Frontend Architecture<a class="headerlink" href="#5-frontend-architecture" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>$lib/api/incidents.ts</code></strong> — typed API client (fetch wrappers + convenience helpers)</li>
+<li><strong><code>$lib/stores/incidents.ts</code></strong> — Svelte writable/derived stores, actions, 30s polling</li>
+<li><strong><code>IncidentTimeline.svelte</code></strong> — vertical timeline, colour-coded by event kind</li>
+<li><strong><code>IncidentCard.svelte</code></strong> — compact list card with quick-action buttons</li>
+<li><strong><code>IncidentStatusBadge.svelte</code></strong> — animated status pill</li>
+<li><strong><code>AddEventForm.svelte</code></strong> — modal form, shows only valid transitions</li>
+<li><strong><code>/incidents</code> route</strong> — full dashboard: list + side-panel detail + create modal</li>
+</ul>
+<hr />
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
+<p><strong>Positive:</strong>
+- Full audit trail from day one
+- State machine prevents nonsensical transitions at the API level
+- Frontend enforces same transitions via AddEventForm (shows only valid options)
+- Active incident count badge in Navbar gives always-visible situational awareness
+- MTTD/MTTR computable from event timestamps for future SLO reporting</p>
+<p><strong>Negative:</strong>
+- In-memory store resets on restart — teams must re-open incidents after redeploys
+- No persistence hook yet (pluggable store interface makes this straightforward to add)</p>
+<hr />
+<h2 id="alternatives-considered">Alternatives Considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Rejected because</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mutable single-row per incident</td>
+<td>No history, no audit trail</td>
+</tr>
+<tr>
+<td>External DB (PostgreSQL)</td>
+<td>Violates stateless constraint for Phase 1</td>
+</tr>
+<tr>
+<td>File-based JSON store</td>
+<td>Adds I/O complexity; in-memory is sufficient for MVP</td>
+</tr>
+<tr>
+<td>Reuse Alertmanager silences for ACK state</td>
+<td>Silences are suppression tools, not incident lifecycle records</td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -920,10 +1176,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.instant", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.action.edit"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.instant", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
