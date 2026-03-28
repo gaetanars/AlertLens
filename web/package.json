@@ -35,7 +35,7 @@
 	},
 	"dependencies": {
 		"@types/js-yaml": "^4.0.9",
-		"bits-ui": "^2.16.2",
+		"bits-ui": "^2.16.4",
 		"clsx": "^2.1.1",
 		"d3": "^7.9.0",
 		"js-yaml": "^4.1.1",
