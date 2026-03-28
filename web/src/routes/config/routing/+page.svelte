@@ -9,6 +9,7 @@
 	import RouteNodeEditor, { type RouteFormNode, emptyNode } from '$lib/components/config/RouteNodeEditor.svelte';
 	import { instances } from '$lib/stores/alerts';
 	import { canEditConfig } from '$lib/stores/auth';
+	import { configDraftStore } from '$lib/stores/configDraft';
 	import { toast } from 'svelte-sonner';
 	import type { RouteNode } from '$lib/api/types';
 	import { Save, Eye, AlertTriangle, FormInput, Code, Lock } from 'lucide-svelte';
@@ -131,6 +132,8 @@
 			pendingYaml = yamlToUse;
 			diffResult = await diffConfig(selectedInstance || '', yamlToUse);
 			step = 'diff';
+			// Share the assembled YAML with the Save & Deploy tab.
+			configDraftStore.set({ instance: selectedInstance, rawYaml: yamlToUse });
 		} catch (e) {
 			toast.error('Diff error: ' + (e instanceof Error ? e.message : ''));
 		}

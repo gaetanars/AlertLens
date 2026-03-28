@@ -8,24 +8,28 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/alertlens/alertlens/internal/alertmanager"
+	"github.com/alertlens/alertlens/internal/auth"
 	"github.com/alertlens/alertlens/internal/configbuilder"
+	"github.com/alertlens/alertlens/internal/confighistory"
 	"github.com/alertlens/alertlens/internal/gitops"
 )
 
 // ConfigHandler handles configuration builder requests.
 type ConfigHandler struct {
 	pool     *alertmanager.Pool
-	ghPusher gitops.Pusher // nil when GitHub is not configured
-	glPusher gitops.Pusher // nil when GitLab is not configured
+	ghPusher gitops.Pusher      // nil when GitHub is not configured
+	glPusher gitops.Pusher      // nil when GitLab is not configured
+	store    *confighistory.Store
 }
 
 // NewConfigHandler creates a ConfigHandler. Pass nil for pushers that are not
 // configured; the interface-nil check in Save is correct only when the caller
 // passes a nil gitops.Pusher (not a typed-nil concrete pointer).
-func NewConfigHandler(pool *alertmanager.Pool, gh, gl gitops.Pusher) *ConfigHandler {
-	return &ConfigHandler{pool: pool, ghPusher: gh, glPusher: gl}
+func NewConfigHandler(pool *alertmanager.Pool, gh, gl gitops.Pusher, store *confighistory.Store) *ConfigHandler {
+	return &ConfigHandler{pool: pool, ghPusher: gh, glPusher: gl, store: store}
 }
 
 // Get handles GET /api/config?instance=<name>.
@@ -206,6 +210,17 @@ func (h *ConfigHandler) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Record the successful save in the in-memory history (feature 009).
+	h.store.Append(req.Alertmanager, confighistory.SaveRecord{
+		SavedAt:      time.Now().UTC(),
+		Mode:         req.SaveMode,
+		Alertmanager: req.Alertmanager,
+		Actor:        string(auth.GetRole(r)),
+		CommitSHA:    commitSHA,
+		HTMLURL:      htmlURL,
+		RawYAML:      req.RawYAML,
+	})
+
 	// Trigger optional webhook after save.
 	if req.WebhookURL != "" {
 		// SEC-02: only allow HTTPS webhooks to non-private destinations.
@@ -241,6 +256,34 @@ func (h *ConfigHandler) Save(w http.ResponseWriter, r *http.Request) {
 		"mode":       req.SaveMode,
 		"commit_sha": commitSHA,
 		"html_url":   htmlURL,
+	})
+}
+
+// History handles GET /api/config/history?instance=<name>.
+// Returns an array of save records for the given Alertmanager instance,
+// newest-first. The array is always non-null even when empty.
+func (h *ConfigHandler) History(w http.ResponseWriter, r *http.Request) {
+	instance := r.URL.Query().Get("instance")
+	writeJSON(w, map[string]any{
+		"alertmanager": instance,
+		"history":      h.store.List(instance),
+	})
+}
+
+// GitopsDefaults handles GET /api/config/gitops-defaults?instance=<name>.
+// Returns which GitOps pushers are configured so the frontend can enable or
+// disable the corresponding save modes, and the disk file path for the
+// requested instance so the frontend can pre-fill the disk path field.
+func (h *ConfigHandler) GitopsDefaults(w http.ResponseWriter, r *http.Request) {
+	instance := r.URL.Query().Get("instance")
+	var diskFilePath string
+	if client := h.pool.Client(instance); client != nil {
+		diskFilePath = client.ConfigFilePath()
+	}
+	writeJSON(w, map[string]any{
+		"github_configured": h.ghPusher != nil,
+		"gitlab_configured": h.glPusher != nil,
+		"disk_file_path":    diskFilePath,
 	})
 }
 

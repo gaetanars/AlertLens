@@ -72,42 +72,38 @@ All types expose a `send_resolved` toggle to control whether recovery notificati
 
 ---
 
-## Saving Changes
+## Save & Deploy
 
-Before any write, AlertLens shows a **unified diff** of the current vs. proposed configuration. You must confirm before the change is applied.
+The **Save & Deploy** tab is the final step in the build → review → publish workflow. It is always accessible from the Config Builder tab bar, regardless of which editor tab is active.
 
-Two save strategies are available per instance:
+### Diff preview
 
-### Disk Write
+Before saving, AlertLens fetches a unified diff between the current live Alertmanager configuration and the proposed YAML assembled by the builder. The diff is rendered with green/red line highlighting using the existing `YamlDiffViewer` component. If there are no changes, the Save button is disabled and a "No changes" message is shown instead.
 
-AlertLens writes `alertmanager.yml` directly to a file path configured in `config_file_path`.
+### Save modes
 
-```yaml
-alertmanagers:
-  - name: production
-    url: http://alertmanager:9093
-    config_file_path: /etc/alertmanager/alertmanager.yml
-```
+Three save modes are available. Modes whose backend pusher is not configured are shown as disabled with an explanatory tooltip.
 
-An optional **webhook** is called after a successful write (e.g., to trigger a reload or CI pipeline).
+#### Disk
+
+AlertLens writes `alertmanager.yml` directly to the file path you specify.
 
 !!! info "Filesystem access"
     AlertLens must have write access to the file path. In Docker, mount the directory as a volume.
 
-### GitOps Push
+#### GitHub / GitLab
 
-AlertLens commits and pushes the updated `alertmanager.yml` to a GitHub or GitLab repository via the API.
+AlertLens commits and pushes the updated configuration to a Git repository via the forge API. Required fields:
 
-Configurable parameters (set in the UI per instance):
-
-| Parameter | Description |
+| Field | Description |
 |---|---|
-| Repository | `owner/repo` |
+| Repository | `owner/repo` (GitHub) or `namespace/project` (GitLab) |
 | Branch | Target branch (e.g., `main`) |
 | File path | Path inside the repo (e.g., `config/alertmanager.yml`) |
-| Commit message | Template or free text |
+| Commit message | Free text |
+| Author name / email | Commit attribution |
 
-An optional webhook is triggered after the push (e.g., to open a pull request or trigger Argo CD).
+On success, a confirmation banner is shown with a clickable link to the commit on the forge.
 
 Configure tokens in your [AlertLens config](../configuration.md#gitops):
 
@@ -118,6 +114,18 @@ gitops:
   gitlab:
     token: ""   # ALERTLENS_GITOPS_GITLAB_TOKEN
 ```
+
+### Save history
+
+Below the save form, the **Save History** section lists all saves made since the last process restart, newest-first. Each row shows:
+
+- Timestamp (RFC 3339)
+- Save mode badge (disk / github / gitlab)
+- Actor (the role of the user who triggered the save)
+- An **Expand diff** button — clicking it fetches a diff between the saved YAML and the current live config and renders it inline
+
+!!! note "Session-scoped history"
+    Save history is in-memory and resets on process restart. Up to 50 saves are retained per Alertmanager instance (oldest evicted on overflow). Persistent history is tracked in feature 024.
 
 ---
 
