@@ -14,6 +14,7 @@
 	import YamlDiffViewer from '$lib/components/config/YamlDiffViewer.svelte';
 	import { instances } from '$lib/stores/alerts';
 	import { canEditConfig } from '$lib/stores/auth';
+	import { configDraftStore } from '$lib/stores/configDraft';
 	import { toast } from 'svelte-sonner';
 	import { Plus, Trash2, Eye, Save, Lock } from 'lucide-svelte';
 
@@ -97,8 +98,10 @@
 		if (!editing) return;
 		upserting = true;
 		try {
-			await upsertReceiver(editing.name, editing, selectedInstance || undefined);
+			const result = await upsertReceiver(editing.name, editing, selectedInstance || undefined);
 			toast.success(`Receiver "${editing.name}" saved`);
+			// Share the assembled YAML with the Save & Deploy tab.
+			configDraftStore.set({ instance: selectedInstance, rawYaml: result.raw_yaml });
 			await load();
 		} catch (e) {
 			toast.error('Save error: ' + (e instanceof Error ? e.message : ''));
@@ -123,10 +126,12 @@
 
 	async function confirmDelete(name: string) {
 		try {
-			await deleteReceiver(name, selectedInstance || undefined);
+			const result = await deleteReceiver(name, selectedInstance || undefined);
 			toast.success(`Receiver "${name}" deleted`);
 			if (editing?.name === name) editing = null;
 			deleteGuard = null;
+			// Share the assembled YAML with the Save & Deploy tab.
+			configDraftStore.set({ instance: selectedInstance, rawYaml: result.raw_yaml });
 			await load();
 		} catch (e) {
 			toast.error('Delete error: ' + (e instanceof Error ? e.message : ''));
@@ -143,6 +148,8 @@
 			pendingYaml = exported.raw_yaml;
 			diffResult = await diffConfig(selectedInstance || '', exported.raw_yaml);
 			step = 'diff';
+			// Share the assembled YAML with the Save & Deploy tab.
+			configDraftStore.set({ instance: selectedInstance, rawYaml: exported.raw_yaml });
 		} catch (e) {
 			toast.error('Diff error: ' + (e instanceof Error ? e.message : ''));
 		}

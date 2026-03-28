@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import { Settings, GitBranch, Clock, Radio } from 'lucide-svelte';
+	import { Settings, GitBranch, Clock, Radio, Save } from 'lucide-svelte';
 
 	let { children } = $props();
 
@@ -15,7 +15,8 @@
 	const tabs = [
 		{ href: '/config/routing',         label: 'Routing',         icon: GitBranch },
 		{ href: '/config/time-intervals',  label: 'Time Intervals',  icon: Clock },
-		{ href: '/config/receivers',       label: 'Receivers',       icon: Radio }
+		{ href: '/config/receivers',       label: 'Receivers',       icon: Radio },
+		{ href: '/config/save',            label: 'Save & Deploy',   icon: Save }
 	];
 </script>
 

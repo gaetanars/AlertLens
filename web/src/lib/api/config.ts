@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { ConfigResponse, ValidationResult, SaveConfigRequest } from './types';
+import type { ConfigResponse, GitopsDefaults, SaveConfigRequest, SaveRecord, ValidationResult } from './types';
 
 export function fetchConfig(instance?: string): Promise<ConfigResponse> {
 	const q = instance ? `?instance=${encodeURIComponent(instance)}` : '';
@@ -28,4 +28,15 @@ export function saveConfig(req: SaveConfigRequest): Promise<{
 	warning?: string;
 }> {
 	return api.post('/config/save', req);
+}
+
+export function fetchHistory(
+	instance: string
+): Promise<{ history: SaveRecord[]; alertmanager: string }> {
+	return api.get(`/config/history?instance=${encodeURIComponent(instance)}`);
+}
+
+export function fetchGitopsDefaults(instance?: string): Promise<GitopsDefaults> {
+	const q = instance ? `?instance=${encodeURIComponent(instance)}` : '';
+	return api.get(`/config/gitops-defaults${q}`);
 }

@@ -11,6 +11,7 @@
 	import YamlDiffViewer from '$lib/components/config/YamlDiffViewer.svelte';
 	import { instances } from '$lib/stores/alerts';
 	import { canEditConfig } from '$lib/stores/auth';
+	import { configDraftStore } from '$lib/stores/configDraft';
 	import { toast } from 'svelte-sonner';
 	import { Plus, Trash2, Save, Eye, Lock } from 'lucide-svelte';
 
@@ -96,9 +97,11 @@
 			return;
 		}
 		try {
-			await deleteTimeInterval(name, selectedInstance || undefined);
+			const result = await deleteTimeInterval(name, selectedInstance || undefined);
 			toast.success(`Time interval "${name}" deleted`);
 			if (editingIdx === idx) editingIdx = null;
+			// Share the assembled YAML with the Save & Deploy tab.
+			configDraftStore.set({ instance: selectedInstance, rawYaml: result.raw_yaml });
 			await load();
 		} catch (e) {
 			toast.error('Delete error: ' + (e instanceof Error ? e.message : ''));
@@ -169,6 +172,8 @@
 			pendingYaml = exported.raw_yaml;
 			diffResult = await diffConfig(selectedInstance || '', exported.raw_yaml);
 			step = 'diff';
+			// Share the assembled YAML with the Save & Deploy tab.
+			configDraftStore.set({ instance: selectedInstance, rawYaml: exported.raw_yaml });
 		} catch (e) {
 			toast.error('Diff error: ' + (e instanceof Error ? e.message : ''));
 		}

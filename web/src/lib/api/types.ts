@@ -364,6 +364,25 @@ export interface BuilderReceiverRoutesResponse {
 	referenced_by: BuilderReceiverRouteRef[];
 }
 
+// ─── Config Save History types (feature 009) ─────────────────────────────────
+
+export interface SaveRecord {
+	saved_at: string; // RFC 3339
+	mode: 'disk' | 'github' | 'gitlab';
+	alertmanager: string;
+	actor: string;
+	commit_sha: string;
+	html_url: string;
+	raw_yaml: string;
+}
+
+export interface GitopsDefaults {
+	github_configured: boolean;
+	gitlab_configured: boolean;
+	/** Local file path from config_file_path for the queried instance; empty string if not set. */
+	disk_file_path: string;
+}
+
 export interface SaveConfigRequest {
 	alertmanager: string;
 	raw_yaml: string;

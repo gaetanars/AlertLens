@@ -13,6 +13,7 @@ import (
 	"github.com/alertlens/alertlens/internal/alertmanager"
 	"github.com/alertlens/alertlens/internal/api/handlers"
 	"github.com/alertlens/alertlens/internal/auth"
+	"github.com/alertlens/alertlens/internal/confighistory"
 	"github.com/alertlens/alertlens/internal/gitops"
 	"github.com/alertlens/alertlens/internal/incident"
 )
@@ -118,13 +119,15 @@ func NewRouter(
 	}))
 
 	// ─── Instantiate handlers ────────────────────────────────────────────────
+	saveHistory := confighistory.NewStore()
+
 	healthH := handlers.NewHealthHandler(version)
 	authH   := handlers.NewAuthHandler(authSvc)
 	amH     := handlers.NewAlertmanagersHandler(pool)
 	alH     := handlers.NewAlertsHandler(pool)
 	silH    := handlers.NewSilencesHandler(pool)
 	rtH     := handlers.NewRoutingHandler(pool)
-	cfgH    := handlers.NewConfigHandler(pool, ghPusher, glPusher)
+	cfgH    := handlers.NewConfigHandler(pool, ghPusher, glPusher, saveHistory)
 	bulkH   := handlers.NewBulkHandler(pool)
 	bldrH   := handlers.NewBuilderHandler(pool)
 	hubH    := handlers.NewHubHandler(pool, logger)
@@ -172,6 +175,8 @@ func NewRouter(
 		r.With(requireConfigEditor).Post("/config/validate", cfgH.Validate)
 		r.With(requireConfigEditor).Post("/config/diff", cfgH.Diff)
 		r.With(requireConfigEditor).Post("/config/save", cfgH.Save)
+		r.With(requireConfigEditor).Get("/config/history", cfgH.History)
+		r.With(requireConfigEditor).Get("/config/gitops-defaults", cfgH.GitopsDefaults)
 
 		// Structured config builder — CRUD for time intervals, receivers, routes.
 		// All endpoints require config-editor role and return {raw_yaml, validation}.

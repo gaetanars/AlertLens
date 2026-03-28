@@ -62,12 +62,13 @@ const (
 
 // Client is an Alertmanager API v2 client for a single instance.
 type Client struct {
-	name      string
-	baseURL   string
-	tenantID  string
-	userAgent string
-	basicAuth *basicAuthCreds
-	http      *http.Client
+	name           string
+	baseURL        string
+	tenantID       string
+	configFilePath string
+	userAgent      string
+	basicAuth      *basicAuthCreds
+	http           *http.Client
 }
 
 type basicAuthCreds struct {
@@ -88,10 +89,11 @@ func NewClient(cfg config.AlertmanagerConfig, version string) *Client {
 	}
 
 	c := &Client{
-		name:      cfg.Name,
-		baseURL:   strings.TrimRight(cfg.URL, "/"),
-		tenantID:  cfg.TenantID,
-		userAgent: "alertlens/" + version,
+		name:           cfg.Name,
+		baseURL:        strings.TrimRight(cfg.URL, "/"),
+		tenantID:       cfg.TenantID,
+		configFilePath: cfg.ConfigFilePath,
+		userAgent:      "alertlens/" + version,
 		http: &http.Client{
 			Timeout:   15 * time.Second,
 			Transport: transport,
@@ -108,6 +110,10 @@ func NewClient(cfg config.AlertmanagerConfig, version string) *Client {
 
 // Name returns the configured name for this instance.
 func (c *Client) Name() string { return c.name }
+
+// ConfigFilePath returns the local file path configured for disk saves, or an
+// empty string if no path was set for this instance.
+func (c *Client) ConfigFilePath() string { return c.configFilePath }
 
 // GetAlerts fetches alerts from the Alertmanager instance.
 func (c *Client) GetAlerts(ctx context.Context, params AlertsQueryParams) ([]Alert, error) {
